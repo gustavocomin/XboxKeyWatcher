@@ -1,0 +1,21 @@
+{
+  "kind": "synthetic_api_vision",
+  "model": "gpt-4.1-mini",
+  "samples": 0,
+  "correct": 0,
+  "wrong": 0,
+  "rejected": 0,
+  "errors": 1,
+  "mean_ms": null,
+  "p50_ms": null,
+  "p95_ms": null,
+  "p99_ms": null,
+  "note": "Full HTTP request including upload and response, excludes window capture and clipboard; fictional fixtures only.",
+  "details": [
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 106.43880002317019,
+      "error": "HTTPError 400 content_type=None proxy=False html=False"
+    }
+  ]
+}

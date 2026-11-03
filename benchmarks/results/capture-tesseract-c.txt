@@ -1,0 +1,1 @@
+method=PrintWindow+Tesseract kind=paint_request_to_ocr samples=30 correct=30 mean_ms=66.578 p50_ms=66.632 p95_ms=67.106 p99_ms=69.094

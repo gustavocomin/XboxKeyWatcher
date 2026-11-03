@@ -1,0 +1,13 @@
+{
+  "kind": "actual_mainform_synthetic_baseline",
+  "events": [
+    {
+      "step": "baseline",
+      "old_keys": 1,
+      "destination_checked": false,
+      "simulated": false
+    }
+  ],
+  "clipboard_restoration": "not_applicable",
+  "error": null
+}

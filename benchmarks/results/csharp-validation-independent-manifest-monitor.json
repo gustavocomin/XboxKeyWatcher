@@ -1,0 +1,3419 @@
+{
+  "implementation": "C# \u002B Windows OCR, edge guard, Tesseract and RapidOCR",
+  "kind": "monitoring_ocr_in_memory",
+  "samples": 480,
+  "correct": 20,
+  "false_positives": 0,
+  "baseline_blocked": 340,
+  "unsafe_baseline": 0,
+  "mean_ms": 94.54536291666665,
+  "p50_ms": 89.2842,
+  "p95_ms": 165.042,
+  "p99_ms": 217.9072,
+  "min_ms": 46.7686,
+  "max_ms": 274.4099,
+  "cpu_percent_one_core": 42.16975935436109,
+  "peak_working_set_bytes": 1193054208,
+  "details": [
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 183.9268,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 126.9774,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 120.3903,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 119.8451,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 117.9054,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 119.2642,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 116.1466,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 122.5445,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 118.2921,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/00-full.jpg",
+      "elapsed_ms": 127.0441,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 106.4671,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 66.5418,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 70.2063,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 70.6253,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 71.6282,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 70.2186,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 67.7835,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 70.0062,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 68.6729,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/01-near-edge.png",
+      "elapsed_ms": 69.8952,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 86.8753,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 114.2217,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 91.6789,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 88.5087,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 89.169,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 89.5867,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 93.2372,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 92.7952,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 92.3377,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/02-clipped.png",
+      "elapsed_ms": 90.7276,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 122.894,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 77.4828,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 102.4993,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 81.4996,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 82.9429,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 82.7171,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 81.232,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 79.9963,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 82.946,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/03-no-key.jpg",
+      "elapsed_ms": 81.6868,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 140.5291,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 96.9404,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 100.9115,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 117.7606,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 99.0743,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 101.4137,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 116.319,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 96.3478,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 102.2287,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/04-full.png",
+      "elapsed_ms": 104.9493,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 160.3347,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 114.7326,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 133.3876,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 115.7479,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 116.0635,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 117.5405,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 114.9674,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 118.4659,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 112.8135,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/05-near-edge.png",
+      "elapsed_ms": 111.8926,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 246.7965,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 146.7677,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 147.6939,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 153.4401,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 152.8357,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 149.2708,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 157.3515,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 148.2931,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 147.1688,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/06-clipped.jpg",
+      "elapsed_ms": 148.1946,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 89.3321,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 59.2381,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 62.5856,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 65.3828,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 60.9586,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 60.4648,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 66.4354,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 73.8266,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 62.4641,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/07-no-key.png",
+      "elapsed_ms": 63.4751,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 196.9003,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 97.1314,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 95.1185,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 102.3848,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 99.8156,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 95.6107,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 100.2281,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 132.0403,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 94.8689,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/08-full.png",
+      "elapsed_ms": 97.4277,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 94.859,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 51.3114,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 54.7606,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 53.085,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 56.0873,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 55.6334,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 51.5228,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 51.2057,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 51.5889,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/09-near-edge.jpg",
+      "elapsed_ms": 51.094,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 144.0983,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 110.1995,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 103.566,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 99.7049,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 99.9723,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 98.2277,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 105.5773,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 98.6595,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 100.4892,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/10-clipped.png",
+      "elapsed_ms": 103.2161,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 115.4344,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 65.4658,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 68.5307,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 73.0217,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 71.4653,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 66.9895,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 71.127,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 70.4216,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 71.1161,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/11-no-key.png",
+      "elapsed_ms": 68.5212,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 171.2656,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 126.6522,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 148.5771,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 127.6501,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 131.462,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 128.5619,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 126.5584,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 124.8506,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 127.1379,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/12-full.jpg",
+      "elapsed_ms": 127.6061,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 97.7261,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 53.7112,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 54.0216,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 54.9991,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 52.2675,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 52.466,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 51.9865,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 50.2418,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 53.2173,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/13-near-edge.png",
+      "elapsed_ms": 51.9095,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 97.2319,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 51.2099,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 49.4035,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 50.2936,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 48.5175,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 53.5182,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 50.0978,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 79.6281,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 48.8533,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/14-clipped.png",
+      "elapsed_ms": 49.4753,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 132.4507,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 76.7103,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 80.9146,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 79.5711,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 91.8863,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 82.6337,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 76.307,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 78.943,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 76.702,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/15-no-key.jpg",
+      "elapsed_ms": 100.7245,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 256.5975,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 146.3817,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 144.5768,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 151.0148,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 146.2452,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 165.042,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 163.113,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 147.8319,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 149.3781,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/16-full.png",
+      "elapsed_ms": 144.2469,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 69.4096,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 67.1811,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 67.9617,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 66.8764,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 72.0348,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 70.1769,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 67.8437,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 68.0616,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 68.0043,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/17-near-edge.png",
+      "elapsed_ms": 66.3767,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 153.2933,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 114.1644,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 116.5421,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 114.4032,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 114.2933,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 128.6,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 116.7341,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 114.2598,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 112.1498,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/18-clipped.jpg",
+      "elapsed_ms": 112.3614,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 93.8199,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 65.7891,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 65.9966,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 66.6054,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 67.23,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 67.3733,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 87.3068,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 67.0057,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 64.5716,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/19-no-key.png",
+      "elapsed_ms": 63.4211,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 251.0027,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 154.8349,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 158.3851,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 157.2732,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 217.9072,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 150.7206,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 154.0426,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 161.4072,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 156.3704,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/20-full.png",
+      "elapsed_ms": 158.7342,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 63.0004,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 66.8925,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 56.3977,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 56.8401,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 56.4184,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 56.2157,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 56.1754,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 59.3048,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 55.7821,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/21-near-edge.jpg",
+      "elapsed_ms": 55.6843,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 62.2646,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 58.7206,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 59.3185,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 57.9698,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 58.0309,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 57.7759,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 57.4325,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 60.1052,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 58.0398,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/22-clipped.png",
+      "elapsed_ms": 57.8204,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 92.8379,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 62.1342,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 65.3763,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 64.2002,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 65.0519,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 66.8661,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 64.4883,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 65.5307,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 66.2078,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/23-no-key.png",
+      "elapsed_ms": 63.9263,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 170.4768,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 148.8205,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 144.2211,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 139.6979,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 140.7879,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 145.6696,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 136.3893,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 140.5321,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 145.0591,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/24-full.jpg",
+      "elapsed_ms": 139.7243,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 88.822,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 49.1642,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 54.0374,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 50.9979,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 52.5415,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 65.5767,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 55.6546,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 51.6697,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 51.6237,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/25-near-edge.png",
+      "elapsed_ms": 54.8127,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 137.0941,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 108.7526,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 98.3926,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 119.5386,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 99.4129,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 99.1623,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 102.7521,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 102.4164,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 100.3714,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/26-clipped.png",
+      "elapsed_ms": 104.2084,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 128.5201,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 65.7832,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 66.8601,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 67.8982,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 68.4436,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 70.702,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 71.0075,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 70.6618,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 68.2353,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/27-no-key.jpg",
+      "elapsed_ms": 70.8434,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 107.1921,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 54.2362,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 51.4728,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 53.7566,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 50.0578,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 76.746,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 48.087,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 47.729,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 47.507,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/28-full.png",
+      "elapsed_ms": 49.1475,
+      "correct": true,
+      "found": [
+        "7N7GK-NMT7G-XJ56L-SRKYE-Q3XMD"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 103.4395,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 52.9912,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 56.165,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 53.624,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 54.0548,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 52.6664,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 52.2972,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 53.0002,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 54.2716,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/29-near-edge.png",
+      "elapsed_ms": 54.4566,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 111.7975,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 102.2069,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 77.4991,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 69.5509,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 67.9735,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 72.7051,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 68.3623,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 69.3225,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 71.6385,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 68.5428,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 113.2059,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 69.5189,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 69.2933,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 73.5507,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 92.9454,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 72.4649,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 74.5386,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 70.007,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 69.8452,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/31-no-key.png",
+      "elapsed_ms": 73.7101,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 196.8766,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 109.6294,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 109.8474,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 110.7076,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 141.6937,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 105.4779,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 116.1247,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 109.1843,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 122.2747,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/32-full.png",
+      "elapsed_ms": 105.3892,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 48.7439,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 53.3973,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 52.6553,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 50.8248,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 48.2986,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 50.5952,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 48.4025,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 76.3825,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 48.5991,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/33-near-edge.jpg",
+      "elapsed_ms": 51.8891,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 140.45,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 96.1529,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 98.9762,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 101.2729,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 103.1716,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 100.0354,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 99.6478,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 110.4421,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 103.3821,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/34-clipped.png",
+      "elapsed_ms": 100.4104,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 97.2104,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 61.9573,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 68.6899,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 65.9418,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 66.4369,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 74.7091,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 63.7185,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 64.1381,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 63.3049,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/35-no-key.png",
+      "elapsed_ms": 66.574,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 178.0852,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 90.6883,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 91.28,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 93.0295,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 92.88,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 95.0312,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 97.9476,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 92.6828,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 90.2318,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/36-full.jpg",
+      "elapsed_ms": 89.2842,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 206.2535,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 112.3506,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 115.1824,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 112.9527,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 117.7682,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 126.7302,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 112.3841,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 114.2028,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 138.0879,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/37-near-edge.png",
+      "elapsed_ms": 110.923,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 135.0157,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 90.9861,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 93.8189,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 93.6147,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 95.4775,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 97.9569,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 95.3262,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 94.7227,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 103.6218,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/38-clipped.png",
+      "elapsed_ms": 95.8603,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 124.2849,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 72.3925,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 74.7435,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 75.6907,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 75.3756,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 82.1481,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 74.1866,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 71.9146,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 71.7544,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/39-no-key.jpg",
+      "elapsed_ms": 73.799,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 129.8521,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 46.7686,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 48.6906,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 49.0649,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 47.5747,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 49.1445,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 50.9927,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 48.5785,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 46.9048,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/40-full.png",
+      "elapsed_ms": 49.3452,
+      "correct": true,
+      "found": [
+        "LJBPL-8VYRM-Y3MEJ-TK8F9-87UJA"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 57.6146,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 55.2255,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 56.9585,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 55.15,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 55.3587,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 55.9848,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 54.3432,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 55.1033,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 64.6011,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/41-near-edge.png",
+      "elapsed_ms": 55.0474,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 208.3376,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 130.0188,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 131.9641,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 137.9897,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 130.6267,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 135.2066,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 153.6061,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 130.9062,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 133.0165,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/42-clipped.jpg",
+      "elapsed_ms": 138.0177,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 115.9746,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 71.285,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 77.2216,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 75.8245,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 72.8934,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 97.5306,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 77.8199,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 71.8499,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 74.497,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/43-no-key.png",
+      "elapsed_ms": 75.1467,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 274.4099,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 179.1358,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 179.3889,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 187.8583,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 182.4789,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 180.0948,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 184.0321,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 185.8881,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 195.0157,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/44-full.png",
+      "elapsed_ms": 182.9527,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 59.9174,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 59.6758,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 59.3041,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 58.7931,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 58.9505,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 60.1388,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 59.2629,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 60.8328,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 59.1033,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/45-near-edge.jpg",
+      "elapsed_ms": 61.5746,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 183.6669,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 116.3981,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 111.7991,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 113.6947,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 112.3491,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 118.2972,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 117.8554,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 111.4425,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 118.7376,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/46-clipped.png",
+      "elapsed_ms": 120.1868,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 188.3286,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 88.489,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 95.7434,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 106.3746,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 126.9687,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 95.4075,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 99.1429,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 106.2963,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 111.7035,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/validation-independent/47-no-key.png",
+      "elapsed_ms": 92.8557,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": false
+    }
+  ]
+}

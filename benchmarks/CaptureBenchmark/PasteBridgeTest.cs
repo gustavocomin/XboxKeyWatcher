@@ -1,0 +1,49 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using XboxKeyWatcher.App;
+
+internal static class PasteBridgeTest
+{
+    internal static void ServeFixture()
+    {
+        const string key = "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R";
+        using var bridge = new PasteBridge(value => value == key);
+        Console.WriteLine(bridge.Token);
+        while (Console.ReadLine() is string command)
+        {
+            if (command == "offer") bridge.Offer(key);
+            else if (command == "clear") bridge.Clear();
+        }
+    }
+
+    internal static async Task Run()
+    {
+        const string fixture = "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R";
+        string clipboard = fixture;
+        using var bridge = new PasteBridge(value => value == Volatile.Read(ref clipboard));
+        using var client = new HttpClient { BaseAddress = new Uri(PasteBridge.Address), Timeout = TimeSpan.FromSeconds(5) };
+        async Task RequireStatus(string path, HttpStatusCode expected, HttpMethod? method = null)
+        {
+            using var request = new HttpRequestMessage(method ?? HttpMethod.Get, path);
+            using var response = await client.SendAsync(request);
+            if (response.StatusCode != expected) throw new InvalidOperationException($"{path}: {response.StatusCode}, esperado {expected}.");
+        }
+        await RequireStatus("pending", HttpStatusCode.Unauthorized);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bridge.Token);
+        await RequireStatus("pending", HttpStatusCode.NoContent);
+        bridge.Offer(fixture);
+        Volatile.Write(ref clipboard, "changed");
+        await RequireStatus("pending", HttpStatusCode.NoContent);
+        Volatile.Write(ref clipboard, fixture);
+        using var payload = JsonDocument.Parse(await client.GetStringAsync("pending"));
+        if (payload.RootElement.GetProperty("Key").GetString() != fixture) throw new InvalidOperationException("Key divergente.");
+        string id = payload.RootElement.GetProperty("Id").GetString()!;
+        await RequireStatus($"ack/{id}", HttpStatusCode.NoContent, HttpMethod.Post);
+        await RequireStatus("pending", HttpStatusCode.NoContent);
+        bridge.Offer(fixture);
+        bridge.Clear();
+        await RequireStatus("pending", HttpStatusCode.NoContent);
+        Console.WriteLine("Bridge: autenticação, clipboard alterado, key exata, confirmação e limpeza passaram.");
+    }
+}

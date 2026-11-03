@@ -1,0 +1,159 @@
+{
+  "implementation": "C# \u002B Windows OCR, edge guard, Tesseract and RapidOCR",
+  "kind": "monitoring_ocr_in_memory",
+  "samples": 20,
+  "correct": 0,
+  "false_positives": 0,
+  "baseline_blocked": 20,
+  "unsafe_baseline": 0,
+  "mean_ms": 148.121905,
+  "p50_ms": 101.6619,
+  "p95_ms": 237.225,
+  "p99_ms": 310.4435,
+  "min_ms": 62.1131,
+  "max_ms": 310.4435,
+  "cpu_percent_one_core": 55.89096320149106,
+  "peak_working_set_bytes": 352854016,
+  "details": [
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 310.4435,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 201.6654,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 204.6692,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 229.1768,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 199.5786,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 209.8261,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 218.5051,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 237.225,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 205.042,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\full.png",
+      "elapsed_ms": 199.5772,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 101.6619,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 63.4596,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 62.1131,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 70.3287,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 72.1252,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 67.3424,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 83.3967,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 95.2697,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 66.6001,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "C:\\Users\\gusta\\Documents\\Codex\\2026-11-03\\continue-o-desenvolvimento-do-xboxkeywatcher-em\\work\\channel-large\\clipped.png",
+      "elapsed_ms": 64.4318,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    }
+  ]
+}

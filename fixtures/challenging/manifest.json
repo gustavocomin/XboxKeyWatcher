@@ -1,0 +1,50 @@
+[
+  {
+    "path": "fixtures/challenging/case-00.jpg",
+    "expected": "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+  },
+  {
+    "path": "fixtures/challenging/case-01.png",
+    "expected": "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+  },
+  {
+    "path": "fixtures/challenging/case-02.png",
+    "expected": "NNNNN-PPPPP-QQQQQ-LLLLL-MMMMM"
+  },
+  {
+    "path": "fixtures/challenging/case-03.jpg",
+    "expected": "DDDDD-EEEEE-AAAAA-BBBBB-CCCCC"
+  },
+  {
+    "path": "fixtures/challenging/case-04.png",
+    "expected": "KKKKK-FFFFF-GGGGG-HHHHH-JJJJJ"
+  },
+  {
+    "path": "fixtures/challenging/case-05.png",
+    "expected": "LLLLL-MMMMM-NNNNN-PPPPP-QQQQQ"
+  },
+  {
+    "path": "fixtures/challenging/case-06.jpg",
+    "expected": "BBBBB-CCCCC-DDDDD-EEEEE-AAAAA"
+  },
+  {
+    "path": "fixtures/challenging/case-07.png",
+    "expected": "HHHHH-JJJJJ-KKKKK-FFFFF-GGGGG"
+  },
+  {
+    "path": "fixtures/challenging/case-08.png",
+    "expected": "PPPPP-QQQQQ-LLLLL-MMMMM-NNNNN"
+  },
+  {
+    "path": "fixtures/challenging/case-09.jpg",
+    "expected": "EEEEE-AAAAA-BBBBB-CCCCC-DDDDD"
+  },
+  {
+    "path": "fixtures/challenging/case-10.png",
+    "expected": "FFFFF-GGGGG-HHHHH-JJJJJ-KKKKK"
+  },
+  {
+    "path": "fixtures/challenging/case-11.png",
+    "expected": "MMMMM-NNNNN-PPPPP-QQQQQ-LLLLL"
+  }
+]

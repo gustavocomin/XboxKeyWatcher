@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "XboxKeyWatcher — colagem assistida",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "scripting", "storage", "clipboardRead"],
+  "host_permissions": ["http://127.0.0.1:47183/*"],
+  "background": { "service_worker": "worker.js" },
+  "action": { "default_popup": "popup.html" }
+}

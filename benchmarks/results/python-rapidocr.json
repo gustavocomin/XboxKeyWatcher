@@ -1,0 +1,477 @@
+{
+  "implementation": "Python 3 + RapidOCR ONNX CPU default",
+  "kind": "isolated_in_memory",
+  "samples": 60,
+  "correct": 50,
+  "false_positives": 0,
+  "mean_ms": 490.53568,
+  "p50_ms": 482.3645,
+  "p95_ms": 541.9642,
+  "p99_ms": 563.8513,
+  "min_ms": 456.4241,
+  "max_ms": 563.8513,
+  "cpu_percent_one_core": 801.5570252226137,
+  "peak_working_set_bytes": 712843264,
+  "details": [
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 476.3167,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 480.9959,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 479.4774,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 491.8969,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 522.235,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 525.4777,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 465.9386,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 485.9741,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 480.3406,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 486.6289,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 543.704,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 482.3645,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 480.9714,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 475.9586,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 498.0558,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 488.3317,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 476.6751,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 464.3007,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 489.7395,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 470.7497,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 546.6351,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 469.8935,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 466.5209,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 487.3555,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 486.2319,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 505.1051,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 491.7928,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 471.4047,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 479.1708,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 468.8685,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 541.9642,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 462.0019,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 499.5334,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 466.4817,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 476.7893,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 473.2213,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 479.347,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 501.3369,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 532.9835,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 521.6079,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 563.8513,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 499.3511,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 507.493,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 494.1727,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 485.421,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 523.8886,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 483.8974,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 478.2135,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 478.6477,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 474.5802,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 535.1092,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 470.5056,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 469.754,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 488.6294,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 523.8327,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 503.5766,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 462.5866,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 463.9171,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 473.9103,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 456.4241,
+      "correct": false,
+      "found": []
+    }
+  ]
+}

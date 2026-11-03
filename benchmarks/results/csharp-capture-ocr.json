@@ -1,0 +1,29 @@
+{
+  "kind": "synthetic_window_paint_to_guarded_ocr",
+  "note": "Paint completion is not physical display appearance; capture, full bitmap copy, crop and guarded OCR included; baseline, change detection and application UI not included.",
+  "full_size": false,
+  "count": 10,
+  "mean_ms": 34.80234,
+  "p50_ms": 31.3384,
+  "p95_ms": 70.4491,
+  "p99_ms": 70.4491,
+  "values": [
+    27.0275,
+    28.5469,
+    28.8276,
+    31.0903,
+    31.3384,
+    32.0301,
+    32.7204,
+    32.8888,
+    33.1043,
+    70.4491
+  ],
+  "clipboard_retries": 0,
+  "clipboard_exceptions": 0,
+  "last_clipboard_error": "",
+  "last_read_length": -1,
+  "last_seq_after_write": 0,
+  "last_seq_after_read": 0,
+  "error": null
+}

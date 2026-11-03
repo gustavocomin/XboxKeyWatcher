@@ -1,0 +1,757 @@
+{
+  "implementation": "Python + native Tesseract, PSM 6",
+  "kind": "isolated_in_memory",
+  "samples": 120,
+  "correct": 0,
+  "false_positives": 10,
+  "mean_ms": 29.747634166666668,
+  "p50_ms": 26.0804,
+  "p95_ms": 63.3323,
+  "p99_ms": 64.1284,
+  "min_ms": 5.097,
+  "max_ms": 64.7568,
+  "cpu_percent_one_core": 99.7456143847587,
+  "peak_working_set_bytes": 55316480,
+  "details": [
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 63.3479,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 64.7568,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 63.7976,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 64.1284,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 63.275,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 63.162,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 63.2142,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 63.3323,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 63.3519,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 63.9191,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 20.2856,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 20.4466,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 19.8604,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 20.0997,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 20.1615,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 19.7529,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 19.9627,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 19.7811,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 19.8081,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 19.8009,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.6151,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.5389,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.6256,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.5569,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.5814,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.5117,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.7678,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.7387,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.7634,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 15.9059,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 45.5293,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 45.5719,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 45.9678,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 45.792,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 45.5878,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 47.0891,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 45.7537,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 45.6174,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 45.3621,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 45.4154,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.0228,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.1133,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.0654,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.2775,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.586,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.2053,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.4134,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.4545,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.0849,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 38.3417,
+      "correct": false,
+      "found": [
+        "KKKKK-FERER-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 45.3893,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 45.3379,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 44.8394,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 44.9175,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 45.119,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 44.7234,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 44.862,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 44.9907,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 45.0517,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 45.0018,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 31.8171,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 30.7968,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 30.7935,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 30.8358,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 30.7387,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 30.5516,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 30.5861,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 30.4905,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 30.6115,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 30.8694,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 25.2525,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 25.086,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 24.9264,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 24.9459,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 24.9488,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 25.1555,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 25.1641,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 25.4265,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 26.0804,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 25.922,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.5288,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.4854,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.2795,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.4844,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.6285,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.3947,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.4698,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.2882,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.2553,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 13.7815,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.4067,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.3966,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.1174,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.2137,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.5037,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.1097,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.2147,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.097,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.1381,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 5.1639,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 15.0712,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 15.3312,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 15.0038,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 15.7695,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 19.7406,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 14.8581,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 14.9798,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 14.8674,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 14.8644,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 15.1312,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 38.4104,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 38.2345,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 38.281,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 38.1952,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 37.9887,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 38.2867,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 38.301,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 38.2714,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 38.1057,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 38.7335,
+      "correct": false,
+      "found": []
+    }
+  ]
+}

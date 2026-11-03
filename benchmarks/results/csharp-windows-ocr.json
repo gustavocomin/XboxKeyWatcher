@@ -1,0 +1,558 @@
+{
+  "implementation": "C# \u002B Windows OCR, edge guard and Tesseract fallback",
+  "kind": "isolated_in_memory",
+  "samples": 60,
+  "correct": 50,
+  "false_positives": 0,
+  "baseline_blocked": 10,
+  "mean_ms": 11.468041666666668,
+  "p50_ms": 3.1872,
+  "p95_ms": 53.5628,
+  "p99_ms": 57.4411,
+  "min_ms": 2.1728,
+  "max_ms": 57.4411,
+  "cpu_percent_one_core": 115.64115665681652,
+  "peak_working_set_bytes": 113557504,
+  "details": [
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 3.2423,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 4.0773,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 2.973,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 2.913,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 2.9849,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 2.8821,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 2.9191,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 2.8996,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 2.9012,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 2.896,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.4218,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.3109,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.2852,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.5622,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.4286,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.2032,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.1728,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.2166,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.213,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 2.1992,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.4432,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.4,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.5539,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.4252,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.3817,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.4027,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.3775,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.4014,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.4013,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 3.5596,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.9972,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.7235,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.7609,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.743,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.7182,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.7083,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.7105,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.8569,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.7324,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 2.6945,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 55.9867,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 53.3183,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 52.803,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 53.3679,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 57.4411,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 53.4033,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 52.9813,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 53.5628,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 53.606,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 53.1281,
+      "correct": false,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.5065,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.2542,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.2782,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.2716,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.2037,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.2631,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.3302,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.3099,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.1872,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 3.1855,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ],
+      "baseline_blocked": false
+    }
+  ]
+}

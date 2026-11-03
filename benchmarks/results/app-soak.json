@@ -1,0 +1,23 @@
+{
+  "kind": "actual_mainform_static_soak_simulated_clipboard",
+  "events": [
+    {
+      "step": "baseline",
+      "old_keys": 1,
+      "destination_checked": true,
+      "simulated": true
+    },
+    {
+      "step": "static_soak",
+      "seconds": 60.9696054,
+      "samples": 60,
+      "cpu_percent_one_core": 1.2301211317992227,
+      "min_working_set_bytes": 144965632,
+      "max_working_set_bytes": 149401600,
+      "final_working_set_bytes": 147804160,
+      "simulated": true
+    }
+  ],
+  "clipboard_restoration": "not_applicable",
+  "error": null
+}

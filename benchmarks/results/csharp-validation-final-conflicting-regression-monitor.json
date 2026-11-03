@@ -1,0 +1,89 @@
+{
+  "implementation": "C# \u002B Windows OCR, edge guard, Tesseract and RapidOCR",
+  "kind": "monitoring_ocr_in_memory",
+  "samples": 10,
+  "correct": 0,
+  "false_positives": 0,
+  "baseline_blocked": 10,
+  "unsafe_baseline": 0,
+  "mean_ms": 122.75589,
+  "p50_ms": 108.6356,
+  "p95_ms": 207.8443,
+  "p99_ms": 207.8443,
+  "min_ms": 107.1251,
+  "max_ms": 207.8443,
+  "cpu_percent_one_core": 38.16631360960669,
+  "peak_working_set_bytes": 158924800,
+  "details": [
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 207.8443,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 108.2253,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 111.2192,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 107.1793,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 107.1251,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 114.9383,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 145.3379,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 108.7001,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 108.6356,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-final/16-full.png",
+      "elapsed_ms": 108.3538,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    }
+  ]
+}

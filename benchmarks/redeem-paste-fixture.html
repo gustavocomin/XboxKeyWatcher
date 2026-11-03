@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<title>XboxKeyWatcher | Resgate fictício</title>
+<form id="fixture">
+  <label>Key fictícia <input id="redeem" autocomplete="off"></label>
+  <label>Outro campo <input id="other" autocomplete="off"></label>
+  <button type="submit">Enviar formulário fictício</button>
+</form>
+<script>
+  const target = document.querySelector('#redeem');
+  const fixturePage = location.href;
+  window.submissionCount = 0;
+  document.querySelector('#fixture').addEventListener('submit', event => {
+    event.preventDefault();
+    window.submissionCount++;
+  });
+
+  // The prototype receives the clipboard snapshot from its test harness.
+  window.tryFillFixture = (enabled, expected, clipboardSnapshot) => {
+    if (!enabled || location.href !== fixturePage || document.visibilityState !== 'visible' ||
+        !document.hasFocus() || document.activeElement !== target ||
+        target.disabled || target.readOnly || target.value !== '' ||
+        clipboardSnapshot !== expected || !/^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){4}$/.test(expected)) return false;
+    target.setRangeText(expected, 0, 0, 'end');
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+    return target.value === expected;
+  };
+</script>
+</html>

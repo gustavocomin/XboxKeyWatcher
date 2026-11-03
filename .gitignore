@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+dist/
+build/
+build-log.txt
+.vs/
+*.user
+.venv/
+__pycache__/
+benchmarks/native/*.exe
+benchmarks/native/*.pdb

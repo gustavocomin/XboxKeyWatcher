@@ -1,0 +1,306 @@
+{
+  "implementation": "Python 3 + RapidOCR ONNX CPU optimized",
+  "threads": 2,
+  "kind": "isolated_in_memory",
+  "samples": 36,
+  "correct": 36,
+  "false_positives": 0,
+  "mean_ms": 59.10681944444445,
+  "p50_ms": 49.025,
+  "p95_ms": 105.5424,
+  "p99_ms": 106.5817,
+  "min_ms": 40.7641,
+  "max_ms": 106.5817,
+  "cpu_percent_one_core": 172.4439063892186,
+  "peak_working_set_bytes": 140058624,
+  "details": [
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 47.8621,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 47.3229,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-00.jpg",
+      "elapsed_ms": 47.9155,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 90.9122,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 47.6059,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 47.8152,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 105.5424,
+      "correct": true,
+      "found": [
+        "NNNNN-PPPPP-QQQQQ-LLLLL-MMMMM"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 54.2482,
+      "correct": true,
+      "found": [
+        "NNNNN-PPPPP-QQQQQ-LLLLL-MMMMM"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-02.png",
+      "elapsed_ms": 53.5062,
+      "correct": true,
+      "found": [
+        "NNNNN-PPPPP-QQQQQ-LLLLL-MMMMM"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 106.5817,
+      "correct": true,
+      "found": [
+        "DDDDD-EEEEE-AAAAA-BBBBB-CCCCC"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 54.9115,
+      "correct": true,
+      "found": [
+        "DDDDD-EEEEE-AAAAA-BBBBB-CCCCC"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-03.jpg",
+      "elapsed_ms": 51.7497,
+      "correct": true,
+      "found": [
+        "DDDDD-EEEEE-AAAAA-BBBBB-CCCCC"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 78.5243,
+      "correct": true,
+      "found": [
+        "KKKKK-FFFFF-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 44.8034,
+      "correct": true,
+      "found": [
+        "KKKKK-FFFFF-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-04.png",
+      "elapsed_ms": 42.413,
+      "correct": true,
+      "found": [
+        "KKKKK-FFFFF-GGGGG-HHHHH-JJJJJ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 84.9336,
+      "correct": true,
+      "found": [
+        "LLLLL-MMMMM-NNNNN-PPPPP-QQQQQ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 44.2385,
+      "correct": true,
+      "found": [
+        "LLLLL-MMMMM-NNNNN-PPPPP-QQQQQ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-05.png",
+      "elapsed_ms": 44.7257,
+      "correct": true,
+      "found": [
+        "LLLLL-MMMMM-NNNNN-PPPPP-QQQQQ"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 94.1316,
+      "correct": true,
+      "found": [
+        "BBBBB-CCCCC-DDDDD-EEEEE-AAAAA"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 47.9699,
+      "correct": true,
+      "found": [
+        "BBBBB-CCCCC-DDDDD-EEEEE-AAAAA"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-06.jpg",
+      "elapsed_ms": 47.6854,
+      "correct": true,
+      "found": [
+        "BBBBB-CCCCC-DDDDD-EEEEE-AAAAA"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 52.9289,
+      "correct": true,
+      "found": [
+        "HHHHH-JJJJJ-KKKKK-FFFFF-GGGGG"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 53.101,
+      "correct": true,
+      "found": [
+        "HHHHH-JJJJJ-KKKKK-FFFFF-GGGGG"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-07.png",
+      "elapsed_ms": 52.949,
+      "correct": true,
+      "found": [
+        "HHHHH-JJJJJ-KKKKK-FFFFF-GGGGG"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 78.9486,
+      "correct": true,
+      "found": [
+        "PPPPP-QQQQQ-LLLLL-MMMMM-NNNNN"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 43.5962,
+      "correct": true,
+      "found": [
+        "PPPPP-QQQQQ-LLLLL-MMMMM-NNNNN"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-08.png",
+      "elapsed_ms": 42.8975,
+      "correct": true,
+      "found": [
+        "PPPPP-QQQQQ-LLLLL-MMMMM-NNNNN"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 73.5295,
+      "correct": true,
+      "found": [
+        "EEEEE-AAAAA-BBBBB-CCCCC-DDDDD"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 41.1328,
+      "correct": true,
+      "found": [
+        "EEEEE-AAAAA-BBBBB-CCCCC-DDDDD"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-09.jpg",
+      "elapsed_ms": 40.7641,
+      "correct": true,
+      "found": [
+        "EEEEE-AAAAA-BBBBB-CCCCC-DDDDD"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 80.2504,
+      "correct": true,
+      "found": [
+        "FFFFF-GGGGG-HHHHH-JJJJJ-KKKKK"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 45.5215,
+      "correct": true,
+      "found": [
+        "FFFFF-GGGGG-HHHHH-JJJJJ-KKKKK"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-10.png",
+      "elapsed_ms": 43.6344,
+      "correct": true,
+      "found": [
+        "FFFFF-GGGGG-HHHHH-JJJJJ-KKKKK"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 93.6312,
+      "correct": true,
+      "found": [
+        "MMMMM-NNNNN-PPPPP-QQQQQ-LLLLL"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 50.5365,
+      "correct": true,
+      "found": [
+        "MMMMM-NNNNN-PPPPP-QQQQQ-LLLLL"
+      ]
+    },
+    {
+      "fixture": "fixtures/challenging/case-11.png",
+      "elapsed_ms": 49.025,
+      "correct": true,
+      "found": [
+        "MMMMM-NNNNN-PPPPP-QQQQQ-LLLLL"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "kind": "synthetic_api_vision",
+  "model": "gpt-6.1-sol",
+  "samples": 0,
+  "correct": 0,
+  "wrong": 0,
+  "rejected": 0,
+  "errors": 1,
+  "mean_ms": null,
+  "p50_ms": null,
+  "p95_ms": null,
+  "p99_ms": null,
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "note": "Full HTTP request including upload and response, excludes window capture and clipboard; fictional fixtures only.",
+  "details": [
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 602.4087999830954,
+      "error": "HTTPError 401 type=invalid_request_error code=invalid_api_key param=None"
+    }
+  ]
+}

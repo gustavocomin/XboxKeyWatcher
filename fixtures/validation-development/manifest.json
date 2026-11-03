@@ -1,0 +1,242 @@
+[
+  {
+    "path": "fixtures/validation-development/00-full.jpg",
+    "expected": "TRQFB-1VUB1-NEMIT-8HYLP-TLA8E",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/01-near-edge.png",
+    "expected": "NWEKR-39TMO-XBAET-RAKUI-N5VR8",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/02-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/03-no-key.jpg",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/04-full.png",
+    "expected": "Z1O9V-5UQ8D-RZBZH-Q85D5-PNE4O",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/05-near-edge.png",
+    "expected": "2TZ5X-AGM5E-Y2NAB-NJ8SC-ODAZQ",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/06-clipped.jpg",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/07-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/08-full.png",
+    "expected": "3LOQB-IOGTS-9B7NN-QQ1YQ-GW6DZ",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/09-near-edge.jpg",
+    "expected": "SKFLO-J7OTF-36D17-W9TIM-2C0SW",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/10-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/11-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/12-full.jpg",
+    "expected": "93O2H-XZX2X-008F2-CW6VN-EFCLZ",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/13-near-edge.png",
+    "expected": "LRIN5-9JHAZ-OI3CQ-2EQ9F-6N4B8",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/14-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/15-no-key.jpg",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/16-full.png",
+    "expected": "A53CG-YZF2P-8QHDY-8O8BQ-71R1P",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/17-near-edge.png",
+    "expected": "A1G1P-4M20B-3Z0UW-GY8KR-EOXDE",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/18-clipped.jpg",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/19-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/20-full.png",
+    "expected": "4B2JX-XCFZ9-3XXYE-L7T1N-XDXID",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/21-near-edge.jpg",
+    "expected": "GP3FJ-580T3-TEUSL-PRIUW-WUYMY",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/22-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/23-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/24-full.jpg",
+    "expected": "DLZXR-DVD9Q-E4YH4-8ABUH-N25JZ",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/25-near-edge.png",
+    "expected": "ZV0IV-DPVV0-XTJL8-736T4-T4ASD",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/26-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/27-no-key.jpg",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/28-full.png",
+    "expected": "IZR5G-PNHKM-C18L8-U92PF-9HSBK",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/29-near-edge.png",
+    "expected": "FJ5CF-3SH77-UL5MP-E5ALI-Z4EZH",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/30-clipped.jpg",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/31-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/32-full.png",
+    "expected": "MY8EO-8AS1Z-W1XVK-KMFSP-C83BF",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/33-near-edge.jpg",
+    "expected": "TV7WN-UVLEO-ET92O-365HD-ZAUUS",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/34-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/35-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/36-full.jpg",
+    "expected": "HJ29X-2D405-6E06V-7TFSR-4AYKG",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/37-near-edge.png",
+    "expected": "NISWP-JXRUC-LD1Q0-IHB54-U6T1Y",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/38-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/39-no-key.jpg",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/40-full.png",
+    "expected": "UI6N9-EOD3L-5C3OD-165HC-7IN9O",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/41-near-edge.png",
+    "expected": "9DXRH-EHMFY-Q0AHW-8IXJX-QIDQD",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/42-clipped.jpg",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/43-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-development/44-full.png",
+    "expected": "DA6J6-5K44S-TY2S6-2QRW4-FO76M",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-development/45-near-edge.jpg",
+    "expected": "8XHZP-8PGEA-OQSED-2EE0O-VIXUL",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-development/46-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-development/47-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  }
+]

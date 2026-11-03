@@ -1,0 +1,417 @@
+{
+  "implementation": "Python + native Tesseract, PSM 7",
+  "kind": "isolated_in_memory",
+  "samples": 60,
+  "correct": 20,
+  "false_positives": 0,
+  "mean_ms": 14.995548333333334,
+  "p50_ms": 14.778,
+  "p95_ms": 26.8187,
+  "p99_ms": 27.1533,
+  "min_ms": 5.2616,
+  "max_ms": 27.1533,
+  "cpu_percent_one_core": 100.64625725456062,
+  "peak_working_set_bytes": 49438720,
+  "details": [
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 27.1533,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 26.8225,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 26.8187,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 26.576,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 26.5353,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 26.5849,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 26.6023,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 26.5357,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 26.829,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/large.png",
+      "elapsed_ms": 26.5229,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.968,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.6621,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.6895,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.5875,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.6082,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.5644,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.63,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.5917,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.7515,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/medium.png",
+      "elapsed_ms": 22.6083,
+      "correct": true,
+      "found": [
+        "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+      ]
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 14.7246,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 14.6108,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 14.6851,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 14.5697,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 14.6325,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 14.5804,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 14.6108,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 14.5542,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 14.778,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/outlined.png",
+      "elapsed_ms": 15.2717,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.8568,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.5667,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.6058,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.5714,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.6047,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.8134,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.6459,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.518,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.6579,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/complex.png",
+      "elapsed_ms": 5.5133,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 15.1532,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 15.1295,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 14.7982,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 14.9875,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 15.0924,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 14.9473,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 14.8713,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 14.8427,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 14.9076,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/small.png",
+      "elapsed_ms": 14.771,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.3659,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.2848,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.3509,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.2616,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.4262,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.4109,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.287,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.2678,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.2911,
+      "correct": false,
+      "found": []
+    },
+    {
+      "fixture": "fixtures/synthetic/compressed.jpg",
+      "elapsed_ms": 5.2725,
+      "correct": false,
+      "found": []
+    }
+  ]
+}

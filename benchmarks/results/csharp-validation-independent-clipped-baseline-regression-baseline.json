@@ -1,0 +1,89 @@
+{
+  "implementation": "C# \u002B Windows OCR, edge guard, Tesseract and RapidOCR",
+  "kind": "baseline_in_memory",
+  "samples": 10,
+  "correct": 0,
+  "false_positives": 0,
+  "baseline_blocked": 10,
+  "unsafe_baseline": 0,
+  "mean_ms": 80.6541,
+  "p50_ms": 70.4192,
+  "p95_ms": 124.6047,
+  "p99_ms": 124.6047,
+  "min_ms": 68.7205,
+  "max_ms": 124.6047,
+  "cpu_percent_one_core": 48.393538922094855,
+  "peak_working_set_bytes": 156053504,
+  "details": [
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 124.6047,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 68.7389,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 68.7205,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 69.7932,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 107.3888,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 71.3968,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 78.5394,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 70.4192,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 69.9277,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-independent/30-clipped.jpg",
+      "elapsed_ms": 77.0118,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    }
+  ]
+}

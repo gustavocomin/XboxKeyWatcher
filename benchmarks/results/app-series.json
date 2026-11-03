@@ -1,0 +1,56 @@
+{
+  "kind": "actual_mainform_synthetic_series_real_clipboard",
+  "events": [
+    {
+      "step": "baseline",
+      "old_keys": 1,
+      "destination_checked": true,
+      "simulated": false
+    },
+    {
+      "step": "series",
+      "samples": 30,
+      "correct": 30,
+      "mean_ms": 145.07401666666664,
+      "p50_ms": 135.2584,
+      "p95_ms": 230.5734,
+      "p99_ms": 255.7371,
+      "values": [
+        75.0162,
+        77.0913,
+        80.8946,
+        83.9792,
+        87.0785,
+        88.2098,
+        91.8827,
+        112.0104,
+        114.3995,
+        120.4076,
+        122.437,
+        131.3533,
+        134.6936,
+        135.2111,
+        135.2584,
+        135.5242,
+        139.9239,
+        142.0633,
+        145.1157,
+        154.8747,
+        167.3041,
+        167.7081,
+        169.1601,
+        184.8828,
+        206.1967,
+        209.4268,
+        224.749,
+        229.0574,
+        230.5734,
+        255.7371
+      ],
+      "simulated": false,
+      "note": "Draw request to verified destination; synthetic frames and 75 ms gap; not physical display onset."
+    }
+  ],
+  "clipboard_restoration": "restored",
+  "error": null
+}

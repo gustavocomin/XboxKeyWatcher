@@ -1,0 +1,4 @@
+[
+  {"path":"fixtures/channel-replay/full.jpg","expected":"T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R","category":"full"},
+  {"path":"fixtures/channel-replay/clipped.jpg","expected":null,"category":"clipped"}
+]

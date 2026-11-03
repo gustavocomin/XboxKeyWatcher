@@ -1,0 +1,26 @@
+[
+  {
+    "path": "fixtures/synthetic/large.png",
+    "expected": "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+  },
+  {
+    "path": "fixtures/synthetic/medium.png",
+    "expected": "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+  },
+  {
+    "path": "fixtures/synthetic/outlined.png",
+    "expected": "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+  },
+  {
+    "path": "fixtures/synthetic/complex.png",
+    "expected": "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+  },
+  {
+    "path": "fixtures/synthetic/small.png",
+    "expected": "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+  },
+  {
+    "path": "fixtures/synthetic/compressed.jpg",
+    "expected": "AAAAA-BBBBB-CCCCC-DDDDD-EEEEE"
+  }
+]

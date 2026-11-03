@@ -1,0 +1,30 @@
+{
+  "kind": "actual_mainform_key_during_baseline_simulated_clipboard",
+  "events": [
+    {
+      "step": "baseline",
+      "old_keys": 1,
+      "destination_checked": true,
+      "simulated": true
+    },
+    {
+      "step": "new_key",
+      "latency_ms": 1111.7858,
+      "destination_verified": true,
+      "simulated": true
+    },
+    {
+      "step": "new_key",
+      "latency_ms": 171.7974,
+      "destination_verified": true,
+      "simulated": true
+    },
+    {
+      "step": "old_key_reappears",
+      "clipboard_unchanged": true,
+      "duplicate_displayed": true
+    }
+  ],
+  "clipboard_restoration": "not_applicable",
+  "error": null
+}

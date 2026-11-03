@@ -1,0 +1,11 @@
+{
+  "kind": "actual_mainform_synthetic_clipped",
+  "events": [
+    {
+      "step": "clipped_baseline",
+      "monitoring_stopped": true
+    }
+  ],
+  "clipboard_restoration": "not_applicable",
+  "error": null
+}

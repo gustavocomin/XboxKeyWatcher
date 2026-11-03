@@ -1,0 +1,89 @@
+{
+  "implementation": "C# \u002B Windows OCR, edge guard, Tesseract and RapidOCR",
+  "kind": "monitoring_ocr_in_memory",
+  "samples": 10,
+  "correct": 0,
+  "false_positives": 0,
+  "baseline_blocked": 10,
+  "unsafe_baseline": 0,
+  "mean_ms": 145.61907000000002,
+  "p50_ms": 132.4991,
+  "p95_ms": 241.1422,
+  "p99_ms": 241.1422,
+  "min_ms": 128.1243,
+  "max_ms": 241.1422,
+  "cpu_percent_one_core": 45.04820518340266,
+  "peak_working_set_bytes": 101793792,
+  "details": [
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 241.1422,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 132.4991,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 128.1243,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 128.6251,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 132.1505,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 134.2988,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 161.1139,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 133.3536,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 133.1532,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/validation-holdout/08-full.png",
+      "elapsed_ms": 131.73,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+method=PrintWindow+Tesseract kind=paint_request_to_clipboard samples=30 correct=30 copied=30 mean_ms=66.172 p50_ms=66.324 p95_ms=68.454 p99_ms=69.415

@@ -1,0 +1,12 @@
+{
+  "kind": "synthetic_window_paint_to_clipboard",
+  "implementation_note": "Native Win32 clipboard write on the UI thread; this is an earlier run and differs from the current background-thread implementation.",
+  "count": 30,
+  "mean_ms": 29.665813333333336,
+  "p50_ms": 28.254,
+  "p95_ms": 41.8079,
+  "p99_ms": 46.0966,
+  "values": [16.8687,16.9059,24.2111,24.363,25.7196,25.9622,26.1847,26.2229,26.4029,26.7003,27.1692,27.369,27.939,28.0134,28.254,29.4427,30.0352,30.0391,30.3146,30.3708,30.4294,31.4139,31.9583,32.2342,32.8781,36.0199,39.094,39.5538,41.8079,46.0966],
+  "clipboard_retries": 0,
+  "error": null
+}

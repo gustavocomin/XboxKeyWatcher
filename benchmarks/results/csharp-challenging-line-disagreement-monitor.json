@@ -1,0 +1,109 @@
+{
+  "implementation": "C# \u002B Windows OCR, edge guard, Tesseract and RapidOCR",
+  "kind": "monitoring_ocr_in_memory",
+  "samples": 10,
+  "correct": 10,
+  "false_positives": 0,
+  "baseline_blocked": 0,
+  "unsafe_baseline": 0,
+  "mean_ms": 123.12616,
+  "p50_ms": 116.5977,
+  "p95_ms": 158.8504,
+  "p99_ms": 158.8504,
+  "min_ms": 109.7671,
+  "max_ms": 158.8504,
+  "cpu_percent_one_core": 43.123419754966434,
+  "peak_working_set_bytes": 136347648,
+  "details": [
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 158.8504,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 116.4016,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 109.7671,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 135.3436,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 121.1427,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 111.8945,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 114.7733,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 119.0469,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 127.4438,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/challenging/case-01.png",
+      "elapsed_ms": 116.5977,
+      "correct": true,
+      "found": [
+        "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
+      ],
+      "baseline_blocked": false
+    }
+  ]
+}

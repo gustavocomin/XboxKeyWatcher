@@ -1,0 +1,179 @@
+{
+  "implementation": "C# \u002B Windows OCR, edge guard, Tesseract and RapidOCR",
+  "kind": "monitoring_ocr_in_memory",
+  "samples": 20,
+  "correct": 10,
+  "false_positives": 0,
+  "baseline_blocked": 10,
+  "unsafe_baseline": 0,
+  "mean_ms": 72.71242500000001,
+  "p50_ms": 77.755,
+  "p95_ms": 98.8834,
+  "p99_ms": 130.1649,
+  "min_ms": 47.9316,
+  "max_ms": 130.1649,
+  "cpu_percent_one_core": 64.43333067810737,
+  "peak_working_set_bytes": 125689856,
+  "details": [
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 98.8834,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 74.582,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 52.7854,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 50.8599,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 47.9316,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 49.5406,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 50.6881,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 50.5935,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 51.2627,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/full.jpg",
+      "elapsed_ms": 49.3461,
+      "correct": true,
+      "found": [
+        "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
+      ],
+      "baseline_blocked": false
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 130.1649,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 77.755,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 87.2914,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 80.8487,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 82.5855,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 88.1579,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 83.1862,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 81.8204,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 82.4722,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    },
+    {
+      "fixture": "fixtures/channel-replay/clipped.jpg",
+      "elapsed_ms": 83.493,
+      "correct": false,
+      "found": [],
+      "baseline_blocked": true
+    }
+  ]
+}

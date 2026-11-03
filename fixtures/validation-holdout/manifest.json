@@ -1,0 +1,242 @@
+[
+  {
+    "path": "fixtures/validation-holdout/00-full.jpg",
+    "expected": "3EE72-VEYBW-3GAM8-264NO-0W38J",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/01-near-edge.png",
+    "expected": "2KOFQ-7IX1T-IQ61K-TA7SD-Q1YFB",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/02-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/03-no-key.jpg",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/04-full.png",
+    "expected": "6KASS-TCC0P-UOG7U-9L0DM-EKJSY",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/05-near-edge.png",
+    "expected": "YCLJB-999KL-KCMP2-LO4O0-L34PC",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/06-clipped.jpg",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/07-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/08-full.png",
+    "expected": "NYALQ-3T3O2-K909P-9GQMO-WS8Y1",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/09-near-edge.jpg",
+    "expected": "VJFOS-A1MFA-1MOFR-OLLUB-9M052",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/10-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/11-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/12-full.jpg",
+    "expected": "STTW8-BFAQ6-BK71K-QBQ8X-M8U0O",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/13-near-edge.png",
+    "expected": "A2592-HANSM-MII1W-OSA0X-GR2TH",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/14-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/15-no-key.jpg",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/16-full.png",
+    "expected": "R0IV6-GPNEN-7SNTR-I3B7V-YA0FE",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/17-near-edge.png",
+    "expected": "F9AH0-2WDR3-WCY6D-HLIGD-VGDLH",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/18-clipped.jpg",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/19-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/20-full.png",
+    "expected": "PLKO5-XRICY-3LXZ4-ZN77G-0CEFR",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/21-near-edge.jpg",
+    "expected": "FQGSO-AQ4MT-3CDQY-AHOQR-03CGT",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/22-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/23-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/24-full.jpg",
+    "expected": "2C20Z-4EZFD-V5P43-NLFAY-CGO4W",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/25-near-edge.png",
+    "expected": "HXHQD-OEGUN-4DNT4-6PXVM-1E49I",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/26-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/27-no-key.jpg",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/28-full.png",
+    "expected": "0U7XW-UXZQY-OC1CB-QYUHG-7ZF7S",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/29-near-edge.png",
+    "expected": "C2QVJ-7YGLW-29VP9-XZ5KT-7ATAR",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/30-clipped.jpg",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/31-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/32-full.png",
+    "expected": "ZMBKW-GBUP1-6J27R-OF11H-FSLAW",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/33-near-edge.jpg",
+    "expected": "CX0UP-F2X7S-9QX02-AF0RF-8NDAC",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/34-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/35-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/36-full.jpg",
+    "expected": "ST0YR-640YT-FP90C-TTQC7-GVM1O",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/37-near-edge.png",
+    "expected": "F19GC-AQVZO-U33FB-7K622-H7ME0",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/38-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/39-no-key.jpg",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/40-full.png",
+    "expected": "0SZ1B-9L8N3-783D5-OJUES-RF7GR",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/41-near-edge.png",
+    "expected": "CJ3X3-F780D-SL40O-VQ24R-NE682",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/42-clipped.jpg",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/43-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  },
+  {
+    "path": "fixtures/validation-holdout/44-full.png",
+    "expected": "KSO7N-HCFX3-OZJM9-YGL7T-LV08J",
+    "category": "full"
+  },
+  {
+    "path": "fixtures/validation-holdout/45-near-edge.jpg",
+    "expected": "V96T0-CLXFG-VLWE9-DA6Z5-R0VN0",
+    "category": "near-edge"
+  },
+  {
+    "path": "fixtures/validation-holdout/46-clipped.png",
+    "expected": null,
+    "category": "clipped"
+  },
+  {
+    "path": "fixtures/validation-holdout/47-no-key.png",
+    "expected": null,
+    "category": "no-key"
+  }
+]

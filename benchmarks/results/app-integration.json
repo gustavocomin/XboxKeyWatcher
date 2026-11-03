@@ -1,0 +1,30 @@
+{
+  "kind": "actual_mainform_synthetic_integration",
+  "events": [
+    {
+      "step": "baseline",
+      "old_keys": 1,
+      "destination_checked": true,
+      "simulated": false
+    },
+    {
+      "step": "new_key",
+      "latency_ms": 187.7647,
+      "destination_verified": true,
+      "simulated": false
+    },
+    {
+      "step": "new_key",
+      "latency_ms": 172.0173,
+      "destination_verified": true,
+      "simulated": false
+    },
+    {
+      "step": "old_key_reappears",
+      "clipboard_unchanged": true,
+      "duplicate_displayed": true
+    }
+  ],
+  "clipboard_restoration": "restored",
+  "error": null
+}
