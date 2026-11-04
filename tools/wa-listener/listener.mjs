@@ -43,7 +43,9 @@ const channelJids = []; const renewTimers = new Map(); const seen = new Set();
 // "Armed" mode: keep a TLS connection to the media CDN and a warm OCR worker ready,
 // so a new post costs only the image transfer and the OCR itself.
 const MEDIA_HOST = 'https://mmg.whatsapp.net';
-const STALE_POST_MS = 120_000;
+// Keys are redeemed within about a minute; live posts arrived 1-3 s after being sent
+// (the slowest seen: ~26 s). Anything older is catch-up and must not be copied.
+const STALE_POST_MS = 45_000;
 // Post fields come from whoever publishes in the channel: only ever fetch HTTPS
 // URLs on WhatsApp's media hosts, built from a plain path, without redirects.
 const DIRECT_PATH = /^\/[A-Za-z0-9._~\/-]+(\?[A-Za-z0-9._~=&%-]*)?$/;
