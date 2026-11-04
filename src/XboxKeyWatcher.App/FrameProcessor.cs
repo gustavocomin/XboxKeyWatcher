@@ -10,7 +10,7 @@ internal sealed class FrameProcessor
     private sealed record ConfirmedRegion(string Key, int Width, int Height, byte[] Pixels);
     private ConfirmedRegion? lastConfirmedRegion;
 
-    internal sealed record KeyRead(string[] Safe, string[] Rejected, bool MalformedCandidate);
+    internal sealed record KeyRead(string[] Safe, string[] Rejected, bool MalformedCandidate, bool Superseded = false);
     internal sealed class OcrTimings
     {
         public double WindowsMs { get; set; }
@@ -123,7 +123,7 @@ internal sealed class FrameProcessor
         finally { report(System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds); }
     }
 
-    public async Task<KeyRead> RecognizeSafeWithFallback(SoftwareBitmap bitmap, byte[]? pixels = null, bool completeScan = false, bool searchIfEmpty = false, OcrTimings? timings = null)
+    public async Task<KeyRead> RecognizeSafeWithFallback(SoftwareBitmap bitmap, byte[]? pixels = null, bool completeScan = false, bool searchIfEmpty = false, OcrTimings? timings = null, Func<bool>? superseded = null)
     {
         var (result, scale, malformed) = await RecognizeWithFallbackResult(bitmap, timings);
         var all = KeyParser.Extract(result.Text).Distinct().ToArray();
@@ -318,6 +318,7 @@ internal sealed class FrameProcessor
         }
         if (searchIfEmpty && all.Length == 0 && safe.Count == 0)
         {
+            if (superseded?.Invoke() == true) return new KeyRead([], [], false, Superseded: true);
             var detected = await ReadFullFrame();
             if (detected is null) return new KeyRead([], rejected.ToArray(), true);
             foreach (var reading in detected)

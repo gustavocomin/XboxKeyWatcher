@@ -412,11 +412,11 @@ internal sealed class MainForm : Form
         if (!active || baseline) return;
         if (area.IsEmpty || area.Right > frame.PixelWidth || area.Bottom > frame.PixelHeight)
         { Post(() => { StopMonitoring(); status.Text = "Tamanho da janela mudou; selecione a região novamente."; }); return; }
-        await ProcessPixels(data, frame.PixelWidth, frame.PixelHeight, area, current, frameStart, frameReadMs);
+        await ProcessPixels(data, frame.PixelWidth, frame.PixelHeight, area, current, frameStart, frameReadMs, captureSource: capture);
     }
 
     private async Task ProcessPixels(byte[] data, int width, int height, Rectangle area, long current,
-        long? frameStart = null, double? frameReadMs = null, bool retry = false)
+        long? frameStart = null, double? frameReadMs = null, bool retry = false, WindowCapture? captureSource = null)
     {
         var currentRecognition = recognition;
         await currentRecognition.WaitAsync().ConfigureAwait(false);
@@ -436,7 +436,16 @@ internal sealed class MainForm : Form
         var watch = System.Diagnostics.Stopwatch.StartNew();
         double cropMs = System.Diagnostics.Stopwatch.GetElapsedTime(cropStart).TotalMilliseconds;
         var ocrTimings = new FrameProcessor.OcrTimings();
-        var read = await processor!.RecognizeSafeWithFallback(crop, cropped, completeScan: retry, searchIfEmpty: true, timings: ocrTimings);
+        Func<bool>? superseded = captureSource is null ? null : () => captureSource.HasNewerFrame;
+        var read = await processor!.RecognizeSafeWithFallback(crop, cropped, completeScan: retry,
+            searchIfEmpty: true, timings: ocrTimings, superseded: superseded);
+        if (read.Superseded)
+        {
+            // The next frame may be pixel-identical to this unfinished read.
+            lock (sync)
+                if (ReferenceEquals(lastPixels, cropped)) lastPixels = null;
+            return;
+        }
         double recognitionMs = watch.Elapsed.TotalMilliseconds;
         var stages = new DetectionStages(cropMs, ocrTimings.WindowsMs, ocrTimings.RapidMs, ocrTimings.TesseractMs,
             ocrTimings.EnhancedLineMs, Math.Max(0, recognitionMs - ocrTimings.WindowsMs - ocrTimings.RapidMs

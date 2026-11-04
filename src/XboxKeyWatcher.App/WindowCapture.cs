@@ -21,6 +21,8 @@ internal sealed class WindowCapture : IDisposable
     private readonly object sync = new();
     private bool processing, disposed;
     private long processingSince;
+    private long receivedVersion, processingVersion;
+    internal bool HasNewerFrame => Interlocked.Read(ref receivedVersion) != Interlocked.Read(ref processingVersion);
     public bool ProcessingStalled => Interlocked.Read(ref processingSince) is var value && value != 0 && Stopwatch.GetElapsedTime(value) > TimeSpan.FromSeconds(10);
     public event Func<SoftwareBitmap, Task>? Frame;
     public event Action<string>? Fault;
@@ -67,6 +69,7 @@ internal sealed class WindowCapture : IDisposable
             {
                 if (disposed) { frame.Dispose(); return; }
                 latest.Put(frame);
+                Interlocked.Increment(ref receivedVersion);
                 if (!processing) { processing = true; _ = Task.Run(ProcessFrames); }
             }
         }
@@ -82,6 +85,7 @@ internal sealed class WindowCapture : IDisposable
             {
                 if (disposed || (frame = latest.Take()) is null) { processing = false; return; }
                 Interlocked.Exchange(ref processingSince, Stopwatch.GetTimestamp());
+                Interlocked.Exchange(ref processingVersion, Interlocked.Read(ref receivedVersion));
             }
             try
             {
