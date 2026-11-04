@@ -278,8 +278,11 @@ internal sealed class FrameProcessor
                 var words = sourceLines[0].Words.Select(w => w.BoundingRect).ToArray();
                 int left = (int)Math.Floor(words.Min(r => r.X) / scale), right = (int)Math.Ceiling(words.Max(r => r.X + r.Width) / scale);
                 int top = (int)Math.Floor(words.Min(r => r.Y) / scale), bottom = (int)Math.Ceiling(words.Max(r => r.Y + r.Height) / scale);
-                int bandTop = Math.Max(0, top - 100);
-                int bandHeight = Math.Min(bitmap.PixelHeight, bottom + 100) - bandTop;
+                bool atSide = left < 3 || right > bitmap.PixelWidth - 3;
+                int margin = atSide && unsafeKeys.Contains(all[0])
+                    ? Math.Clamp((bottom - top) * 2, 32, 100) : 100;
+                int bandTop = Math.Max(0, top - margin);
+                int bandHeight = Math.Min(bitmap.PixelHeight, bottom + margin) - bandTop;
                 bool tryBand = bandHeight > 0 && bandHeight <= bitmap.PixelHeight / 2;
                 for (int attempt = tryBand ? 0 : 1; attempt < 2; attempt++)
                 {
