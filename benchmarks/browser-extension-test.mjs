@@ -116,6 +116,30 @@ try {
   const noSubmission = await evaluate(sendPage, `location.href === ${JSON.stringify(page)} && document.forms.length === 0`);
   console.log(JSON.stringify({ heldWhileOtherTab, heldWhileOtherField, heldWhenClipboardChanged, exact: true, acknowledged, noSubmission }));
   if (!heldWhileOtherTab || !heldWhileOtherField || !heldWhenClipboardChanged || !noSubmission) process.exitCode = 1;
+  if (process.argv.includes('--measure') && !process.exitCode) {
+    const times = [];
+    for (let i = 0; i < 30; i++) {
+      await evaluate(sendPage, 'document.querySelector("#redeem").value = "";');
+      await wait(15 + (i * 37) % 143);
+      const elapsed = await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          lines.removeListener('line', receive);
+          reject(new Error('A extensão não confirmou o preenchimento medido.'));
+        }, 3000);
+        function receive(line) {
+          if (!line.startsWith('latency ')) return;
+          clearTimeout(timer);
+          lines.removeListener('line', receive);
+          resolve(Number(line.slice(8)));
+        }
+        lines.on('line', receive);
+        bridge.stdin.write('measure\n');
+      });
+      times.push(elapsed);
+    }
+    const sorted = times.toSorted((a, b) => a - b);
+    console.log(JSON.stringify({ measured: times.length, p50: sorted[14], p95: sorted[28], times }));
+  }
 } finally {
   for (const socket of sockets) socket.close();
   browser?.kill();

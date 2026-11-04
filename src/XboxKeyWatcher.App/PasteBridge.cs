@@ -15,6 +15,7 @@ internal sealed class PasteBridge : IDisposable
     private readonly Func<string, bool> clipboardMatches;
     private readonly Action<string, double>? onPasted;
     private Pending? pending;
+    private TaskCompletionSource offerChanged = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool disposed;
 
     private sealed record Pending(string Id, string Key, DateTimeOffset Expires, long OfferedAt);
@@ -55,7 +56,11 @@ internal sealed class PasteBridge : IDisposable
                     payload.TryGetProperty("action", out var action) && action.ValueKind == JsonValueKind.String)
                 {
                     if (action.GetString() == "pending")
-                        response = JsonSerializer.Serialize(new { offer = AvailableOffer() });
+                    {
+                        bool wait = payload.TryGetProperty("wait", out var option) && option.ValueKind == JsonValueKind.True;
+                        var (offer, waited) = await GetNativeOffer(wait, timeout.Token);
+                        response = JsonSerializer.Serialize(new { offer, waited });
+                    }
                     else if (action.GetString() == "ack" && payload.TryGetProperty("id", out var id) &&
                              id.ValueKind == JsonValueKind.String)
                         Acknowledge(id.GetString()!);
@@ -65,6 +70,19 @@ internal sealed class PasteBridge : IDisposable
             }
             catch (Exception error) when (error is IOException or OperationCanceledException or JsonException) { }
         }
+    }
+
+    private async Task<(Pending? Offer, bool Waited)> GetNativeOffer(bool wait, CancellationToken token)
+    {
+        Task? change;
+        lock (sync)
+            change = wait && (pending is null || pending.Expires <= DateTimeOffset.UtcNow)
+                ? offerChanged.Task : null;
+        if (change is null) return (AvailableOffer(), false);
+
+        try { await change.WaitAsync(TimeSpan.FromMilliseconds(600), token); }
+        catch (TimeoutException) { }
+        return (AvailableOffer(), true);
     }
 
     private Pending? AvailableOffer()
@@ -93,6 +111,8 @@ internal sealed class PasteBridge : IDisposable
             var now = DateTimeOffset.UtcNow;
             if (pending is { } current && current.Key == key && current.Expires > now) return false;
             pending = new(Guid.NewGuid().ToString("N"), key, now.AddSeconds(30), Stopwatch.GetTimestamp());
+            offerChanged.TrySetResult();
+            offerChanged = new(TaskCreationOptions.RunContinuationsAsynchronously);
             return true;
         }
     }

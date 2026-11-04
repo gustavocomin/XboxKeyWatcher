@@ -55,6 +55,7 @@
     }
 
     async function poll() {
+      let delay = 125;
       try {
         if (location.href !== page || (!real && !target?.isConnected)) { stop(); return; }
         if (real) target = findRedeemField();
@@ -63,6 +64,7 @@
         const response = await chrome.runtime.sendMessage({ action: 'pending', id });
         if (response.disarmed) { stop(); return; }
         const offer = response.offer;
+        if (!offer && response.waited) delay = 0;
         if (!offer && response.reason) report(response.reason);
         if (!offer || offer.Id === lastFilled || !/^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){4}$/.test(offer.Key)) return;
         if (!ready() || Date.parse(offer.Expires) <= Date.now()) return;
@@ -83,7 +85,7 @@
           await chrome.runtime.sendMessage({ action: 'ack', id, offerId: offer.Id, filled });
         }
       } catch { report('Falha ao consultar a ponte local ou verificar o campo.'); }
-      finally { if (!stopped) timer = setTimeout(poll, 125); }
+      finally { if (!stopped) timer = setTimeout(poll, delay); }
     }
     return true;
   }

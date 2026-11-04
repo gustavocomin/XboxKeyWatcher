@@ -1,5 +1,15 @@
 # Medições experimentais — 2 e 3 de novembro de 2026
 
+## Otimizações de latência
+
+### Confirmação localizada no RapidOCR
+
+O reconhecimento direto da linha foi comparado com o commit `c9f17a0` em três conjuntos fictícios, com dez leituras por imagem. Ele manteve os mesmos acertos e zero falsos positivos. No conjunto difícil, a mediana das leituras corretas caiu de 80,94 para 51,17 ms, mas o p95 delas subiu de 127,04 para 153,15 ms. O p95 de todas as leituras subiu de 158,02 para 170,63 ms. No replay do canal subiu de 100,84 para 106,06 ms e no holdout de 177,88 para 186,54 ms. O holdout teve zero acertos em ambas as versões. O experimento foi descartado.
+
+### Entrega à extensão com espera por nova oferta
+
+O teste `node benchmarks/browser-extension-test.mjs --measure` executou 30 entregas fictícias por configuração, com a mesma sequência de intervalos entre ofertas e o campo vazio. A medição vai da oferta do aplicativo à confirmação pelo navegador Edge isolado. A mediana caiu de 66,08 para 49,72 ms e o p95 de 129,38 para 100,86 ms. A variante aguarda a próxima oferta na ponte por até 600 ms e responde assim que ela chega. Também passaram os casos de aba diferente, foco em outro campo e clipboard alterado. O teste exclui captura, OCR e tempo de resposta do site do Xbox.
+
 ## Continuação: corpus independente e limites
 
 Em 3 de novembro de 2026, o conjunto difícil anterior passou de 40/120 para 50/120 observações aceitas, sem falsos positivos nessa execução, média 103,27 ms e p95 152,80 ms em memória. São dez repetições de cada uma de 12 imagens, não 120 imagens independentes.
