@@ -102,6 +102,66 @@ internal sealed class FrameProcessor
         await RecognizeSafeWithFallback(blank, bytes);
     }
 
+    // Images received directly from WhatsApp (channel listener) are complete files,
+    // not screen crops, so a thumbnail or window border cannot clip the key. The
+    // edge guard does not apply; safety comes from two independent engines reading
+    // exactly the same single key (or a Windows re-read of RapidOCR's line).
+    internal async Task<KeyRead> RecognizeCompleteImage(byte[] bgra, int width, int height, OcrTimings? timings = null)
+    {
+        const int maxWidth = 1000;
+        if (width > maxWidth)
+        {
+            int scaledHeight = Math.Max(1, (int)Math.Round(height * (double)maxWidth / width));
+            var pin = GCHandle.Alloc(bgra, GCHandleType.Pinned);
+            try
+            {
+                using var source = new Bitmap(width, height, width * 4, System.Drawing.Imaging.PixelFormat.Format32bppArgb, pin.AddrOfPinnedObject());
+                using var scaled = new Bitmap(maxWidth, scaledHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using (var graphics = Graphics.FromImage(scaled))
+                {
+                    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    graphics.DrawImage(source, new Rectangle(0, 0, maxWidth, scaledHeight));
+                }
+                var bits = scaled.LockBits(new Rectangle(0, 0, maxWidth, scaledHeight), System.Drawing.Imaging.ImageLockMode.ReadOnly, scaled.PixelFormat);
+                var data = new byte[checked(maxWidth * scaledHeight * 4)];
+                try { Marshal.Copy(bits.Scan0, data, 0, data.Length); } finally { scaled.UnlockBits(bits); }
+                bgra = data; width = maxWidth; height = scaledHeight;
+            }
+            finally { pin.Free(); }
+        }
+        using var bitmap = CreateBitmap(bgra, width, height);
+        var windowsTask = RecognizeWithFallbackResult(bitmap, timings, bgra);
+        var rapidTask = Measure(() => RapidOcrWorker.Instance.Recognize(bgra, width, height, timings?.RapidPhases),
+            ms => { if (timings is not null) timings.RapidMs += ms; });
+        var (result, _, malformed) = await windowsTask;
+        var readings = await rapidTask;
+        var windowsKeys = KeyParser.Extract(result.Text).Distinct(StringComparer.Ordinal).ToArray();
+        var confident = readings?.Where(row => row.Confidence >= .75).ToArray() ?? [];
+        var rapidKeys = confident.SelectMany(row => KeyParser.Extract(row.Text)).Distinct(StringComparer.Ordinal).ToArray();
+        var rejected = new HashSet<string>(windowsKeys.Concat(rapidKeys), StringComparer.Ordinal);
+        if (TraceOcr) Console.Error.WriteLine($"[ocr] complete windows={windowsKeys.Length} malformed={malformed.Length} rapid={rapidKeys.Length} same={windowsKeys.Length == 1 && rapidKeys.SequenceEqual(windowsKeys)}");
+        if (rapidKeys.Length == 1 && windowsKeys.Length <= 1)
+        {
+            string candidate = rapidKeys[0];
+            bool confirmed = windowsKeys.Length == 1 && windowsKeys[0] == candidate;
+            if (!confirmed)
+            {
+                var line = confident.First(row => KeyParser.Extract(row.Text).Contains(candidate));
+                int x0 = Math.Max(0, line.Left - 16), y0 = Math.Max(0, line.Top - 16);
+                int x1 = Math.Min(width, line.Right + 16), y1 = Math.Min(height, line.Bottom + 16);
+                if (x1 > x0 && y1 > y0)
+                {
+                    using var lineCrop = Crop(bgra, width, height, new Rectangle(x0, y0, x1 - x0, y1 - y0));
+                    confirmed = await Measure(async () => KeyParser.Extract(await RecognizeWithFallback(lineCrop)).Distinct(StringComparer.Ordinal).SequenceEqual([candidate]),
+                        ms => { if (timings is not null) timings.EnhancedLineMs += ms; });
+                }
+            }
+            if (TraceOcr) Console.Error.WriteLine($"[ocr]   complete confirmed={confirmed}");
+            if (confirmed) { rejected.Remove(candidate); return new KeyRead([candidate], rejected.ToArray(), false); }
+        }
+        return new KeyRead([], rejected.ToArray(), malformed.Length > 0);
+    }
+
     public async Task<string> RecognizeWithFallback(SoftwareBitmap bitmap) => (await RecognizeWithFallbackResult(bitmap)).Result.Text;
 
     private async Task<(OcrResult Result, int Scale, string[] Malformed)> RecognizeWithFallbackResult(SoftwareBitmap bitmap, OcrTimings? timings = null, byte[]? pixels = null)

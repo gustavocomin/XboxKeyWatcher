@@ -50,6 +50,8 @@ internal sealed class MainForm : Form
     private readonly Label status = new() { Dock = DockStyle.Bottom, Height = 45, Text = "Selecione uma janela para iniciar a prévia experimental." };
     private readonly Label details = new() { Dock = DockStyle.Bottom, Height = 28, Text = "Nenhuma key copiada." };
     private readonly Label health = new() { Dock = DockStyle.Bottom, Height = 24, Text = "Watchdog ativo; aguardando janela." };
+    private readonly Label botStatus = new() { Dock = DockStyle.Bottom, Height = 24, Text = "Bot do canal: desligado." };
+    private ChannelBot? channelBot;
     private WindowCapture? capture;
     private GraphicsCaptureItem? selectedItem;
     private TaskCompletionSource<bool>? captureReady;
@@ -91,32 +93,24 @@ internal sealed class MainForm : Form
 #if XKW_ISOLATED_CANDIDATE
         Text = "XboxKeyWatcher — Teste de miniaturas";
 #else
-        Text = "XboxKeyWatcher — Release - V2";
+        Text = "XboxKeyWatcher — Release - V3";
 #endif
         ClientSize = new Size(920, 680);
         var bar = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40 };
         var select = new Button { Text = "Selecionar janela", AutoSize = true };
-        var test = new Button { Text = "Testar OCR", AutoSize = true };
-        var start = new Button { Text = "Iniciar experimental", AutoSize = true };
+        var start = new Button { Text = "Iniciar", AutoSize = true };
         var stop = new Button { Text = "Parar", AutoSize = true };
-        var recopy = new Button { Text = "Copiar última", AutoSize = true };
-        var testClipboard = new Button { Text = "Testar clipboard", AutoSize = true };
         var clear = new Button { Text = "Limpar histórico", AutoSize = true };
-        var settings = new Button { Text = "Atalhos", AutoSize = true };
         var paste = new Button { Text = "Colagem assistida", AutoSize = true };
         try { if (File.Exists(hotkeysPath)) { var saved = JsonSerializer.Deserialize<HotkeyPreferences>(File.ReadAllText(hotkeysPath)); if (saved is not null && saved.TryBindings(out _)) hotkeys = saved; else status.Text = "Atalhos inválidos; usando padrões."; } }
         catch (Exception e) { status.Text = "Erro ao carregar atalhos: " + e.Message; }
         select.Click += async (_, _) => { try { await SelectWindow(); } catch (Exception e) { status.Text = "Erro: " + e.Message; } };
-        test.Click += async (_, _) => { try { await TestOcr(); } catch (Exception e) { status.Text = "Erro: " + e.Message; } };
         start.Click += async (_, _) => { try { await StartMonitoring(); } catch (Exception e) { StopMonitoring(); status.Text = "Erro no baseline: " + e.Message; } };
         stop.Click += (_, _) => StopMonitoring();
-        recopy.Click += async (_, _) => await CopyLastKey();
-        testClipboard.Click += async (_, _) => { var ok = await CopyKey("XBOXKEYWATCHER-TESTE", generation, true); status.Text = ok ? "Teste do clipboard aprovado." : "Clipboard indisponível."; };
         clear.Click += (_, _) => { StopMonitoring(); lock (sync) { gate.ClearHistory(); copiedKeys.Clear(); } status.Text = "Histórico limpo. Inicie novamente para estabelecer baseline."; };
-        settings.Click += (_, _) => EditHotkeys();
         paste.Click += (_, _) => ConfigurePasteBridge();
-        bar.Controls.Add(select); bar.Controls.Add(test); bar.Controls.Add(start); bar.Controls.Add(stop); bar.Controls.Add(recopy); bar.Controls.Add(testClipboard); bar.Controls.Add(clear); bar.Controls.Add(settings); bar.Controls.Add(paste);
-        Controls.Add(preview); Controls.Add(details); Controls.Add(health); Controls.Add(status); Controls.Add(bar);
+        bar.Controls.Add(select); bar.Controls.Add(start); bar.Controls.Add(stop); bar.Controls.Add(clear); bar.Controls.Add(paste);
+        Controls.Add(preview); Controls.Add(details); Controls.Add(health); Controls.Add(botStatus); Controls.Add(status); Controls.Add(bar);
         preview.MouseDown += (_, e) => { dragging = true; dragStart = e.Location; };
         preview.MouseUp += (_, e) => SelectRegion(e.Location);
         preview.Paint += (_, e) => PaintRegion(e.Graphics);
@@ -131,7 +125,12 @@ internal sealed class MainForm : Form
         };
         watchdog.Start();
         SystemEvents.SessionSwitch += OnSessionSwitch;
-        FormClosed += (_, _) => { watchdog.Stop(); watchdog.Dispose(); SystemEvents.SessionSwitch -= OnSessionSwitch; tray.Visible = false; tray.Dispose(); capture?.Dispose(); preview.Image?.Dispose(); pasteBridge?.Dispose(); };
+        botInbox = new BotKeyInbox(AcceptBotKey);
+#if !INTEGRATION_TEST
+        channelBot = new ChannelBot(text => Post(() => botStatus.Text = text.Length > 160 ? text[..160] : text));
+        Shown += (_, _) => channelBot.Start();
+#endif
+        FormClosed += (_, _) => { channelBot?.Dispose(); botInbox?.Dispose(); watchdog.Stop(); watchdog.Dispose(); SystemEvents.SessionSwitch -= OnSessionSwitch; tray.Visible = false; tray.Dispose(); capture?.Dispose(); preview.Image?.Dispose(); pasteBridge?.Dispose(); };
     }
 
     private void ConfigurePasteBridge()
@@ -468,7 +467,10 @@ internal sealed class MainForm : Form
             if (!uncertain)
             {
                 offeredWhileVisible.RemoveWhere(key => !keys.Contains(key));
-                pasteBridge?.ClearIfAbsent(keys);
+                // A key from the channel listener usually arrives before WhatsApp Desktop
+                // draws it; keep that offer alive instead of clearing it as "not on screen".
+                bool botOfferActive = botOfferKey is not null && System.Diagnostics.Stopwatch.GetTimestamp() < botOfferUntil;
+                pasteBridge?.ClearIfAbsent(botOfferActive ? [.. keys, botOfferKey!] : keys);
             }
         }
         var duplicates = new List<string>();
@@ -567,6 +569,49 @@ internal sealed class MainForm : Form
     {
         lock (sync) { monitoring = false; generation = gate.BeginBaseline(); pasteBridge?.Clear(); }
         status.Text = "Parado.";
+    }
+
+    private BotKeyInbox? botInbox;
+    private string? botOfferKey;
+    private long botOfferUntil;
+
+    // Key read by the WhatsApp channel listener from the post itself. Same clipboard and
+    // bridge path as a screen detection; whichever path reads a key first copies it.
+    private async Task<string> AcceptBotKey(string key, string source)
+    {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        long current; bool isNew;
+        lock (sync)
+        {
+            if (!monitoring) return "not_monitoring";
+            current = generation;
+            // Each channel post is a distinct event (the listener drops repeated deliveries
+            // of the same post), so a key is copied again even if it was read before.
+            isNew = gate.TryAccept(current, key);
+        }
+        bool copied = await CopyKey(key, current);
+        string? offerId = null;
+        if (copied)
+        {
+            lock (sync)
+                if (monitoring && generation == current)
+                {
+                    copiedKeys.Add(key);
+                    botOfferKey = key;
+                    botOfferUntil = System.Diagnostics.Stopwatch.GetTimestamp() + System.Diagnostics.Stopwatch.Frequency * 30;
+                    if (pasteBridge?.Offer(key, out offerId) == true) offeredWhileVisible.Add(key);
+                }
+        }
+        else if (isNew) gate.ReleaseAfterFailure(current, key);
+        double elapsedMs = watch.Elapsed.TotalMilliseconds;
+        LogDetection(copied ? "copied_bot" : "clipboard_failed", key, elapsedMs, copied, null, offerId);
+        Post(() =>
+        {
+            lastKey = key;
+            if (copied) { copiedCount++; System.Media.SystemSounds.Asterisk.Play(); }
+            status.Text = copied ? $"Copiada pelo bot ({source}): {key} ({elapsedMs:F0} ms)" : "Bot: falha ao copiar a key; use Copiar última.";
+        });
+        return copied ? "copied" : "clipboard_failed";
     }
 
     private async Task CopyLastKey()

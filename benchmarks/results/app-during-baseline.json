@@ -9,13 +9,13 @@
     },
     {
       "step": "new_key",
-      "latency_ms": 1111.7858,
+      "latency_ms": 1229.9926,
       "destination_verified": true,
       "simulated": true
     },
     {
       "step": "new_key",
-      "latency_ms": 171.7974,
+      "latency_ms": 128.9829,
       "destination_verified": true,
       "simulated": true
     },

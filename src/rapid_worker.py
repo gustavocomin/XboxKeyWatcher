@@ -68,10 +68,31 @@ try:
     phases ={'DetectionMs': 0.0, 'RecognitionMs': 0.0}
     engine.text_detector = timed_stage(engine.text_detector, phases, 'DetectionMs')
     engine.text_recognizer = timed_stage(engine.text_recognizer, phases, 'RecognitionMs')
+    # Optional "key lines only" mode, requested per frame by setting the top bit of
+    # the height field (used by the channel listener): recognize only wide, short
+    # text boxes shaped like a 25-character key line. Promo images full of text
+    # otherwise spend most of their time recognizing lines that cannot be keys.
+    key_lines_only = False
+    raw_sorted_boxes = engine.sorted_boxes
+    def key_line_boxes(dt_boxes):
+        boxes = raw_sorted_boxes(dt_boxes)
+        if not key_lines_only:
+            return boxes
+        kept = []
+        for box in boxes:
+            points = np.asarray(box, dtype=np.float32)
+            box_w = float(np.linalg.norm(points[0] - points[1]))
+            box_h = float(np.linalg.norm(points[0] - points[3]))
+            if box_h > 0 and box_w / box_h >= 8:
+                kept.append(box)
+        return kept
+    engine.sorted_boxes = key_line_boxes
     reply({'ready':True})
     while True:
         header=read_exact(sys.stdin.buffer,12)
         width,height,length=struct.unpack('<III',header)
+        key_lines_only = bool(height & 0x80000000)
+        height &= 0x7FFFFFFF
         if width<1 or height<1 or width>10000 or height>10000 or length!=width*height*4 or length>100_000_000:
             raise ValueError('invalid frame size')
         bgra=np.frombuffer(read_exact(sys.stdin.buffer,length),dtype=np.uint8).reshape(height,width,4)
@@ -80,7 +101,11 @@ try:
         phases['TextRegions'] = 0
         image=cv2.cvtColor(bgra,cv2.COLOR_BGRA2BGR)
         phases['ConversionMs'] = (perf_counter_ns() - start) / 1_000_000
-        results,_=engine(image)
+        try:
+            results,_=engine(image)
+        except Exception:
+            if not key_lines_only: raise
+            results = None  # no key-shaped line survived the filter
         readings=[]
         for row in (results or []):
             points=np.asarray(row[0],dtype=float)
