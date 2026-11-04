@@ -32,6 +32,21 @@ internal sealed class FrameProcessor
     public static SoftwareBitmap Crop(byte[] pixels, int width, int height, Rectangle region)
         => CreateBitmap(CropPixels(pixels, width, height, region), region.Width, region.Height);
 
+    public static bool RegionEquals(ReadOnlySpan<byte> frame, int frameWidth, Rectangle region, ReadOnlySpan<byte> crop)
+    {
+        int rowBytes = region.Width * 4;
+        if (crop.Length != rowBytes * region.Height) return false;
+        int bottomRow = ((region.Bottom - 1) * frameWidth + region.Left) * 4;
+        if (!frame.Slice(bottomRow, rowBytes).SequenceEqual(crop[^rowBytes..])) return false;
+        for (int y = 0; y < region.Height - 1; y++)
+        {
+            int offset = ((region.Top + y) * frameWidth + region.Left) * 4;
+            if (!frame.Slice(offset, rowBytes).SequenceEqual(crop.Slice(y * rowBytes, rowBytes)))
+                return false;
+        }
+        return true;
+    }
+
     public static byte[] CropPixels(byte[] pixels, int width, int height, Rectangle region)
     {
         if (region.Width < 1 || region.Height < 1 || region.Left < 0 || region.Top < 0 || region.Right > width || region.Bottom > height)

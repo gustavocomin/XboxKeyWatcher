@@ -5,6 +5,12 @@ using System.Text.Json;
 using XboxKeyWatcher.App;
 using XboxKeyWatcher.Core;
 
+if (args.Contains("--compare-crop"))
+{
+    CompareCrop();
+    return 0;
+}
+
 var root = Directory.GetCurrentDirectory();
 var manifestIndex = Array.IndexOf(args, "--manifest");
 var path = manifestIndex >= 0 && manifestIndex + 1 < args.Length ? Path.GetFullPath(args[manifestIndex + 1]) : Path.Combine(root, "fixtures", "synthetic", "manifest.json");
@@ -71,5 +77,51 @@ if (args.Contains("--require-safe") && (falsePositives != 0 || unsafeBaseline !=
 var minimumIndex = Array.IndexOf(args, "--minimum-correct");
 if (minimumIndex >= 0 && (minimumIndex + 1 >= args.Length || !int.TryParse(args[minimumIndex + 1], out var minimum) || correct < minimum)) return 1;
 return 0;
+
+static void CompareCrop()
+{
+    const int width = 1920, height = 1032, runs = 200;
+    var region = new Rectangle(450, 120, 1100, 800);
+    var original = new byte[width * height * 4];
+    new Random(73).NextBytes(original);
+    var previous = FrameProcessor.CropPixels(original, width, height, region);
+    foreach (var scenario in new[] { "equal", "change-at-top", "change-at-bottom" })
+    {
+        var frame = (byte[])original.Clone();
+        if (scenario != "equal")
+        {
+            int startY = scenario == "change-at-top" ? region.Top : region.Bottom - 40;
+            for (int y = startY; y < startY + 40; y++)
+                for (int x = region.Left; x < region.Left + 40; x++)
+                    frame[(y * width + x) * 4] ^= 255;
+        }
+
+        bool Changed(bool precheck)
+        {
+            if (precheck && FrameProcessor.RegionEquals(frame, width, region, previous)) return false;
+            var next = FrameProcessor.CropPixels(frame, width, height, region);
+            return FrameChange.IsSignificant(previous, next, region.Width, region.Height);
+        }
+
+        foreach (bool precheck in new[] { false, true })
+        {
+            bool expected = scenario != "equal";
+            for (int i = 0; i < 15; i++)
+                if (Changed(precheck) != expected) throw new InvalidOperationException(scenario);
+            var samples = new double[runs];
+            long allocated = GC.GetAllocatedBytesForCurrentThread();
+            for (int i = 0; i < runs; i++)
+            {
+                long start = Stopwatch.GetTimestamp();
+                if (Changed(precheck) != expected) throw new InvalidOperationException(scenario);
+                samples[i] = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            }
+            allocated = GC.GetAllocatedBytesForCurrentThread() - allocated;
+            Array.Sort(samples);
+            Console.WriteLine(JsonSerializer.Serialize(new { scenario, precheck, runs, p50_ms = samples[99],
+                p95_ms = samples[189], bytes_per_frame = allocated / runs }));
+        }
+    }
+}
 
 record Fixture(string Path, string? Expected, string? Category);

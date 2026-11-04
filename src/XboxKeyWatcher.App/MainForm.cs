@@ -425,6 +425,11 @@ internal sealed class MainForm : Form
         lock (sync) { if (!monitoring || baselining || current != generation || !ReferenceEquals(pixels, data)) return; }
         if (area.IsEmpty || area.Right > width || area.Bottom > height) return;
         long cropStart = System.Diagnostics.Stopwatch.GetTimestamp();
+        lock (sync)
+        {
+            if (!retry && lastPixels is { } previous && FrameProcessor.RegionEquals(data, width, area, previous))
+                return;
+        }
         var cropped = FrameProcessor.CropPixels(data, width, height, area);
         lock (sync) { if (!retry && lastPixels is not null && !FrameChange.IsSignificant(lastPixels, cropped, area.Width, area.Height)) return; lastPixels = cropped; }
         using var crop = FrameProcessor.CreateBitmap(cropped, area.Width, area.Height);

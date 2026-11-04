@@ -22,6 +22,10 @@ No OCR completo em memória, 4, 6 e 8 threads mantiveram 50/120 acertos no conju
 
 Quatro chaves fictícias foram desenhadas em regiões de 1200 × 600. Cada região teve cinco variações que mudavam apenas um retângulo no topo, fora do recorte da chave. Em três execuções com uma leitura por imagem, ambas as versões acertaram 72/72, sem falsos positivos. Nas 60 leituras após a primeira imagem de cada chave, a mediana caiu de 100,08 para 58,66 ms e o p95 de 129,87 para 67,20 ms. Considerando também as 12 primeiras leituras, a mediana caiu de 100,92 para 59,34 ms e o p95 subiu de 143,82 para 153,81 ms. As primeiras leituras não usam o cache. No conjunto difícil, a variante manteve 50/120 acertos, zero falsos positivos e p95 de 157,62 ms. São tempos de OCR em memória.
 
+### Comparação antes de alocar o recorte
+
+O teste `dotnet run --project benchmarks/OcrBenchmark -c Release -- --compare-crop` compara o recorte de 1100 × 800 de um quadro de 1920 × 1032 em memória. Em duas execuções de 200 iterações por configuração, a mediana de quadros iguais caiu de 0,55–0,67 ms para 0,12–0,15 ms e a alocação por quadro caiu de 3.520.024 bytes para zero. As mudanças no topo e na base continuaram sendo detectadas, com diferença máxima de 0,011 ms entre as medianas pareadas. A medida cobre apenas a comparação e o recorte em CPU. A transferência da janela inteira da GPU permanece no caminho de captura.
+
 ## Continuação: corpus independente e limites
 
 Em 3 de novembro de 2026, o conjunto difícil anterior passou de 40/120 para 50/120 observações aceitas, sem falsos positivos nessa execução, média 103,27 ms e p95 152,80 ms em memória. São dez repetições de cada uma de 12 imagens, não 120 imagens independentes.
