@@ -8,6 +8,10 @@ using XboxKeyWatcher.Core;
 var root = Directory.GetCurrentDirectory();
 var manifestIndex = Array.IndexOf(args, "--manifest");
 var path = manifestIndex >= 0 && manifestIndex + 1 < args.Length ? Path.GetFullPath(args[manifestIndex + 1]) : Path.Combine(root, "fixtures", "synthetic", "manifest.json");
+var runsIndex = Array.IndexOf(args, "--runs");
+int runs = runsIndex < 0 ? 10 : int.Parse(args[runsIndex + 1]);
+if (runs <= 0) throw new ArgumentOutOfRangeException(nameof(runs));
+var outputIndex = Array.IndexOf(args, "--output-dir");
 var cases = JsonSerializer.Deserialize<Fixture[]>(File.ReadAllText(path), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
 var images = new List<(Fixture fixture, Windows.Graphics.Imaging.SoftwareBitmap bitmap)>();
 foreach (var fixture in cases)
@@ -39,7 +43,7 @@ foreach (var (fixture, bitmap) in images)
         Console.WriteLine($"{Path.GetFileName(fixture.Path)} category={fixture.Category} candidates={candidates.Length} exact={exact} edge_blocked={edgeBlocked} clearance={clearance}");
     }
     if (args.Contains("--trace")) Console.WriteLine($"{fixture.Path}: {(await engine.Recognize(bitmap)).Replace('\n',' ').Replace('\r',' ')}");
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < runs; i++)
     {
         var watch = Stopwatch.StartNew(); var recognized = await engine.RecognizeSafeWithFallback(bitmap, searchIfEmpty: args.Contains("--search-empty"), completeScan: args.Contains("--baseline")); watch.Stop();
         var found = recognized.Safe; bool blocked = recognized.MalformedCandidate || recognized.Rejected.Length > 0;
@@ -57,7 +61,7 @@ var peakWorkingSetBytes = process.PeakWorkingSet64;
 times.Sort(); double P(double p) => times[(int)Math.Ceiling(p * times.Count)-1];
 var summary = new { implementation = "C# + Windows OCR, edge guard, Tesseract and RapidOCR", kind = args.Contains("--baseline") ? "baseline_in_memory" : "monitoring_ocr_in_memory", samples = times.Count, correct, false_positives = falsePositives, baseline_blocked = baselineBlocked, unsafe_baseline = unsafeBaseline,
     mean_ms = times.Average(), p50_ms = P(.50), p95_ms = P(.95), p99_ms = P(.99), min_ms = times[0], max_ms = times[^1], cpu_percent_one_core = cpuPercentOneCore, peak_working_set_bytes = peakWorkingSetBytes, details };
-var output = Path.Combine(root, "benchmarks", "results"); Directory.CreateDirectory(output);
+var output = outputIndex >= 0 ? Path.GetFullPath(args[outputIndex + 1]) : Path.Combine(root, "benchmarks", "results"); Directory.CreateDirectory(output);
 string filename = manifestIndex >= 0 ? args.Contains("--baseline") ? "csharp-challenging-baseline.json" : args.Contains("--search-empty") ? "csharp-challenging-search.json" : "csharp-challenging.json" : "csharp-windows-ocr.json";
 if (manifestIndex >= 0 && !path.Replace('\\', '/').EndsWith("/fixtures/challenging/manifest.json", StringComparison.OrdinalIgnoreCase))
     filename = $"csharp-{Path.GetFileName(Path.GetDirectoryName(path))}-{Path.GetFileNameWithoutExtension(path)}-{(args.Contains("--baseline") ? "baseline" : "monitor")}.json";

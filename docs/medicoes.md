@@ -10,6 +10,18 @@ O reconhecimento direto da linha foi comparado com o commit `c9f17a0` em três c
 
 O teste `node benchmarks/browser-extension-test.mjs --measure` executou 30 entregas fictícias por configuração, com a mesma sequência de intervalos entre ofertas e o campo vazio. A medição vai da oferta do aplicativo à confirmação pelo navegador Edge isolado. A mediana caiu de 66,08 para 49,72 ms e o p95 de 129,38 para 100,86 ms. A variante aguarda a próxima oferta na ponte por até 600 ms e responde assim que ela chega. Também passaram os casos de aba diferente, foco em outro campo e clipboard alterado. O teste exclui captura, OCR e tempo de resposta do site do Xbox.
 
+### Ampliação, fila de captura e threads
+
+Pular a ampliação quando a primeira leitura do Windows OCR não detectava linhas manteve a contagem de acertos nos conjuntos testados, mas piorou o p95 no conjunto difícil de 158,02 para 170,28 ms e no sintético básico de 112,71 para 124,97 ms. A variante foi descartada.
+
+Em dez rodadas de scroll sintético, uma fila de dois quadros leu quatro chaves exibidas por 48 ms, contra zero com o quadro mais recente. As duas versões leram os dez quadros finais. O maior tempo dos quadros finais subiu de 565,17 para 738,37 ms. A fila não foi adotada.
+
+No OCR completo em memória, 4, 6 e 8 threads mantiveram 50/120 acertos no conjunto difícil, com p95 de 157,90, 157,55 e 153,86 ms. No replay do canal, as três mantiveram 10/20 acertos e os p95 foram 96,46, 99,50 e 122,41 ms. A configuração permaneceu em quatro threads.
+
+### Reuso da confirmação por pixels idênticos
+
+Quatro chaves fictícias foram desenhadas em regiões de 1200 × 600. Cada região teve cinco variações que mudavam apenas um retângulo no topo, fora do recorte da chave. Em três execuções com uma leitura por imagem, ambas as versões acertaram 72/72, sem falsos positivos. Nas 60 leituras após a primeira imagem de cada chave, a mediana caiu de 100,08 para 58,66 ms e o p95 de 129,87 para 67,20 ms. Considerando também as 12 primeiras leituras, a mediana caiu de 100,92 para 59,34 ms e o p95 subiu de 143,82 para 153,81 ms. As primeiras leituras não usam o cache. No conjunto difícil, a variante manteve 50/120 acertos, zero falsos positivos e p95 de 157,62 ms. São tempos de OCR em memória.
+
 ## Continuação: corpus independente e limites
 
 Em 3 de novembro de 2026, o conjunto difícil anterior passou de 40/120 para 50/120 observações aceitas, sem falsos positivos nessa execução, média 103,27 ms e p95 152,80 ms em memória. São dez repetições de cada uma de 12 imagens, não 120 imagens independentes.

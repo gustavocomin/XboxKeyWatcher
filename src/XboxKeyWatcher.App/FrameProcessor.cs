@@ -7,6 +7,9 @@ namespace XboxKeyWatcher.App;
 
 internal sealed class FrameProcessor
 {
+    private sealed record ConfirmedRegion(string Key, int Width, int Height, byte[] Pixels);
+    private ConfirmedRegion? lastConfirmedRegion;
+
     internal sealed record KeyRead(string[] Safe, string[] Rejected, bool MalformedCandidate);
     internal sealed class OcrTimings
     {
@@ -225,9 +228,16 @@ internal sealed class FrameProcessor
             var region = new byte[checked(width * height * 4)];
             for (int y = 0; y < height; y++)
                 System.Buffer.BlockCopy(pixels, ((y+y0) * bitmap.PixelWidth + x0) * 4, region, y * width * 4, width * 4);
+            var previous = lastConfirmedRegion;
+            if (searchIfEmpty && previous is not null && previous.Key == candidate &&
+                previous.Width == width && previous.Height == height && previous.Pixels.AsSpan().SequenceEqual(region))
+                continue;
+
             var readings = await Measure(() => RapidOcrWorker.Instance.Recognize(region, width, height), ms => { if (timings is not null) timings.RapidMs += ms; });
             var alternatives = readings?.Where(reading => reading.Confidence >= .75).SelectMany(reading => KeyParser.Extract(reading.Text)).Distinct(StringComparer.Ordinal).ToArray();
             bool confirmed = alternatives is not null && (alternatives.Contains(candidate) || (recovered.Contains(candidate) && alternatives.Length == 0));
+            if (searchIfEmpty && alternatives?.Contains(candidate) == true)
+                lastConfirmedRegion = new(candidate, width, height, region);
             if (!confirmed && alternatives is { Length: 0 } && readings!.All(reading => !KeyParser.Extract(reading.Text).Any()) && TesseractOcr.Instance.IsAvailable)
             {
                 int lx = Math.Max(0, left - 16), ly = Math.Max(0, top - 16);
