@@ -43,6 +43,7 @@ const channelJids = []; const renewTimers = new Map(); const seen = new Set();
 // "Armed" mode: keep a TLS connection to the media CDN and a warm OCR worker ready,
 // so a new post costs only the image transfer and the OCR itself.
 const MEDIA_HOST = 'https://mmg.whatsapp.net';
+const STALE_POST_MS = 120_000;
 // Post fields come from whoever publishes in the channel: only ever fetch HTTPS
 // URLs on WhatsApp's media hosts, built from a plain path, without redirects.
 const DIRECT_PATH = /^\/[A-Za-z0-9._~\/-]+(\?[A-Za-z0-9._~=&%-]*)?$/;
@@ -112,7 +113,7 @@ async function fetchHistory(sock, jid) {
 
 async function handlePost(sock, msg, via) {
   const arrived = now();
-  const id = msg.key?.server_id ?? msg.newsletterServerId ?? msg.key?.id;
+  const id = String(msg.key?.server_id ?? msg.newsletterServerId ?? msg.key?.id);
   const dedupe = `${msg.key?.remoteJid}:${id}`;
   const first = !seen.has(dedupe); seen.add(dedupe);
   const content = msg.message ?? {};
@@ -131,6 +132,13 @@ async function handlePost(sock, msg, via) {
     hasMediaKey: !!image?.mediaKey?.length, hasDirectPath: !!image?.directPath });
   console.log(`${stamp(arrived)}  POST via=${via}${first ? '' : ' (repetido)'} tipo=${type} atraso≈${lagS}s (resolução de 1 s)`);
   if (!image || !first) return;
+  // Posts delivered on (re)connect are catch-up from while the bot was offline: an old
+  // key must never be copied. Live posts arrive ~1-3 s after they were sent (rarely ~25 s).
+  if (sentAt && arrived - sentAt > STALE_POST_MS) {
+    log('stale', { id, ageS: Math.round((arrived - sentAt) / 1000) });
+    console.log(`${stamp(arrived)}  post antigo (${Math.round((arrived - sentAt) / 1000)} s) ignorado`);
+    return;
+  }
   const start = now();
   try {
     let buffer, winner = 'baileys';
