@@ -1,0 +1,2 @@
+# Login que o bot usa ao abrir o app: auth-secundario ou auth-principal
+auth-principal

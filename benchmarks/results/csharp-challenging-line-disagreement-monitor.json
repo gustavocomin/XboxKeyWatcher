@@ -6,18 +6,18 @@
   "false_positives": 0,
   "baseline_blocked": 0,
   "unsafe_baseline": 0,
-  "mean_ms": 123.12616,
-  "p50_ms": 116.5977,
-  "p95_ms": 158.8504,
-  "p99_ms": 158.8504,
-  "min_ms": 109.7671,
-  "max_ms": 158.8504,
-  "cpu_percent_one_core": 43.123419754966434,
-  "peak_working_set_bytes": 136347648,
+  "mean_ms": 130.96854,
+  "p50_ms": 125.5821,
+  "p95_ms": 159.1547,
+  "p99_ms": 159.1547,
+  "min_ms": 113.1842,
+  "max_ms": 159.1547,
+  "cpu_percent_one_core": 52.460436437256476,
+  "peak_working_set_bytes": 139964416,
   "details": [
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 158.8504,
+      "elapsed_ms": 130.456,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
@@ -26,7 +26,7 @@
     },
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 116.4016,
+      "elapsed_ms": 113.1842,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
@@ -35,7 +35,7 @@
     },
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 109.7671,
+      "elapsed_ms": 119.5019,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
@@ -44,7 +44,7 @@
     },
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 135.3436,
+      "elapsed_ms": 117.7792,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
@@ -53,7 +53,7 @@
     },
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 121.1427,
+      "elapsed_ms": 125.5821,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
@@ -62,7 +62,7 @@
     },
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 111.8945,
+      "elapsed_ms": 137.5848,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
@@ -71,7 +71,7 @@
     },
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 114.7733,
+      "elapsed_ms": 118.3197,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
@@ -80,7 +80,7 @@
     },
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 119.0469,
+      "elapsed_ms": 146.3012,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
@@ -89,7 +89,7 @@
     },
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 127.4438,
+      "elapsed_ms": 141.8216,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"
@@ -98,7 +98,7 @@
     },
     {
       "fixture": "fixtures/challenging/case-01.png",
-      "elapsed_ms": 116.5977,
+      "elapsed_ms": 159.1547,
       "correct": true,
       "found": [
         "GGGGG-HHHHH-JJJJJ-KKKKK-FFFFF"

@@ -22,6 +22,9 @@ internal sealed class WindowCapture : IDisposable
     private bool processing, disposed;
     private long processingSince;
     private long receivedVersion, processingVersion;
+#if INTEGRATION_TEST
+    internal long ReceivedFrameVersionForIntegrationTest => Interlocked.Read(ref receivedVersion);
+#endif
     internal bool HasNewerFrame => Interlocked.Read(ref receivedVersion) != Interlocked.Read(ref processingVersion);
     public bool ProcessingStalled => Interlocked.Read(ref processingSince) is var value && value != 0 && Stopwatch.GetElapsedTime(value) > TimeSpan.FromSeconds(10);
     public event Func<SoftwareBitmap, Task>? Frame;

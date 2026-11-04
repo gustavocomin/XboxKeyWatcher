@@ -5,6 +5,8 @@ using System.Text.Json;
 using XboxKeyWatcher.App;
 using XboxKeyWatcher.Core;
 
+if (args.Contains("--resize-buffers")) return ResizeProbe.Run(args.Contains("--require-reduced-allocations"));
+
 if (args.Contains("--compare-crop"))
 {
     CompareCrop();
@@ -51,7 +53,14 @@ foreach (var (fixture, bitmap) in images)
     if (args.Contains("--trace")) Console.WriteLine($"{fixture.Path}: {(await engine.Recognize(bitmap)).Replace('\n',' ').Replace('\r',' ')}");
     for (int i = 0; i < runs; i++)
     {
-        var watch = Stopwatch.StartNew(); var recognized = await engine.RecognizeSafeWithFallback(bitmap, searchIfEmpty: args.Contains("--search-empty"), completeScan: args.Contains("--baseline")); watch.Stop();
+        var stageTimings = new FrameProcessor.OcrTimings();
+        var watch = Stopwatch.StartNew();
+        var recognized = args.Contains("--complete-image")
+            ? await engine.RecognizeCompleteImage(FrameProcessor.Pixels(bitmap), bitmap.PixelWidth, bitmap.PixelHeight, stageTimings)
+            : await engine.RecognizeSafeWithFallback(bitmap, searchIfEmpty: args.Contains("--search-empty"), completeScan: args.Contains("--baseline"), timings: stageTimings);
+        watch.Stop();
+        if (args.Contains("--timings"))
+            Console.WriteLine($"{Path.GetFileName(fixture.Path)} total={watch.Elapsed.TotalMilliseconds:F1} win1={stageTimings.WindowsFirstPassMs:F1} resize={stageTimings.WindowsResizeMs:F1} win2={stageTimings.WindowsSecondPassMs:F1} rapid={stageTimings.RapidMs:F1} (calls={stageTimings.RapidPhases.Calls} det={stageTimings.RapidPhases.DetectionMs:F1} rec={stageTimings.RapidPhases.RecognitionMs:F1}) tess={stageTimings.TesseractMs:F1} enh={stageTimings.EnhancedLineMs:F1} ok={recognized.Safe.Contains(fixture.Expected)}");
         var found = recognized.Safe; bool blocked = recognized.MalformedCandidate || recognized.Rejected.Length > 0;
         var hit = found.Contains(fixture.Expected) && !blocked;
         times.Add(watch.Elapsed.TotalMilliseconds); if (hit) correct++; falsePositives += found.Count(x => x != fixture.Expected);

@@ -37,7 +37,7 @@ const chrome = {
   windows: { get: async () => ({ focused: false }) }
 };
 vm.runInNewContext(await readFile(new URL('../browser-extension/worker.js', import.meta.url), 'utf8'),
-  { chrome, setTimeout, clearTimeout });
+  { chrome, setTimeout, clearTimeout, performance });
 const send = (action, extra = {}, senderUrl = frame, tabUrl = url, frameId = 1) => new Promise(resolve =>
   listener({ action, id: 'test', ...extra }, { tab: { id: 7, url: tabUrl }, frameId, url: senderUrl }, resolve));
 

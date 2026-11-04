@@ -1,0 +1,7 @@
+# Canais do WhatsApp que o bot acompanha (um link por linha; linhas com # são ignoradas).
+# Canal oficial (Sucumba Promo)
+https://whatsapp.com/channel/0029Vb7utobJZg44EknmPF40
+# Canal de corrida (dono: numero secundario)
+https://whatsapp.com/channel/0029Vb9X81XKwqSUzbtwP82p
+# Canal de teste (dono: numero principal)
+https://whatsapp.com/channel/0029VbEHSwI9MF8vV4q4gM0K

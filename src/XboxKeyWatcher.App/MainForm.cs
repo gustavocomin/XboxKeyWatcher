@@ -11,21 +11,24 @@ namespace XboxKeyWatcher.App;
 
 internal sealed class MainForm : Form
 {
-    private sealed record DetectionStages(double CropMs, double WindowsMs, double RapidMs, double TesseractMs, double EnhancedLineMs, double OtherOcrMs, double? ClipboardMs, double? FrameReadMs, double? FrameToClipboardMs);
-    private sealed record DetectionEvent(DateTimeOffset Timestamp, string Status, string? Key, double ElapsedMs, bool? ClipboardConfirmed, DetectionStages? Stages);
+    private sealed record DetectionStages(double CropMs, double WindowsMs, double RapidMs, double TesseractMs, double EnhancedLineMs, double OtherOcrMs, double? ClipboardMs, double? FrameReadMs, double? FrameToClipboardMs, RapidOcrWorker.Timings? RapidPhases, double WindowsFirstPassMs, double WindowsResizeMs, double WindowsSecondPassMs);
+    private sealed record DetectionEvent(DateTimeOffset Timestamp, string Status, string? Key, double ElapsedMs, bool? ClipboardConfirmed, DetectionStages? Stages, string? OfferId, PasteBridge.DeliveryTiming? Delivery);
     private static readonly Channel<DetectionEvent> detectionLog = Channel.CreateBounded<DetectionEvent>(
         new BoundedChannelOptions(256) { SingleReader = true, FullMode = BoundedChannelFullMode.DropOldest });
     private static readonly Lazy<Task> detectionLogWriter = new(() => Task.Run(WriteDetectionLog));
 #if INTEGRATION_TEST
     internal static readonly string DetectionLogPath = Path.Combine(Path.GetTempPath(), $"XboxKeyWatcher-test-{Environment.ProcessId}.jsonl");
+#elif XKW_ISOLATED_CANDIDATE
+    private static readonly string DetectionLogPath = Path.Combine(AppContext.BaseDirectory, "detections-teste.jsonl");
 #else
     private static readonly string DetectionLogPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "XboxKeyWatcher", "detections.jsonl");
 #endif
 
-    private static void LogDetection(string status, string? key, double elapsedMs, bool? clipboardConfirmed, DetectionStages? stages)
+    private static void LogDetection(string status, string? key, double elapsedMs, bool? clipboardConfirmed, DetectionStages? stages,
+        string? offerId = null, PasteBridge.DeliveryTiming? delivery = null)
     {
-        detectionLog.Writer.TryWrite(new(DateTimeOffset.Now, status, key, Math.Round(elapsedMs, 2), clipboardConfirmed, stages));
+        detectionLog.Writer.TryWrite(new(DateTimeOffset.Now, status, key, Math.Round(elapsedMs, 2), clipboardConfirmed, stages, offerId, delivery));
         _ = detectionLogWriter.Value;
     }
 
@@ -47,6 +50,8 @@ internal sealed class MainForm : Form
     private readonly Label status = new() { Dock = DockStyle.Bottom, Height = 45, Text = "Selecione uma janela para iniciar a prévia experimental." };
     private readonly Label details = new() { Dock = DockStyle.Bottom, Height = 28, Text = "Nenhuma key copiada." };
     private readonly Label health = new() { Dock = DockStyle.Bottom, Height = 24, Text = "Watchdog ativo; aguardando janela." };
+    private readonly Label botStatus = new() { Dock = DockStyle.Bottom, Height = 24, Text = "Bot do canal: desligado." };
+    private ChannelBot? channelBot;
     private WindowCapture? capture;
     private GraphicsCaptureItem? selectedItem;
     private TaskCompletionSource<bool>? captureReady;
@@ -85,31 +90,27 @@ internal sealed class MainForm : Form
 
     public MainForm()
     {
-        Text = "XboxKeyWatcher — em desenvolvimento";
+#if XKW_ISOLATED_CANDIDATE
+        Text = "XboxKeyWatcher — Teste de miniaturas";
+#else
+        Text = "XboxKeyWatcher — Release - V3";
+#endif
         ClientSize = new Size(920, 680);
         var bar = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40 };
         var select = new Button { Text = "Selecionar janela", AutoSize = true };
-        var test = new Button { Text = "Testar OCR", AutoSize = true };
-        var start = new Button { Text = "Iniciar experimental", AutoSize = true };
+        var start = new Button { Text = "Iniciar", AutoSize = true };
         var stop = new Button { Text = "Parar", AutoSize = true };
-        var recopy = new Button { Text = "Copiar última", AutoSize = true };
-        var testClipboard = new Button { Text = "Testar clipboard", AutoSize = true };
         var clear = new Button { Text = "Limpar histórico", AutoSize = true };
-        var settings = new Button { Text = "Atalhos", AutoSize = true };
         var paste = new Button { Text = "Colagem assistida", AutoSize = true };
         try { if (File.Exists(hotkeysPath)) { var saved = JsonSerializer.Deserialize<HotkeyPreferences>(File.ReadAllText(hotkeysPath)); if (saved is not null && saved.TryBindings(out _)) hotkeys = saved; else status.Text = "Atalhos inválidos; usando padrões."; } }
         catch (Exception e) { status.Text = "Erro ao carregar atalhos: " + e.Message; }
         select.Click += async (_, _) => { try { await SelectWindow(); } catch (Exception e) { status.Text = "Erro: " + e.Message; } };
-        test.Click += async (_, _) => { try { await TestOcr(); } catch (Exception e) { status.Text = "Erro: " + e.Message; } };
         start.Click += async (_, _) => { try { await StartMonitoring(); } catch (Exception e) { StopMonitoring(); status.Text = "Erro no baseline: " + e.Message; } };
         stop.Click += (_, _) => StopMonitoring();
-        recopy.Click += async (_, _) => await CopyLastKey();
-        testClipboard.Click += async (_, _) => { var ok = await CopyKey("XBOXKEYWATCHER-TESTE", generation, true); status.Text = ok ? "Teste do clipboard aprovado." : "Clipboard indisponível."; };
         clear.Click += (_, _) => { StopMonitoring(); lock (sync) { gate.ClearHistory(); copiedKeys.Clear(); } status.Text = "Histórico limpo. Inicie novamente para estabelecer baseline."; };
-        settings.Click += (_, _) => EditHotkeys();
         paste.Click += (_, _) => ConfigurePasteBridge();
-        bar.Controls.Add(select); bar.Controls.Add(test); bar.Controls.Add(start); bar.Controls.Add(stop); bar.Controls.Add(recopy); bar.Controls.Add(testClipboard); bar.Controls.Add(clear); bar.Controls.Add(settings); bar.Controls.Add(paste);
-        Controls.Add(preview); Controls.Add(details); Controls.Add(health); Controls.Add(status); Controls.Add(bar);
+        bar.Controls.Add(select); bar.Controls.Add(start); bar.Controls.Add(stop); bar.Controls.Add(clear); bar.Controls.Add(paste);
+        Controls.Add(preview); Controls.Add(details); Controls.Add(health); Controls.Add(botStatus); Controls.Add(status); Controls.Add(bar);
         preview.MouseDown += (_, e) => { dragging = true; dragStart = e.Location; };
         preview.MouseUp += (_, e) => SelectRegion(e.Location);
         preview.Paint += (_, e) => PaintRegion(e.Graphics);
@@ -124,7 +125,12 @@ internal sealed class MainForm : Form
         };
         watchdog.Start();
         SystemEvents.SessionSwitch += OnSessionSwitch;
-        FormClosed += (_, _) => { watchdog.Stop(); watchdog.Dispose(); SystemEvents.SessionSwitch -= OnSessionSwitch; tray.Visible = false; tray.Dispose(); capture?.Dispose(); preview.Image?.Dispose(); pasteBridge?.Dispose(); };
+        botInbox = new BotKeyInbox(AcceptBotKey);
+#if !INTEGRATION_TEST
+        channelBot = new ChannelBot(text => Post(() => botStatus.Text = text.Length > 160 ? text[..160] : text));
+        Shown += (_, _) => channelBot.Start();
+#endif
+        FormClosed += (_, _) => { channelBot?.Dispose(); botInbox?.Dispose(); watchdog.Stop(); watchdog.Dispose(); SystemEvents.SessionSwitch -= OnSessionSwitch; tray.Visible = false; tray.Dispose(); capture?.Dispose(); preview.Image?.Dispose(); pasteBridge?.Dispose(); };
     }
 
     private void ConfigurePasteBridge()
@@ -142,7 +148,7 @@ internal sealed class MainForm : Form
                 }
                 pasteBridge = new PasteBridge(
                     key => NativeClipboard.TryGetText(clipboardOwner, out var value) && value == key,
-                    (key, elapsed) => LogDetection("pasted", key, elapsed, true, null),
+                    (key, elapsed, delivery) => LogDetection("pasted", key, elapsed, true, null, delivery.OfferId, delivery),
                     native: true, http: false);
             }
             status.Text = "Ponte nativa ativa. Ative o preenchimento na extensão do Chrome.";
@@ -449,7 +455,9 @@ internal sealed class MainForm : Form
         double recognitionMs = watch.Elapsed.TotalMilliseconds;
         var stages = new DetectionStages(cropMs, ocrTimings.WindowsMs, ocrTimings.RapidMs, ocrTimings.TesseractMs,
             ocrTimings.EnhancedLineMs, Math.Max(0, recognitionMs - ocrTimings.WindowsMs - ocrTimings.RapidMs
-                - ocrTimings.TesseractMs - ocrTimings.EnhancedLineMs), null, frameReadMs, null);
+                - ocrTimings.TesseractMs - ocrTimings.EnhancedLineMs - ocrTimings.WindowsResizeMs), null, frameReadMs, null,
+            ocrTimings.RapidPhases.Calls > 0 ? ocrTimings.RapidPhases : null,
+            ocrTimings.WindowsFirstPassMs, ocrTimings.WindowsResizeMs, ocrTimings.WindowsSecondPassMs);
         var keys = read.Safe;
         bool uncertain = read.Rejected.Length > 0 || read.MalformedCandidate;
         if (read.Rejected.Length > 0 || read.MalformedCandidate) Post(() => status.Text = RapidOcrWorker.Instance.LastError is { } error ? "RapidOCR indisponível; key não copiada: " + error : "Possível key cortada, incompleta ou sem confirmação: não copiada.");
@@ -459,7 +467,10 @@ internal sealed class MainForm : Form
             if (!uncertain)
             {
                 offeredWhileVisible.RemoveWhere(key => !keys.Contains(key));
-                pasteBridge?.ClearIfAbsent(keys);
+                // A key from the channel listener usually arrives before WhatsApp Desktop
+                // draws it; keep that offer alive instead of clearing it as "not on screen".
+                bool botOfferActive = botOfferKey is not null && System.Diagnostics.Stopwatch.GetTimestamp() < botOfferUntil;
+                pasteBridge?.ClearIfAbsent(botOfferActive ? [.. keys, botOfferKey!] : keys);
             }
         }
         var duplicates = new List<string>();
@@ -476,10 +487,10 @@ internal sealed class MainForm : Form
                     if (offeredWhileVisible.Contains(key)) { duplicates.Add(key); continue; }
                     if (NativeClipboard.TryGetText(clipboardOwner, out var clipboard) && clipboard == key)
                     {
-                        if (pasteBridge?.Offer(key) == true)
+                        if (pasteBridge?.Offer(key, out var repeatId) == true)
                         {
                             offeredWhileVisible.Add(key);
-                            LogDetection("reoffered", key, recognitionMs, true, stages);
+                            LogDetection("reoffered", key, recognitionMs, true, stages, repeatId);
                         }
                         duplicates.Add(key);
                         continue;
@@ -491,13 +502,14 @@ internal sealed class MainForm : Form
             double clipboardStart = watch.Elapsed.TotalMilliseconds;
             var copied = await CopyKey(key, current);
             double elapsedMs = watch.Elapsed.TotalMilliseconds;
+            string? offerId = null;
             if (copied)
             {
                 lock (sync)
                     if (monitoring && generation == current)
                     {
                         copiedKeys.Add(key);
-                        if (pasteBridge?.Offer(key) == true) offeredWhileVisible.Add(key);
+                        if (pasteBridge?.Offer(key, out offerId) == true) offeredWhileVisible.Add(key);
                     }
             }
             if (!copied) { if (isNew) gate.ReleaseAfterFailure(current, key); lock (sync) { lastPixels = null; } }
@@ -510,7 +522,7 @@ internal sealed class MainForm : Form
                     ClipboardMs = elapsedMs - clipboardStart,
                     FrameToClipboardMs = copied && frameStart is long start
                         ? System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds : null
-                });
+                }, offerId);
             Post(() =>
             {
                 lastKey = key;
@@ -557,6 +569,49 @@ internal sealed class MainForm : Form
     {
         lock (sync) { monitoring = false; generation = gate.BeginBaseline(); pasteBridge?.Clear(); }
         status.Text = "Parado.";
+    }
+
+    private BotKeyInbox? botInbox;
+    private string? botOfferKey;
+    private long botOfferUntil;
+
+    // Key read by the WhatsApp channel listener from the post itself. Same clipboard and
+    // bridge path as a screen detection; whichever path reads a key first copies it.
+    private async Task<string> AcceptBotKey(string key, string source)
+    {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        long current; bool isNew;
+        lock (sync)
+        {
+            if (!monitoring) return "not_monitoring";
+            current = generation;
+            // Each channel post is a distinct event (the listener drops repeated deliveries
+            // of the same post), so a key is copied again even if it was read before.
+            isNew = gate.TryAccept(current, key);
+        }
+        bool copied = await CopyKey(key, current);
+        string? offerId = null;
+        if (copied)
+        {
+            lock (sync)
+                if (monitoring && generation == current)
+                {
+                    copiedKeys.Add(key);
+                    botOfferKey = key;
+                    botOfferUntil = System.Diagnostics.Stopwatch.GetTimestamp() + System.Diagnostics.Stopwatch.Frequency * 30;
+                    if (pasteBridge?.Offer(key, out offerId) == true) offeredWhileVisible.Add(key);
+                }
+        }
+        else if (isNew) gate.ReleaseAfterFailure(current, key);
+        double elapsedMs = watch.Elapsed.TotalMilliseconds;
+        LogDetection(copied ? "copied_bot" : "clipboard_failed", key, elapsedMs, copied, null, offerId);
+        Post(() =>
+        {
+            lastKey = key;
+            if (copied) { copiedCount++; System.Media.SystemSounds.Asterisk.Play(); }
+            status.Text = copied ? $"Copiada pelo bot ({source}): {key} ({elapsedMs:F0} ms)" : "Bot: falha ao copiar a key; use Copiar última.";
+        });
+        return copied ? "copied" : "clipboard_failed";
     }
 
     private async Task CopyLastKey()
@@ -622,6 +677,13 @@ internal sealed class MainForm : Form
 #if INTEGRATION_TEST
     internal Func<string, long, bool, Task<bool>>? ClipboardOverrideForIntegrationTest { get; set; }
     internal Action<string>? CopiedForIntegrationTest { get; set; }
+    internal Func<Task>? BeforeWideFallbackForIntegrationTest
+    {
+        set => processor!.BeforeWideFallbackForIntegrationTest = value;
+    }
+    internal bool HasPendingFrameForIntegrationTest => capture?.HasNewerFrame == true;
+    internal long ReceivedFrameVersionForIntegrationTest => capture?.ReceivedFrameVersionForIntegrationTest ?? 0;
+    internal int PrioritizedReadsForIntegrationTest => 0;
     internal async Task AttachForIntegrationTest(GraphicsCaptureItem item)
     {
         selectedItem = item; processor = new FrameProcessor(); await processor.WarmUp();
@@ -631,6 +693,18 @@ internal sealed class MainForm : Form
         lock (sync) selection = new Rectangle(0, 0, frameWidth, frameHeight);
     }
     internal Task StartForIntegrationTest() => StartMonitoring();
+    internal string StartBrowserBridgeForIntegrationTest(Action<string, double> onPasted)
+    {
+        pasteBridge = new PasteBridge(
+            key => NativeClipboard.TryGetText(clipboardOwner, out var value) && value == key,
+            (key, elapsed, delivery) =>
+            {
+                LogDetection("pasted", key, elapsed, true, null, delivery.OfferId, delivery);
+                onPasted(key, elapsed);
+            }, native: true);
+        return pasteBridge.Token;
+    }
+
     internal void ClickPreviewForIntegrationTest()
     {
         dragging = true;

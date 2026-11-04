@@ -6,81 +6,81 @@
   "false_positives": 0,
   "baseline_blocked": 10,
   "unsafe_baseline": 0,
-  "mean_ms": 122.75589,
-  "p50_ms": 108.6356,
-  "p95_ms": 207.8443,
-  "p99_ms": 207.8443,
-  "min_ms": 107.1251,
-  "max_ms": 207.8443,
-  "cpu_percent_one_core": 38.16631360960669,
-  "peak_working_set_bytes": 158924800,
+  "mean_ms": 82.47662000000001,
+  "p50_ms": 75.9139,
+  "p95_ms": 139.3841,
+  "p99_ms": 139.3841,
+  "min_ms": 73.9697,
+  "max_ms": 139.3841,
+  "cpu_percent_one_core": 49.19837827612758,
+  "peak_working_set_bytes": 156119040,
   "details": [
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 207.8443,
+      "elapsed_ms": 139.3841,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 108.2253,
+      "elapsed_ms": 80.1049,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 111.2192,
+      "elapsed_ms": 75.4512,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 107.1793,
+      "elapsed_ms": 73.9697,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 107.1251,
+      "elapsed_ms": 74.6332,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 114.9383,
+      "elapsed_ms": 76.8803,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 145.3379,
+      "elapsed_ms": 74.7583,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 108.7001,
+      "elapsed_ms": 76.4592,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 108.6356,
+      "elapsed_ms": 77.2114,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-final/16-full.png",
-      "elapsed_ms": 108.3538,
+      "elapsed_ms": 75.9139,
       "correct": false,
       "found": [],
       "baseline_blocked": true

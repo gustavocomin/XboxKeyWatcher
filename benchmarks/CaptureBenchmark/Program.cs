@@ -21,6 +21,26 @@ static class Program
         if (args.Length == 1 && args[0] == "--paste-prototype") { ApplicationConfiguration.Initialize(); Application.Run(new PastePrototype()); return; }
         if (args.Length == 1 && args[0] == "--paste-bridge-test") { PasteBridgeTest.Run().GetAwaiter().GetResult(); return; }
         if (args.Length == 1 && args[0] == "--paste-bridge-fixture") { PasteBridgeTest.ServeFixture(); return; }
+        if (args.Length is 1 or 2 && args[0] == "--probe-backlog")
+        {
+            BacklogFixture.Probe(args.Length == 2 ? args[1] : null).GetAwaiter().GetResult();
+            return;
+        }
+        if (args.Length is 1 or 2 && args[0] is "--probe-small" or "--probe-small-controls")
+        {
+            int count = args.Length == 2 ? int.Parse(args[1]) : 12;
+            if (count is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(args));
+            SmallThumbnailFixture.Probe(count, controls: args[0] == "--probe-small-controls").GetAwaiter().GetResult();
+            return;
+        }
+        if (args is ["--app-browser"] or ["--app-browser-scroll"] or ["--app-browser-backlog"] or ["--app-browser-small"])
+        {
+            ApplicationConfiguration.Initialize();
+            Application.Run(new IntegrationScenario(false, false, false, false, false, false, browser: true,
+                scrollReplay: args[0] == "--app-browser-scroll", backlogReplay: args[0] == "--app-browser-backlog",
+                smallReplay: args[0] == "--app-browser-small"));
+            return;
+        }
         if (args.Contains("--app-integration") || args.Contains("--app-baseline") || args.Contains("--app-clipped") || args.Contains("--app-simulated") || args.Contains("--app-during-baseline") || args.Contains("--app-soak") || args.Contains("--app-series")) { ApplicationConfiguration.Initialize(); Application.Run(new IntegrationScenario(args.Contains("--app-baseline") || args.Contains("--app-clipped"), args.Contains("--app-clipped"), args.Contains("--app-simulated") || args.Contains("--app-during-baseline") || args.Contains("--app-soak"), args.Contains("--app-during-baseline"), args.Contains("--app-soak"), args.Contains("--app-series"))); return; }
         var runsIndex = Array.IndexOf(args, "--runs");
         var intervalIndex = Array.IndexOf(args, "--interval");

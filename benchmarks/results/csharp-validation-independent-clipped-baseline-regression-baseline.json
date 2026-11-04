@@ -6,81 +6,81 @@
   "false_positives": 0,
   "baseline_blocked": 10,
   "unsafe_baseline": 0,
-  "mean_ms": 80.6541,
-  "p50_ms": 70.4192,
-  "p95_ms": 124.6047,
-  "p99_ms": 124.6047,
-  "min_ms": 68.7205,
-  "max_ms": 124.6047,
-  "cpu_percent_one_core": 48.393538922094855,
-  "peak_working_set_bytes": 156053504,
+  "mean_ms": 83.41265999999999,
+  "p50_ms": 76.4062,
+  "p95_ms": 109.2732,
+  "p99_ms": 109.2732,
+  "min_ms": 74.0545,
+  "max_ms": 109.2732,
+  "cpu_percent_one_core": 61.75427779741938,
+  "peak_working_set_bytes": 153124864,
   "details": [
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 124.6047,
+      "elapsed_ms": 109.2732,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 68.7389,
+      "elapsed_ms": 74.5504,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 68.7205,
+      "elapsed_ms": 74.6493,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 69.7932,
+      "elapsed_ms": 76.4062,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 107.3888,
+      "elapsed_ms": 74.0545,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 71.3968,
+      "elapsed_ms": 76.133,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 78.5394,
+      "elapsed_ms": 87.4158,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 70.4192,
+      "elapsed_ms": 79.2963,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 69.9277,
+      "elapsed_ms": 86.7019,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-independent/30-clipped.jpg",
-      "elapsed_ms": 77.0118,
+      "elapsed_ms": 95.646,
       "correct": false,
       "found": [],
       "baseline_blocked": true

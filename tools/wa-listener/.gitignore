@@ -1,0 +1,7 @@
+node_modules/
+auth*/
+media/
+logs/
+fundo-teste.jpg
+test-images/
+bot.pid
