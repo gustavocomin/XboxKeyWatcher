@@ -8,7 +8,7 @@ internal static class PasteBridgeTest
     internal static void ServeFixture()
     {
         const string key = "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R";
-        using var bridge = new PasteBridge(value => value == key);
+        using var bridge = new PasteBridge(value => value == key, native: true);
         Console.WriteLine(bridge.Token);
         while (Console.ReadLine() is string command)
         {
@@ -39,10 +39,20 @@ internal static class PasteBridgeTest
         using var payload = JsonDocument.Parse(await client.GetStringAsync("pending"));
         if (payload.RootElement.GetProperty("Key").GetString() != fixture) throw new InvalidOperationException("Key divergente.");
         string id = payload.RootElement.GetProperty("Id").GetString()!;
+        bridge.Offer(fixture);
+        using var repeated = JsonDocument.Parse(await client.GetStringAsync("pending"));
+        if (repeated.RootElement.GetProperty("Id").GetString() != id)
+            throw new InvalidOperationException("Oferta pendente mudou após releitura da mesma key.");
         await RequireStatus($"ack/{id}", HttpStatusCode.NoContent, HttpMethod.Post);
         await RequireStatus("pending", HttpStatusCode.NoContent);
-        bridge.Offer(fixture);
-        bridge.Clear();
+        if (!bridge.Offer(fixture))
+            throw new InvalidOperationException("Mesma key não foi ofertada novamente após confirmação.");
+        using var next = JsonDocument.Parse(await client.GetStringAsync("pending"));
+        if (next.RootElement.GetProperty("Id").GetString() == id)
+            throw new InvalidOperationException("Nova entrega reutilizou o ID confirmado.");
+        bridge.ClearIfAbsent([fixture]);
+        await RequireStatus("pending", HttpStatusCode.OK);
+        bridge.ClearIfAbsent([]);
         await RequireStatus("pending", HttpStatusCode.NoContent);
         Console.WriteLine("Bridge: autenticação, clipboard alterado, key exata, confirmação e limpeza passaram.");
     }

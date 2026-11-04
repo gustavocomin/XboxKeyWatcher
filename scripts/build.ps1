@@ -5,6 +5,8 @@ $env:PYINSTALLER_CONFIG_DIR = Join-Path (Get-Location) 'build\pyinstaller-cache'
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet publish src\XboxKeyWatcher.App\XboxKeyWatcher.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o dist\win-x64
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+dotnet publish src\XboxKeyWatcher.NativeHost\XboxKeyWatcher.NativeHost.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o dist\win-x64
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $libs = '.venv\Lib\site-packages\tesserocr.libs'
 $model = 'models\tessdata\eng.traineddata'
 if (-not (Test-Path $libs) -or -not (Test-Path $model)) { throw 'Tesseract e modelo ausentes; execute scripts/install-dev.ps1.' }

@@ -2,9 +2,9 @@
 <html lang="pt-BR">
 <meta charset="utf-8">
 <title>XboxKeyWatcher</title>
-<label>Código de pareamento <input id="token" type="password" autocomplete="off" size="32"></label>
-<button id="arm">Autorizar esta aba</button>
+<button id="arm" disabled>Ativar nesta aba</button>
 <button id="disarm">Desativar</button>
-<p id="status" role="status">Depois de autorizar, clique no campo vazio onde deseja receber a key.</p>
-<script src="popup.js"></script>
+<p id="status" role="status">Verificando a aba atual…</p>
+<a id="open-redeem" href="https://www.xbox.com/pt-BR/redeem" target="_blank" rel="noopener" hidden>Abrir página de resgate</a>
+<script type="module" src="popup.js"></script>
 </html>

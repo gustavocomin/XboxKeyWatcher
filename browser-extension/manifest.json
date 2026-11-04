@@ -1,9 +1,33 @@
 {
   "manifest_version": 3,
   "name": "XboxKeyWatcher — colagem assistida",
-  "version": "0.1.0",
-  "permissions": ["activeTab", "scripting", "storage", "clipboardRead"],
-  "host_permissions": ["http://127.0.0.1:47183/*"],
-  "background": { "service_worker": "worker.js" },
-  "action": { "default_popup": "popup.html" }
+  "version": "0.3.0",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "clipboardRead",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:47183/*"
+  ],
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.microsoft.com/store/purchase/buynowui/redeemnow*",
+        "https://microsoft.com/store/purchase/buynowui/redeemnow*"
+      ],
+      "all_frames": true,
+      "js": [
+        "arm.js"
+      ]
+    }
+  ]
 }

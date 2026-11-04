@@ -1,6 +1,5 @@
 import { spawn } from 'node:child_process';
-import { createServer } from 'node:http';
-import { cp, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, realpath, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { createInterface } from 'node:readline';
@@ -10,9 +9,9 @@ import { fileURLToPath } from 'node:url';
 const fixture = 'T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R';
 const temporaryRoot = await realpath(tmpdir());
 const root = await mkdtemp(join(temporaryRoot, 'xkw-extension-test-'));
-const extension = join(root, 'extension');
+const extension = fileURLToPath(new URL('../browser-extension', import.meta.url));
 const sockets = [];
-let browser, bridge, server;
+let browser, bridge;
 async function until(check, message) {
   for (let attempt = 0; attempt < 100; attempt++) {
     const value = await check();
@@ -54,15 +53,7 @@ async function evaluate(send, expression) {
 }
 
 try {
-  await cp(fileURLToPath(new URL('../browser-extension', import.meta.url)), extension, { recursive: true });
-  const manifestPath = join(extension, 'manifest.json');
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-  manifest.host_permissions.push('http://127.0.0.1/*');
-  await writeFile(manifestPath, JSON.stringify(manifest));
-  const html = await readFile(new URL('./redeem-paste-fixture.html', import.meta.url));
-  server = createServer((_, response) => { response.setHeader('Content-Type', 'text/html; charset=utf-8'); response.end(html); });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const origin = `http://127.0.0.1:${server.address().port}`;
+  const origin = 'http://127.0.0.1:47183';
   const page = `${origin}/fixture`;
   const dll = fileURLToPath(new URL('./CaptureBenchmark/bin/Release/net8.0-windows10.0.19041.0/CaptureBenchmark.dll', import.meta.url));
   bridge = spawn('dotnet', [dll, '--paste-bridge-fixture'], { windowsHide: true, stdio: ['pipe', 'pipe', 'inherit'] });
@@ -95,8 +86,8 @@ try {
   await sendPage('Browser.grantPermissions', { origin, permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'] });
   const tabId = await evaluate(sendWorker, `new Promise(resolve => chrome.tabs.query({}, tabs => resolve(tabs.find(t => t.url === ${JSON.stringify(page)})?.id)))`);
   console.log('Aba fictícia encontrada.');
-  await evaluate(sendWorker, `chrome.storage.session.set({pairing:${JSON.stringify({ token, tabId, url: page, id: 'fixture-pairing' })}})`);
-  console.log('Pareamento de teste salvo.');
+  await evaluate(sendWorker, `chrome.storage.session.set({pairing:${JSON.stringify({ native: true, tabId, url: page, id: 'fixture-pairing' })}})`);
+  console.log('Transporte nativo selecionado.');
   await evaluate(sendWorker, `chrome.scripting.executeScript({target:{tabId:${tabId}},files:['arm.js']})`);
   console.log('Campo aguardando clique.');
   await wait(250);
@@ -122,15 +113,13 @@ try {
   await until(() => evaluate(sendPage, `document.querySelector("#redeem").value === ${JSON.stringify(fixture)}`), 'A extensão não preencheu a key.');
   const acknowledged = await until(async () => (await fetch('http://127.0.0.1:47183/pending',
     { headers: { Authorization: `Bearer ${token}` } })).status === 204, 'A extensão não confirmou o preenchimento.');
-  const noSubmission = await evaluate(sendPage, 'submissionCount === 0');
+  const noSubmission = await evaluate(sendPage, `location.href === ${JSON.stringify(page)} && document.forms.length === 0`);
   console.log(JSON.stringify({ heldWhileOtherTab, heldWhileOtherField, heldWhenClipboardChanged, exact: true, acknowledged, noSubmission }));
   if (!heldWhileOtherTab || !heldWhileOtherField || !heldWhenClipboardChanged || !noSubmission) process.exitCode = 1;
 } finally {
   for (const socket of sockets) socket.close();
   browser?.kill();
   bridge?.stdin.end();
-  server?.close();
-  server?.closeAllConnections();
   const resolved = await realpath(root);
   if (dirname(resolved) === temporaryRoot)
     await rm(resolved, { recursive: true, force: true, maxRetries: 4, retryDelay: 100 }).catch(() => {});

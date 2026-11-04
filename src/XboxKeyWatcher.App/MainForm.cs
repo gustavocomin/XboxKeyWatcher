@@ -69,6 +69,8 @@ internal sealed class MainForm : Form
     private long captureGeneration;
     private byte[]? lastPixels;
     private string? lastKey;
+    private readonly HashSet<string> copiedKeys = new(StringComparer.Ordinal);
+    private readonly HashSet<string> offeredWhileVisible = new(StringComparer.Ordinal);
     private PasteBridge? pasteBridge;
     private readonly SemaphoreSlim clipboardWriter = new(1, 1);
     private SemaphoreSlim recognition = new(1, 1);
@@ -101,9 +103,9 @@ internal sealed class MainForm : Form
         test.Click += async (_, _) => { try { await TestOcr(); } catch (Exception e) { status.Text = "Erro: " + e.Message; } };
         start.Click += async (_, _) => { try { await StartMonitoring(); } catch (Exception e) { StopMonitoring(); status.Text = "Erro no baseline: " + e.Message; } };
         stop.Click += (_, _) => StopMonitoring();
-        recopy.Click += async (_, _) => { if (lastKey is null) { status.Text = "Nenhuma key detectada."; return; } var ok = await CopyKey(lastKey, generation, true); status.Text = ok ? "Key copiada." : "Não foi possível acessar o clipboard."; };
+        recopy.Click += async (_, _) => await CopyLastKey();
         testClipboard.Click += async (_, _) => { var ok = await CopyKey("XBOXKEYWATCHER-TESTE", generation, true); status.Text = ok ? "Teste do clipboard aprovado." : "Clipboard indisponível."; };
-        clear.Click += (_, _) => { StopMonitoring(); gate.ClearHistory(); status.Text = "Histórico limpo. Inicie novamente para estabelecer baseline."; };
+        clear.Click += (_, _) => { StopMonitoring(); lock (sync) { gate.ClearHistory(); copiedKeys.Clear(); } status.Text = "Histórico limpo. Inicie novamente para estabelecer baseline."; };
         settings.Click += (_, _) => EditHotkeys();
         paste.Click += (_, _) => ConfigurePasteBridge();
         bar.Controls.Add(select); bar.Controls.Add(test); bar.Controls.Add(start); bar.Controls.Add(stop); bar.Controls.Add(recopy); bar.Controls.Add(testClipboard); bar.Controls.Add(clear); bar.Controls.Add(settings); bar.Controls.Add(paste);
@@ -130,22 +132,20 @@ internal sealed class MainForm : Form
         try
         {
             lock (sync)
-                pasteBridge ??= new PasteBridge(
-                    key => NativeClipboard.TryGetText(clipboardOwner, out var value) && value == key,
-                    (key, elapsed) => LogDetection("pasted", key, elapsed, true, null));
-            using var dialog = new Form { Text = "Colagem assistida — pareamento", ClientSize = new Size(600, 105), StartPosition = FormStartPosition.CenterParent };
-            var info = new Label { Dock = DockStyle.Top, Height = 34, Text = "Cole este código na extensão. Autorize a aba e clique no campo de resgate." };
-            var token = new TextBox { Dock = DockStyle.Top, ReadOnly = true, Text = pasteBridge.Token };
-            var disable = new Button { Text = "Desativar colagem", Dock = DockStyle.Bottom, Height = 32 };
-            disable.Click += (_, _) =>
             {
-                lock (sync) { pasteBridge?.Dispose(); pasteBridge = null; }
-                dialog.Close();
-            };
-            dialog.Controls.Add(token);
-            dialog.Controls.Add(info);
-            dialog.Controls.Add(disable);
-            dialog.ShowDialog(this);
+                if (pasteBridge is not null)
+                {
+                    pasteBridge.Dispose();
+                    pasteBridge = null;
+                    status.Text = "Colagem assistida desativada.";
+                    return;
+                }
+                pasteBridge = new PasteBridge(
+                    key => NativeClipboard.TryGetText(clipboardOwner, out var value) && value == key,
+                    (key, elapsed) => LogDetection("pasted", key, elapsed, true, null),
+                    native: true, http: false);
+            }
+            status.Text = "Ponte nativa ativa. Ative o preenchimento na extensão do Chrome.";
         }
         catch (Exception error) { status.Text = "Colagem assistida indisponível: " + error.Message; }
     }
@@ -186,7 +186,7 @@ internal sealed class MainForm : Form
             {
                 case 0: if (monitoring) StopMonitoring(); else await StartMonitoring(); break;
                 case 1: await ForceOcr(); break;
-                case 2: if (lastKey is not null) status.Text = await CopyKey(lastKey, generation, true) ? "Key copiada." : "Clipboard indisponível."; break;
+                case 2: await CopyLastKey(); break;
                 case 3: Show(); WindowState = FormWindowState.Normal; Activate(); break;
             }
         }
@@ -268,6 +268,7 @@ internal sealed class MainForm : Form
             data = pixels; width = frameWidth; height = frameHeight; area = selection;
             generation = gate.BeginBaseline(); current = generation; baselining = true; monitoring = true; lastPixels = null;
             pasteBridge?.Clear();
+            offeredWhileVisible.Clear();
         }
         status.Text = "Preparando baseline.";
         using var crop = FrameProcessor.Crop(data, width, height, area);
@@ -415,7 +416,7 @@ internal sealed class MainForm : Form
     }
 
     private async Task ProcessPixels(byte[] data, int width, int height, Rectangle area, long current,
-        long? frameStart = null, double? frameReadMs = null)
+        long? frameStart = null, double? frameReadMs = null, bool retry = false)
     {
         var currentRecognition = recognition;
         await currentRecognition.WaitAsync().ConfigureAwait(false);
@@ -425,30 +426,52 @@ internal sealed class MainForm : Form
         if (area.IsEmpty || area.Right > width || area.Bottom > height) return;
         long cropStart = System.Diagnostics.Stopwatch.GetTimestamp();
         var cropped = FrameProcessor.CropPixels(data, width, height, area);
-        lock (sync) { if (lastPixels is not null && !FrameChange.IsSignificant(lastPixels, cropped, area.Width, area.Height)) return; lastPixels = cropped; }
+        lock (sync) { if (!retry && lastPixels is not null && !FrameChange.IsSignificant(lastPixels, cropped, area.Width, area.Height)) return; lastPixels = cropped; }
         using var crop = FrameProcessor.CreateBitmap(cropped, area.Width, area.Height);
         var watch = System.Diagnostics.Stopwatch.StartNew();
         double cropMs = System.Diagnostics.Stopwatch.GetElapsedTime(cropStart).TotalMilliseconds;
         var ocrTimings = new FrameProcessor.OcrTimings();
-        var read = await processor!.RecognizeSafeWithFallback(crop, cropped, searchIfEmpty: true, timings: ocrTimings);
+        var read = await processor!.RecognizeSafeWithFallback(crop, cropped, completeScan: retry, searchIfEmpty: true, timings: ocrTimings);
         double recognitionMs = watch.Elapsed.TotalMilliseconds;
         var stages = new DetectionStages(cropMs, ocrTimings.WindowsMs, ocrTimings.RapidMs, ocrTimings.TesseractMs,
             ocrTimings.EnhancedLineMs, Math.Max(0, recognitionMs - ocrTimings.WindowsMs - ocrTimings.RapidMs
                 - ocrTimings.TesseractMs - ocrTimings.EnhancedLineMs), null, frameReadMs, null);
         var keys = read.Safe;
+        bool uncertain = read.Rejected.Length > 0 || read.MalformedCandidate;
         if (read.Rejected.Length > 0 || read.MalformedCandidate) Post(() => status.Text = RapidOcrWorker.Instance.LastError is { } error ? "RapidOCR indisponível; key não copiada: " + error : "Possível key cortada, incompleta ou sem confirmação: não copiada.");
         lock (sync)
         {
             if (!monitoring || current != generation) return;
+            if (!uncertain)
+            {
+                offeredWhileVisible.RemoveWhere(key => !keys.Contains(key));
+                pasteBridge?.ClearIfAbsent(keys);
+            }
         }
         var duplicates = new List<string>();
         bool attempted = false;
         foreach (var key in keys)
         {
+            bool isNew;
             lock (sync)
             {
                 if (!monitoring || current != generation) return;
-                if (!gate.TryAccept(current, key)) { duplicates.Add(key); continue; }
+                isNew = gate.TryAccept(current, key);
+                if (!isNew)
+                {
+                    if (offeredWhileVisible.Contains(key)) { duplicates.Add(key); continue; }
+                    if (NativeClipboard.TryGetText(clipboardOwner, out var clipboard) && clipboard == key)
+                    {
+                        if (pasteBridge?.Offer(key) == true)
+                        {
+                            offeredWhileVisible.Add(key);
+                            LogDetection("reoffered", key, recognitionMs, true, stages);
+                        }
+                        duplicates.Add(key);
+                        continue;
+                    }
+                    if (!copiedKeys.Contains(key)) { duplicates.Add(key); continue; }
+                }
             }
             attempted = true;
             double clipboardStart = watch.Elapsed.TotalMilliseconds;
@@ -457,9 +480,13 @@ internal sealed class MainForm : Form
             if (copied)
             {
                 lock (sync)
-                    if (monitoring && generation == current) pasteBridge?.Offer(key);
+                    if (monitoring && generation == current)
+                    {
+                        copiedKeys.Add(key);
+                        if (pasteBridge?.Offer(key) == true) offeredWhileVisible.Add(key);
+                    }
             }
-            if (!copied) { gate.ReleaseAfterFailure(current, key); lock (sync) { lastPixels = null; } }
+            if (!copied) { if (isNew) gate.ReleaseAfterFailure(current, key); lock (sync) { lastPixels = null; } }
 #if INTEGRATION_TEST
             if (copied) CopiedForIntegrationTest?.Invoke(key);
 #endif
@@ -478,8 +505,12 @@ internal sealed class MainForm : Form
                 details.Text = $"Última detecção: {key} às {DateTime.Now:HH:mm:ss} — {elapsedMs:F0} ms — cópias: {copiedCount} — clipboard: {(copied ? "confirmado" : "falhou")}";
             });
         }
-        if (read.Rejected.Length > 0 || read.MalformedCandidate)
+        if (uncertain)
+        {
             LogDetection("rejected", null, recognitionMs, null, stages);
+            if (!retry && keys.Length == 0)
+                _ = RetryStableFrame(cropped, width, height, area, current, frameStart, frameReadMs);
+        }
         foreach (string duplicate in duplicates)
             LogDetection("duplicate", duplicate, recognitionMs, null, stages);
         if (duplicates.Count > 0 && !attempted)
@@ -491,10 +522,46 @@ internal sealed class MainForm : Form
         finally { currentRecognition.Release(); }
     }
 
+    private async Task RetryStableFrame(byte[] rejectedCrop, int width, int height, Rectangle area, long current,
+        long? frameStart, double? frameReadMs)
+    {
+        await Task.Delay(250).ConfigureAwait(false);
+        byte[]? data;
+        lock (sync)
+        {
+            if (generation != current || !ReferenceEquals(lastPixels, rejectedCrop)) return;
+            data = pixels;
+        }
+        try
+        {
+            if (data is not null) await ProcessPixels(data, width, height, area, current, frameStart, frameReadMs, retry: true);
+        }
+        catch (Exception error) { Post(() => status.Text = "Falha na segunda leitura: " + error.Message); }
+    }
+
     private void StopMonitoring()
     {
         lock (sync) { monitoring = false; generation = gate.BeginBaseline(); pasteBridge?.Clear(); }
         status.Text = "Parado.";
+    }
+
+    private async Task CopyLastKey()
+    {
+        string? key = lastKey;
+        if (key is null) { status.Text = "Nenhuma key detectada."; return; }
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        bool copied = await CopyKey(key, generation, true);
+        bool offered = false;
+        if (copied)
+        {
+            lock (sync)
+            {
+                if (pasteBridge is not null) { pasteBridge.Offer(key); offered = true; }
+            }
+        }
+        LogDetection(copied ? "manual_copy" : "clipboard_failed", key, watch.Elapsed.TotalMilliseconds, copied, null);
+        status.Text = offered ? "Key copiada e disponível para a extensão por 30 s."
+            : copied ? "Key copiada." : "Não foi possível acessar o clipboard.";
     }
 
     private Task<bool> CopyKey(string key, long current, bool manual = false)
@@ -531,6 +598,8 @@ internal sealed class MainForm : Form
         using var bitmap = FrameProcessor.Crop(data, width, height, region);
         var watch = System.Diagnostics.Stopwatch.StartNew();
         var read = await (processor ?? throw new InvalidOperationException("Selecione uma janela.")).RecognizeSafeWithFallback(bitmap, searchIfEmpty: true);
+        if (read.Safe.Length == 1 && read.Rejected.Length == 0 && !read.MalformedCandidate)
+            lastKey = read.Safe[0];
         status.Text = $"OCR em {watch.Elapsed.TotalMilliseconds:F0} ms: {string.Join(", ", read.Safe)}" + (read.Rejected.Length > 0 || read.MalformedCandidate ? " — possível key rejeitada por corte, incompletude ou localização incerta." : "");
     }
 

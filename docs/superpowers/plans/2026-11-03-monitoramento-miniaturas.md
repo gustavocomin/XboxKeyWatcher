@@ -40,6 +40,8 @@
 
 ## 6. Reduzir latência e testar colagem assistida
 
+O usuário informou que a página real envia o resgate ao receber o valor. Portanto, a colagem na página real tem o mesmo efeito de submissão e fica fora do escopo manual. A extensão foi restringida à página fictícia servida em loopback. O teste com a extensão e a ponte reais, em perfil temporário do Edge, confirmou que a key espera enquanto outra aba ou campo tem foco, não é preenchida com clipboard divergente, entra inteira ao voltar ao campo e é confirmada à ponte. A página local não contém formulário de envio.
+
 O protótipo `CaptureBenchmark --paste-prototype` validou a inserção exata a partir do clipboard em um campo WinForms fictício, com opção desativada, outro campo, outra janela e clipboard alterado como casos de bloqueio. O preenchimento local levou 6,76 ms. A primeira execução sem foco não pôde validar o caso positivo. A execução com foco passou. Isso valida a decisão no formulário fictício. A identificação da aba e do campo no navegador ainda está pendente.
 
 O protótipo `node benchmarks/browser-paste-prototype.mjs` passou em Edge e Chrome com perfis temporários e um formulário local. Verificou opção desativada, aba inativa, URL diferente, outro campo, clipboard simulado alterado e campo já preenchido. No caso positivo, inseriu o valor exato e registrou zero submissões. O navegador ainda não recebe eventos do monitor. A próxima integração precisa vincular o evento de cópia a uma única aba autorizada e verificar página, foco e campo no próprio navegador.
@@ -55,6 +57,8 @@ Na nova rolagem do canal, o log registrou 394,22 ms do frame entregue ao clipboa
 - [ ] Validar a colagem no campo de resgate após os testes fictícios. A confirmação do resgate permanece manual nesta etapa.
 
 **Decisão futura sobre Enter.** Enviar Enter pode submeter o formulário e iniciar um resgate. A ideia fica registrada para avaliação separada. Antes de considerá-la, demonstrar que o valor completo foi colado no campo correto e que o foco e a página continuam válidos. Qualquer teste de envio deve começar em um formulário fictício. A implementação e o uso em página real dependem de uma mudança explícita do escopo atual, que mantém o resgate manual.
+
+O usuário autorizou uma tentativa real com uma key já resgatada. A extensão oferece um modo de teste único na URL limpa `https://www.xbox.com/pt-BR/redeem`, com autorização explícita e comparação com a key informada no pareamento. Ele para depois da primeira inserção e não envia Enter. A key fornecida no endereço divergia da leitura da imagem, então a tentativa depende de identificar qual delas foi resgatada. Nenhum código real foi incluído no plano ou no código.
 
 ### Evidências parciais de 2026-11-03
 
@@ -102,3 +106,16 @@ Na nova rolagem do canal, o log registrou 394,22 ms do frame entregue ao clipboa
 - O usuário limitou a investigação de GPT a uma imagem e uma chamada. O benchmark preparado seleciona uma única imagem fictícia e um único modelo por execução. A variável de API presente ainda não tinha formato válido; não há medição bem-sucedida de API nem integração ao aplicativo.
 - Tentativa posterior com uma única imagem fictícia: a API retornou HTTP 401 `invalid_api_key`, sem resultado de leitura. Nenhuma imagem real foi enviada e não há medida válida de latência ou precisão para o GPT.
 - Reexecução das referências C, C++ e Python com janelas sintéticas separadas, PrintWindow e Tesseract: cada caminho acertou 30/30 repetições de uma mesma key fictícia; média/p95 em ms foram C 66,56/69,29, C++ 67,11/71,68 e Python 66,86/72,09. Não incluem clipboard e não executam o mesmo fluxo WGC + múltiplos motores; não permitem atribuir diferenças apenas à linguagem nem comparar diretamente com a aplicação.
+
+
+### Native Messaging
+
+- [x] Publicar o host e registrar o ID da extensão no Windows. A comunicação com o aplicativo usa named pipe restrito ao usuário atual.
+- [x] Remover o código de pareamento na aba do Xbox e permitir que o WhatsApp fique em foco. A ponte confere o clipboard do Windows antes de entregar a key.
+- [x] Validar o transporte em perfil temporário do Edge com key fictícia. A extensão preencheu e confirmou o valor exato e bloqueou outra aba, outro campo e clipboard divergente. O teste de autorização única e URL exata também passou.
+- [x] Validar preenchimento e latência no site real no Chrome. O último teste confirmado às 23:45:11 levou cerca de 419 ms do quadro capturado à confirmação do preenchimento.
+
+- [x] Inspecionar o campo real no Chrome. O formulário está no iframe da Microsoft e expõe `input[name="tokenString"]` com maxlength 29. A extensão agora roda nesse iframe e o teste do worker confirmou duas entregas na mesma ativação.
+
+- [x] Confirmar a primeira entrega no Chrome real. Às 23:06:47, o aplicativo confirmou o clipboard e registrou preenchimento 113,71 ms após ofertar a chave. O usuário confirmou que a chave apareceu no campo.
+- [x] Confirmar reenvios da mesma chave no Chrome real. O log registrou preenchimentos após reofertas às 23:19:57 e 23:21:55. A versão posterior passou a limitar o envio automático a uma vez por aparição.

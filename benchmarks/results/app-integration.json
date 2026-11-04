@@ -9,13 +9,13 @@
     },
     {
       "step": "new_key",
-      "latency_ms": 187.7647,
+      "latency_ms": 158.4288,
       "destination_verified": true,
       "simulated": false
     },
     {
       "step": "new_key",
-      "latency_ms": 172.0173,
+      "latency_ms": 188.3918,
       "destination_verified": true,
       "simulated": false
     },
@@ -23,6 +23,16 @@
       "step": "old_key_reappears",
       "clipboard_unchanged": true,
       "duplicate_displayed": true
+    },
+    {
+      "step": "new_key",
+      "latency_ms": 145.5938,
+      "destination_verified": true,
+      "simulated": false
+    },
+    {
+      "step": "previously_copied_key_reappears",
+      "image_clipboard_replaced": true
     }
   ],
   "clipboard_restoration": "restored",

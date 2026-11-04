@@ -1,51 +1,104 @@
-(async () => {
-  globalThis.xkwStopPaste?.();
-  const { id } = await chrome.runtime.sendMessage({ action: 'init' });
-  if (!id) return;
-  const page = location.href;
-  let stopped = false, timer, target, lastFilled;
-  function stop() {
-    stopped = true;
-    clearTimeout(timer);
-    document.removeEventListener('click', chooseField, true);
-  }
-  globalThis.xkwStopPaste = stop;
+(() => {
+  const fixture = location.href === 'http://127.0.0.1:47183/fixture';
+  const redeemFrame = window !== window.top &&
+    /^https:\/\/(www\.)?microsoft\.com\/store\/purchase\/buynowui\/redeemnow(?:[?#]|$)/.test(location.href);
 
-  function chooseField(event) {
-    const field = event.target;
-    if (!event.isTrusted || !(field instanceof HTMLInputElement) ||
-        !['text', 'search'].includes(field.type) || field.readOnly || field.disabled ||
-        field.value !== '' || field.autocomplete === 'current-password' ||
-        field.autocomplete === 'new-password') return;
-    target = field;
-    document.removeEventListener('click', chooseField, true);
-    void poll();
-  }
-  document.addEventListener('click', chooseField, true);
+  async function startPaste() {
+    const { id } = await chrome.runtime.sendMessage({ action: 'init' });
+    if (!id) return;
+    globalThis.xkwStopPaste?.();
+    const real = redeemFrame;
+    const page = location.href;
+    let stopped = false, timer, target, lastFilled, lastStatus;
+    function report(text) {
+      if (text === lastStatus) return;
+      lastStatus = text;
+      void chrome.runtime.sendMessage({ action: 'status', id, text }).catch(() => {});
+    }
+    function stop() {
+      stopped = true;
+      clearTimeout(timer);
+      document.removeEventListener('click', chooseField, true);
+    }
+    globalThis.xkwStopPaste = stop;
 
-  function ready() {
-    return !stopped && location.href === page && document.visibilityState === 'visible' &&
-      document.hasFocus() && document.activeElement === target && target.isConnected &&
-      !target.disabled && !target.readOnly && target.value === '';
-  }
+    function chooseField(event) {
+      const field = event.target;
+      if (!event.isTrusted || (!real && field !== document.querySelector('#redeem')) || !(field instanceof HTMLInputElement) ||
+          !['text', 'search'].includes(field.type) || field.readOnly || field.disabled ||
+          field.value !== '' || field.autocomplete === 'current-password' ||
+          field.autocomplete === 'new-password') return;
+      target = field;
+      document.removeEventListener('click', chooseField, true);
+      void poll();
+    }
+    if (real) {
+      report('Formulário da Microsoft conectado.');
+      void poll();
+    }
+    else document.addEventListener('click', chooseField, true);
 
-  async function poll() {
-    try {
-      if (location.href !== page || !target.isConnected) { stop(); return; }
-      if (!ready()) return;
-      const response = await chrome.runtime.sendMessage({ action: 'pending', id });
-      if (response.disarmed) { stop(); return; }
-      const offer = response.offer;
-      if (!offer || offer.Id === lastFilled || !/^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){4}$/.test(offer.Key)) return;
-      if (!ready() || Date.parse(offer.Expires) <= Date.now()) return;
-      if (await navigator.clipboard.readText() !== offer.Key || !ready() || Date.parse(offer.Expires) <= Date.now()) return;
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(target, offer.Key);
-      target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste', data: offer.Key }));
-      if (target.value === offer.Key) {
+    function findRedeemField() {
+      const matches = document.querySelectorAll('input[name="tokenString"][type="text"][maxlength="29"]');
+      return matches.length === 1 ? matches[0] : null;
+    }
+
+    function ready() {
+      return !stopped && location.href === page && document.visibilityState === 'visible' &&
+        (real || document.hasFocus()) && target?.isConnected &&
+        (real ? findRedeemField() === target && target.getClientRects().length > 0 &&
+          getComputedStyle(target).visibility === 'visible' &&
+          (document.activeElement === target ||
+            !document.activeElement?.closest('input, textarea, select, [contenteditable], iframe'))
+          : document.activeElement === target) &&
+        !target.disabled && !target.readOnly && target.value === '';
+    }
+
+    async function poll() {
+      try {
+        if (location.href !== page || (!real && !target?.isConnected)) { stop(); return; }
+        if (real) target = findRedeemField();
+        if (real && !target) { report('Campo de resgate ausente ou ambíguo nesta página.'); return; }
+        if (!ready()) { report('Aguardando a aba ativa e o campo de resgate vazio e disponível.'); return; }
+        const response = await chrome.runtime.sendMessage({ action: 'pending', id });
+        if (response.disarmed) { stop(); return; }
+        const offer = response.offer;
+        if (!offer && response.reason) report(response.reason);
+        if (!offer || offer.Id === lastFilled || !/^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){4}$/.test(offer.Key)) return;
+        if (!ready() || Date.parse(offer.Expires) <= Date.now()) return;
+        if (!real) {
+          let clipboard;
+          try { clipboard = await navigator.clipboard.readText(); }
+          catch { report('O Chrome não permitiu conferir o clipboard nesta página.'); return; }
+          if (clipboard !== offer.Key) { report('O clipboard mudou antes do preenchimento.'); return; }
+        }
+        if (!ready() || Date.parse(offer.Expires) <= Date.now()) return;
+
         lastFilled = offer.Id;
-        await chrome.runtime.sendMessage({ action: 'ack', id, offerId: offer.Id });
-      }
-    } catch { /* The clipboard remains available if the browser cannot confirm the destination. */ }
-    finally { if (!stopped) timer = setTimeout(poll, 125); }
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(target, offer.Key);
+        target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste', data: offer.Key }));
+        const filled = target.value === offer.Key;
+        report(filled ? 'Preenchimento confirmado.' : 'A página não manteve o valor preenchido.');
+        if (filled) {
+          await chrome.runtime.sendMessage({ action: 'ack', id, offerId: offer.Id, filled });
+        }
+      } catch { report('Falha ao consultar a ponte local ou verificar o campo.'); }
+      finally { if (!stopped) timer = setTimeout(poll, 125); }
+    }
+    return true;
   }
-})().catch(() => {});
+
+  if (fixture || redeemFrame) void startPaste().catch(() => {});
+  if (redeemFrame) {
+    chrome.runtime.onMessage.addListener((message, sender, reply) => {
+      if (message.action === 'activate') {
+        startPaste().then(active => reply({ active: Boolean(active) }), () => reply({ active: false }));
+        return true;
+      }
+      if (message.action === 'deactivate') {
+        globalThis.xkwStopPaste?.();
+        reply({ active: false });
+      }
+    });
+  }
+})();

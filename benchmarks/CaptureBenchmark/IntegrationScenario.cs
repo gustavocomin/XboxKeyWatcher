@@ -46,6 +46,9 @@ internal sealed class IntegrationScenario : Form
         else e.Graphics.DrawString(text, font, Brushes.White, 70, 65);
     }
 
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern uint GetClipboardSequenceNumber();
+
     private async Task Run()
     {
         try
@@ -93,6 +96,24 @@ internal sealed class IntegrationScenario : Form
             if (!watcher.StatusForIntegrationTest.Contains(Old, StringComparison.Ordinal))
                 throw new InvalidOperationException("Recognized duplicate key was not displayed");
             events.Add(new { step = "old_key_reappears", clipboard_unchanged = true, duplicate_displayed = true });
+            if (!simulated)
+            {
+                using var clipboardImage = new Bitmap(2, 2);
+                Clipboard.SetImage(clipboardImage);
+                uint imageSequence = GetClipboardSequenceNumber();
+                try
+                {
+                    if (NativeClipboard.TryGetText(Handle, out _))
+                        throw new InvalidOperationException("Expected an image-only clipboard");
+                    await PublishAndCheck(Second);
+                    events.Add(new { step = "previously_copied_key_reappears", image_clipboard_replaced = true });
+                }
+                finally
+                {
+                    if (GetClipboardSequenceNumber() == imageSequence)
+                        NativeClipboard.TrySetAndVerify(Handle, Sentinel);
+                }
+            }
             Finish(null);
         }
         catch (Exception e) { Finish(e.GetType().Name + ": " + e.Message); }

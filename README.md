@@ -16,11 +16,12 @@ Os atalhos padrão são Ctrl+Alt+Shift+F9 (iniciar/parar), F10 (forçar OCR), F1
 
 ### Colagem assistida experimental
 
-A versão atual inclui uma ponte local opcional para Chrome ou Edge. No navegador, abra a página de extensões, ative o modo do desenvolvedor e carregue a pasta `browser-extension` como extensão sem compactação. No XboxKeyWatcher, clique em **Colagem assistida** para abrir o pareamento. Copie o código, abra o pop-up da extensão na aba HTTPS que deseja autorizar, cole o código e clique em **Autorizar esta aba**. Em seguida, clique no campo vazio que receberá a key.
+A extensão usa Native Messaging. Carregue a pasta `browser-extension` como extensão sem compactação em `chrome://extensions`. Se já estiver instalada, clique em **Recarregar** e aceite a permissão, se o Chrome pedir. Em uma instalação nova, copie o ID mostrado nessa página e execute `scripts/register-native-host.ps1 -ExtensionId ID_DA_EXTENSAO` no PowerShell. Para Edge, use também `-Browser Edge`.
 
-Uma nova cópia confirmada pelo monitor fica disponível por até 30 segundos. A extensão preenche apenas a aba autorizada, com o campo escolhido em foco e vazio, depois de verificar que o clipboard ainda contém a mesma key. Se você rolar no WhatsApp, volte ao campo dentro desse prazo. O envio do formulário é manual. **Parar** limpa a key pendente e **Desativar colagem** encerra a ponte. Uma reinicialização do aplicativo requer novo pareamento.
+Abra o XboxKeyWatcher, clique em **Colagem assistida** e inicie o monitoramento. Deixe `https://www.xbox.com/pt-BR/redeem` como a aba selecionada na janela do navegador, com o campo vazio. Na extensão, clique em **Ativar preenchimento**. A extensão permanece ativa nessa aba até você desativar. Após recarregar a extensão, atualize também a página do Xbox para conectar o formulário da Microsoft. Você pode voltar ao WhatsApp e manter a janela do navegador aberta. Inserir a key pode iniciar o resgate automaticamente. A oferta expira em 30 segundos. **Parar** limpa a oferta e um novo clique em **Colagem assistida** desativa a ponte.
 
-O teste `dotnet run --project benchmarks/CaptureBenchmark -c Release -- --paste-bridge-test` exercita a ponte local. O teste `node benchmarks/browser-paste-prototype.mjs` verifica o preenchimento de um formulário fictício no navegador. O pareamento da extensão com uma aba real ainda requer validação interativa.
+
+O teste `dotnet run --project benchmarks/CaptureBenchmark -c Release -- --paste-bridge-test` exercita a ponte local. O teste `node benchmarks/browser-redeem-test.mjs` verifica o envio repetido ao formulário autorizado.
 
 Com .NET SDK 8+ e Python 3.13, abra PowerShell neste diretório:
 
