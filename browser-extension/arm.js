@@ -10,6 +10,7 @@
     const real = redeemFrame;
     const page = location.href;
     let stopped = false, polling = false, timer, target, lastFilled, lastStatus;
+    let lastUnavailableAt;
     function wakeWhenReady() {
       if (polling || stopped) return;
       if (real) target = findRedeemField();
@@ -75,8 +76,16 @@
         if (location.href !== page || (!real && !target?.isConnected)) { stop(); return; }
         if (real) target = findRedeemField();
         if (real && !target) { report('Campo de resgate ausente ou ambíguo nesta página.'); return; }
-        if (!ready()) { report('Aguardando a aba ativa e o campo de resgate vazio e disponível.'); return; }
+        if (!ready()) {
+          lastUnavailableAt = performance.now();
+          report('Aguardando a aba ativa e o campo de resgate vazio e disponível.');
+          return;
+        }
+        const requestedAt = performance.now();
+        const sinceLastUnavailableMs = lastUnavailableAt === undefined ? null : requestedAt - lastUnavailableAt;
+        lastUnavailableAt = undefined;
         const response = await chrome.runtime.sendMessage({ action: 'pending', id });
+        const receivedAt = performance.now();
         if (response.disarmed) { stop(); return; }
         const offer = response.offer;
         if (!offer && response.waited) delay = 0;
@@ -91,13 +100,21 @@
         }
         if (!ready() || Date.parse(offer.Expires) <= Date.now()) return;
 
+        const applyAt = performance.now();
         lastFilled = offer.Id;
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(target, offer.Key);
         target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste', data: offer.Key }));
         const filled = target.value === offer.Key;
+        const appliedAt = performance.now();
         report(filled ? 'Preenchimento confirmado.' : 'A página não manteve o valor preenchido.');
         if (filled) {
-          await chrome.runtime.sendMessage({ action: 'ack', id, offerId: offer.Id, filled });
+          await chrome.runtime.sendMessage({ action: 'ack', id, offerId: offer.Id, filled, timing: {
+            SinceLastUnavailableMs: sinceLastUnavailableMs,
+            QueryMs: receivedAt - requestedAt,
+            NativeQueryMs: response.nativeQueryMs ?? null,
+            ValidateMs: applyAt - receivedAt,
+            ApplyMs: appliedAt - applyAt
+          } });
         }
       } catch { report('Falha ao consultar a ponte local ou verificar o campo.'); }
       finally {

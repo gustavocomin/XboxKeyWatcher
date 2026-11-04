@@ -75,7 +75,7 @@ async function handle(message, sender) {
 
   if (message.action === 'ack') {
     if (message.filled === true && /^[a-f0-9]{32}$/.test(message.offerId)) {
-      await sendNative({ action: 'ack', id: message.offerId });
+      await sendNative({ action: 'ack', id: message.offerId, timing: message.timing });
     }
     return {};
   }
@@ -83,7 +83,9 @@ async function handle(message, sender) {
   if (!tab.active || tab.url !== pairing.url || (!real && !(await chrome.windows.get(tab.windowId)).focused))
     return { retry: true, reason: 'A aba autorizada precisa estar ativa na sua janela.' };
   try {
+    const started = performance.now();
     const response = await sendNative({ action: 'pending', wait: true });
+    const nativeQueryMs = performance.now() - started;
     if (response.offline) return { retry: true, reason: 'Ative Colagem assistida no XboxKeyWatcher.' };
     if (response.offer && response.waited) {
       const current = await chrome.tabs.get(pairing.tabId);
@@ -92,7 +94,7 @@ async function handle(message, sender) {
       if (!current.active || current.url !== pairing.url || (!real && !(await chrome.windows.get(current.windowId)).focused))
         return { retry: true, reason: 'A aba autorizada precisa estar ativa na sua janela.' };
     }
-    return response.offer ? { offer: response.offer }
+    return response.offer ? { offer: response.offer, nativeQueryMs }
       : { retry: true, waited: response.waited, reason: 'Ponte nativa conectada. Aguardando uma key confirmada no clipboard.' };
   } catch {
     return { retry: true, reason: 'Host nativo indisponível. Confira a instalação e recarregue a extensão.' };

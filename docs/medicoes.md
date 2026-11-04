@@ -1,5 +1,42 @@
 # Medições experimentais — 2 e 3 de novembro de 2026
 
+## Captura até preenchimento local
+
+Compile com `dotnet build benchmarks/CaptureBenchmark -c Release` e execute `node benchmarks/browser-extension-test.mjs --end-to-end` com a sessão gráfica desbloqueada. O Edge precisa ter o host nativo registrado para a extensão. Feche outra instância com colagem assistida ativa antes do ensaio. O teste alterna duas chaves fictícias, usa a captura e o OCR do aplicativo, confirma o clipboard do Windows e verifica o valor preenchido em um formulário local do Edge headless. O clipboard isolado do Edge recebe o valor esperado antes de cada rodada. O teste restaura o clipboard do Windows quando ele ainda contém um dos valores da bancada.
+
+A série de 20 rodadas teve 20 preenchimentos exatos, média de 93,33 ms, p50 de 87,53 ms e p95 de 132,88 ms, do início do desenho à confirmação do preenchimento. A medição usa o mesmo relógio do aplicativo para os dois extremos. As chaves fictícias foram desenhadas em uma janela WinForms. A série não mede o WhatsApp nem o site do Xbox.
+
+O worker registra conversão BGRA, detecção, reconhecimento e o restante do processamento interno. A diferença para o tempo no C# inclui transferência, espera pelo worker e leitura da resposta. Nas 20 cópias da série, houve uma chamada ao RapidOCR por cópia. As medianas foram 0,14 ms de conversão, 19,80 ms de detecção, 25,92 ms de reconhecimento, 0,69 ms de outros passos internos e 0,57 ms no restante da ida e volta.
+
+Uma imagem anexada pelo usuário foi avaliada separadamente em memória, no tamanho original e reduzida para 475 e 330 pixels de largura. Foram dez repetições de cada tamanho, sem preenchimento. Nenhuma passou no critério completo de leitura segura. Uma sondagem isolada do RapidOCR retornou o código exato nos três tamanhos. A proteção de borda sinalizou o original e a versão de 330 pixels. Na versão de 475 pixels, as medianas do RapidOCR foram 24,31 ms de detecção, 29,19 ms de reconhecimento, 0,15 ms de conversão, 0,34 ms de outros passos internos e 0,63 ms no restante da ida e volta. A imagem e o código do exemplo ficaram fora do repositório.
+
+
+A investigação reproduziu o bloqueio de 475 pixels. O Windows OCR e o RapidOCR concordaram na chave, mas só a caixa do Windows OCR foi sinalizada pela proteção de borda. A correção permite uma releitura em alto contraste quando as caixas se sobrepõem, o RapidOCR indica margem livre e as duas leituras são idênticas. A miniatura passou de 0/10 para 10/10 em memória. O original e a versão de 330 pixels continuaram rejeitados. Em 116 imagens de controle, incluindo seis recortes laterais da mesma miniatura, as decisões permaneceram iguais e não houve aceitação incorreta.
+
+Na recuperação de uma leitura sinalizada junto à lateral, a faixa enviada ao RapidOCR agora usa uma margem proporcional à altura da linha. A região completa continua disponível como segunda tentativa. Na miniatura de 475 pixels, com 15 repetições por versão, a mediana do OCR caiu de 74,09 para 61,53 ms, o p95 de 142,35 para 131,71 ms e a mediana do RapidOCR de 55,05 para 42,72 ms. As 136 observações de controle tiveram as mesmas decisões e zero falsas aceitações. O p95 do conjunto independente passou de 231,38 para 254,66 ms nesta comparação. A variante que encolhia a faixa para todas as leituras rejeitadas chegou a 294,45 ms no mesmo conjunto e foi descartada. As medições são em memória.
+
+### Replay de rolagem com miniaturas comprimidas
+
+Execute `node benchmarks/browser-extension-test.mjs --scroll-replay` após compilar o benchmark. O cenário desenha uma miniatura JPEG fictícia que entra pela borda inferior da janela. Alterna quadros que ficam na tela e quadros que desaparecem após 120 ms. O relógio começa antes de desenhar a primeira posição com a linha inteira visível e termina na confirmação do campo local do Edge.
+
+Em 12 rodadas por configuração, todas preencheram as 12 chaves corretamente. A média foi de 152,87 ms na referência e 175,18 ms ao buscar primeiro nas linhas alteradas. A versão final, que pula a busca ampla apenas quando o OCR ainda não confirmou uma chave e já existe outro quadro na fila, chegou a 125,49 ms. O p95 amostral passou de 312,73 para 192,62 ms. A amostra tem só seis aparições breves por configuração e não substitui um teste no WhatsApp real.
+
+### Tempo após liberar o campo
+
+O teste `node benchmarks/browser-extension-test.mjs --field-ready` usa o Edge isolado e uma oferta fictícia disponível enquanto o campo está ocupado. Mede no próprio navegador desde limpar o campo e emitir o evento de entrada até a extensão preencher a chave. Em 24 amostras por versão, a mediana caiu de 64,75 para 2,40 ms e o p95 de 127,10 para 2,80 ms. O valor é específico desse cenário e não identifica a causa do atraso no Chrome real.
+
+### Log por oferta e por chamada de OCR
+
+`OfferId` liga a cópia ou reoferta ao preenchimento. `Delivery` separa a oferta até a ponte começar a responder da resposta até a confirmação. Em `Delivery.Browser`, `QueryMs` inclui o tempo em que a consulta ficou aguardando uma oferta, e `NativeQueryMs` é a parte da consulta que passou pelo host nativo. `ValidateMs` mede as verificações no navegador antes de preencher e `ApplyMs` mede a escrita do valor e o evento de entrada. `SinceLastUnavailableMs` indica o intervalo desde a última observação de campo indisponível, quando observado. Esses intervalos se sobrepõem e não devem ser somados.
+
+No OCR do Windows, `WindowsFirstPassMs`, `WindowsResizeMs` e `WindowsSecondPassMs` distinguem a leitura inicial, o preparo da imagem ampliada e a segunda leitura. `RapidPhases.Details` mostra cada chamada, com dimensões, fila, inicialização, escrita, espera e leitura da resposta, decodificação e tempos internos do worker. `TextRegions` conta quantos recortes foram enviados ao reconhecedor. A espera pela resposta contém a execução do worker e, por isso, se sobrepõe aos tempos internos.
+
+### Lotes do reconhecedor em quadros carregados
+
+O filtro geométrico em ensaio reduziu a mediana de 14 para 6,5 regiões reconhecidas e o tempo mediano de reconhecimento de 148,07 para 97,44 ms em 24 quadros carregados. Nenhuma versão aceitou as chaves desse conjunto, por isso esse ensaio não demonstrou que descartar regiões preserva a leitura nesse cenário. Num segundo conjunto carregado, as 12 imagens com chave foram lidas pelas duas versões e as seis sem chave ficaram sem aceitação.
+
+A versão adotada mantém todos os recortes e passa a usar lotes de duas linhas apenas quando há mais de seis regiões. O modelo ordena os recortes por proporção e preenche cada lote até a largura do maior. Lotes menores reduzem esse preenchimento. Nos 24 quadros carregados, a mediana do OCR total caiu de 354,04 para 312,56 ms e o p95 de 570,30 para 496,47 ms. As decisões coincidiram em 280 observações, incluindo miniaturas completas, cortes e quadros sem chave. No segundo conjunto carregado, o p95 caiu de 476,39 para 434,73 ms e a mediana subiu de 56,49 para 61,98 ms. São medidas em memória.
+
 ## Otimizações de latência
 
 ### Confirmação localizada no RapidOCR

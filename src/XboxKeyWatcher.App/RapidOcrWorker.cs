@@ -14,6 +14,32 @@ internal sealed class RapidOcrWorker
     public string? LastError { get; private set; }
     internal sealed record Reading(string Text, double Confidence, int Left, int Top, int Right, int Bottom);
 
+    internal sealed class Timings
+    {
+        public List<CallTiming> Details { get; } = [];
+        public int Calls => Details.Count;
+        public double ConversionMs { get; private set; }
+        public double DetectionMs { get; private set; }
+        public double RecognitionMs { get; private set; }
+        public double WorkerOtherMs { get; private set; }
+        public double RoundTripOtherMs { get; private set; }
+
+        public void Add(WorkerTimings sample, CallTiming detail)
+        {
+            Details.Add(detail);
+            ConversionMs += sample.ConversionMs;
+            DetectionMs += sample.DetectionMs;
+            RecognitionMs += sample.RecognitionMs;
+            WorkerOtherMs += Math.Max(0, sample.WorkerMs - sample.ConversionMs - sample.DetectionMs - sample.RecognitionMs);
+            RoundTripOtherMs += Math.Max(0, detail.TotalMs - sample.WorkerMs);
+        }
+    }
+
+    internal sealed record WorkerTimings(double ConversionMs, double DetectionMs, double RecognitionMs, double WorkerMs,
+        int? TextRegions);
+    internal sealed record CallTiming(int Width, int Height, double TotalMs, double QueueMs, double StartupMs,
+        double WriteMs, double WaitAndReadMs, double DecodeMs, WorkerTimings Worker);
+
     private RapidOcrWorker() => AppDomain.CurrentDomain.ProcessExit += (_, _) => Stop();
 
     public async Task<bool> WarmUp()
@@ -24,20 +50,25 @@ internal sealed class RapidOcrWorker
         finally { gate.Release(); }
     }
 
-    public async Task<Reading[]?> Recognize(byte[] bgra, int width, int height)
+    public async Task<Reading[]?> Recognize(byte[] bgra, int width, int height, Timings? timings = null)
     {
         if (width < 1 || height < 1 || bgra.Length != (long)width * height * 4 || bgra.Length > 100_000_000) throw new ArgumentException("Buffer RapidOCR inválido.");
+        long start = Stopwatch.GetTimestamp();
         await gate.WaitAsync().ConfigureAwait(false);
+        long dequeued = Stopwatch.GetTimestamp();
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             if (!await EnsureStarted(timeout.Token).ConfigureAwait(false)) return null;
+            long writeStart = Stopwatch.GetTimestamp();
             var input = process!.StandardInput.BaseStream;
             var header = new byte[12]; BinaryPrimitives.WriteInt32LittleEndian(header, width); BinaryPrimitives.WriteInt32LittleEndian(header.AsSpan(4), height); BinaryPrimitives.WriteInt32LittleEndian(header.AsSpan(8), bgra.Length);
             await input.WriteAsync(header, timeout.Token).ConfigureAwait(false);
             await input.WriteAsync(bgra, timeout.Token).ConfigureAwait(false);
             await input.FlushAsync(timeout.Token).ConfigureAwait(false);
+            long readStart = Stopwatch.GetTimestamp();
             using var response = await ReadResponse(process.StandardOutput.BaseStream, timeout.Token).ConfigureAwait(false);
+            long decodeStart = Stopwatch.GetTimestamp();
             if (!response.RootElement.TryGetProperty("readings", out var values) || values.ValueKind != JsonValueKind.Array) throw new InvalidDataException("Resposta RapidOCR inválida.");
             var result = new List<Reading>();
             foreach (var item in values.EnumerateArray())
@@ -46,6 +77,15 @@ internal sealed class RapidOcrWorker
                     var box = bounds.EnumerateArray().Select(value => value.GetInt32()).ToArray();
                     result.Add(new Reading(text.GetString() ?? "", score, box[0], box[1], box[2], box[3]));
                 }
+            if (timings is not null && response.RootElement.TryGetProperty("timings", out var phases) &&
+                phases.Deserialize<WorkerTimings>() is { } sample)
+            {
+                long end = Stopwatch.GetTimestamp();
+                static double Ms(long from, long to) => Stopwatch.GetElapsedTime(from, to).TotalMilliseconds;
+                timings.Add(sample, new(width, height, Ms(start, end), Ms(start, dequeued),
+                    Ms(dequeued, writeStart), Ms(writeStart, readStart), Ms(readStart, decodeStart),
+                    Ms(decodeStart, end), sample));
+            }
             LastError = null; return result.ToArray();
         }
         catch (Exception e) { LastError = e.Message; Stop(); return null; }

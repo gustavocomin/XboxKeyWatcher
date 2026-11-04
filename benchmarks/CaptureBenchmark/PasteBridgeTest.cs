@@ -9,7 +9,7 @@ internal static class PasteBridgeTest
     {
         const string key = "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R";
         bool measuring = false;
-        using var bridge = new PasteBridge(value => value == key, (_, elapsed) =>
+        using var bridge = new PasteBridge(value => value == key, (_, elapsed, _) =>
         {
             if (Volatile.Read(ref measuring)) Console.WriteLine(FormattableString.Invariant($"latency {elapsed:F3}"));
         }, native: true);

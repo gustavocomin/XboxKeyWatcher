@@ -20,21 +20,50 @@ internal sealed class IntegrationScenario : Form
     private readonly bool duringBaseline;
     private readonly bool soak;
     private readonly bool series;
+    private readonly bool browser;
+    private Bitmap? scrollThumbnail;
+    private Bitmap? backlogFrame;
+    private readonly bool smallReplay;
+    private Bitmap? smallThumbnail;
+    private Point smallLocation;
+    private int scrollY;
     private readonly HashSet<string> written = new(StringComparer.Ordinal) { Sentinel };
     private string simulatedClipboard = Sentinel;
     protected override bool ShowWithoutActivation => true;
 
-    public IntegrationScenario(bool baselineOnly, bool clipped, bool simulated, bool duringBaseline, bool soak, bool series)
+    public IntegrationScenario(bool baselineOnly, bool clipped, bool simulated, bool duringBaseline, bool soak, bool series, bool browser = false, bool scrollReplay = false, bool backlogReplay = false, bool smallReplay = false)
     {
         this.baselineOnly = baselineOnly; this.clipped = clipped; this.simulated = simulated; this.duringBaseline = duringBaseline; this.soak = soak; this.series = series;
+        this.browser = browser;
+        this.smallReplay = smallReplay;
         Text = "XboxKeyWatcher fixture — códigos fictícios";
-        ClientSize = new Size(1000, 220); BackColor = Color.Black; ShowInTaskbar = false;
+        ClientSize = new Size(1000, scrollReplay ? 460 : 220); BackColor = Color.Black; ShowInTaskbar = false;
+        if (backlogReplay || smallReplay)
+        {
+            FormBorderStyle = FormBorderStyle.None;
+            ClientSize = smallReplay ? SmallThumbnailFixture.ChannelSize : BacklogFixture.FrameSize;
+        }
         Shown += async (_, _) => await Run();
     }
 
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);
+        if (smallReplay)
+        {
+            SmallThumbnailFixture.PaintChannel(e.Graphics, smallThumbnail, smallLocation);
+            return;
+        }
+        if (backlogFrame is not null)
+        {
+            e.Graphics.DrawImageUnscaled(backlogFrame, 0, 0);
+            return;
+        }
+        if (scrollThumbnail is not null)
+        {
+            e.Graphics.DrawImageUnscaled(scrollThumbnail, 180, scrollY);
+            return;
+        }
         using var font = new Font("Arial", 32, FontStyle.Bold);
         if (clipped)
         {
@@ -53,6 +82,7 @@ internal sealed class IntegrationScenario : Form
     {
         try
         {
+            if (browser) { await RunBrowser(); return; }
             if (simulated)
                 watcher.ClipboardOverrideForIntegrationTest = (value, _, _) => { simulatedClipboard = value; return Task.FromResult(true); };
             if (!baselineOnly && !simulated)
@@ -117,6 +147,302 @@ internal sealed class IntegrationScenario : Form
             Finish(null);
         }
         catch (Exception e) { Finish(e.GetType().Name + ": " + e.Message); }
+    }
+
+    private async Task RunBrowser()
+    {
+        IDataObject? previous = Clipboard.GetDataObject();
+        bool touchedClipboard = false;
+        try
+        {
+            _ = watcher.Handle;
+            await watcher.AttachForIntegrationTest(CaptureInterop.ForWindow(Handle));
+            await watcher.StartForIntegrationTest();
+            if (!watcher.MonitoringForIntegrationTest) throw new InvalidOperationException("Baseline indisponível.");
+            TaskCompletionSource<(string Key, long At, double BridgeMs)>? confirmation = null;
+            Console.WriteLine(watcher.StartBrowserBridgeForIntegrationTest((filled, bridgeMs) =>
+            {
+                Volatile.Read(ref confirmation)?.TrySetResult((filled, Stopwatch.GetTimestamp(), bridgeMs));
+            }));
+            while (await Task.Run(Console.ReadLine) is string command)
+            {
+                string[] parts = command.Split(' ');
+                if (smallReplay && parts is [var smallMode, var smallNumber, var smallKey] &&
+                    smallMode is "small" or "small-clipped" or "small-empty" or "small-settled" or "small-brief" &&
+                    int.TryParse(smallNumber, out int smallIndex) && smallIndex is >= 0 and < 100 &&
+                    smallKey.StartsWith("FAKEX-", StringComparison.Ordinal) &&
+                    XboxKeyWatcher.Core.KeyParser.Extract(smallKey).SequenceEqual(new[] { smallKey }))
+                {
+                    touchedClipboard = true;
+                    await RunSmallSample(smallMode, smallIndex, smallKey, pasted => Volatile.Write(ref confirmation, pasted));
+                    continue;
+                }
+                if (parts is ["backlog", var number] && int.TryParse(number, out int index) && index is >= 0 and < 100)
+                {
+                    touchedClipboard = true;
+                    await RunBacklogSample(index, pasted => Volatile.Write(ref confirmation, pasted));
+                    continue;
+                }
+                if (parts.Length != 2 || parts[0] is not ("plain" or "settled" or "brief" or "arrival") ||
+                    parts[1] is not ("first" or "second")) continue;
+                string scenario = parts[0];
+                string key = parts[1] == "first" ? First : Second;
+                using var thumbnail = scenario == "plain" ? null : CreateScrollThumbnail(key);
+                scrollThumbnail = null;
+                text = string.Empty;
+                Invalidate(); Update();
+                await Task.Delay(850);
+                if (!NativeClipboard.TrySetAndVerify(Handle, Sentinel))
+                    throw new InvalidOperationException("Clipboard de teste indisponível.");
+                touchedClipboard = true;
+                var copied = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var pasted = new TaskCompletionSource<(string Key, long At, double BridgeMs)>(TaskCreationOptions.RunContinuationsAsynchronously);
+                Volatile.Write(ref confirmation, pasted);
+                watcher.CopiedForIntegrationTest = found =>
+                {
+                    if (found == key) copied.TrySetResult(Stopwatch.GetTimestamp());
+                };
+                if (thumbnail is not null && scenario != "arrival")
+                {
+                    scrollThumbnail = thumbnail;
+                    foreach (int y in new[] { 456, 440, 415, 385 })
+                    {
+                        scrollY = y;
+                        Invalidate(); Update();
+                        await Task.Delay(24);
+                    }
+                    scrollY = 345;
+                }
+                if (scenario == "arrival") { scrollY = 270; scrollThumbnail = thumbnail; }
+                long started = Stopwatch.GetTimestamp();
+                text = key;
+                Invalidate(); Update();
+                if (scenario == "brief")
+                {
+                    await Task.Delay(120);
+                    scrollThumbnail = null;
+                    text = string.Empty;
+                    Invalidate(); Update();
+                }
+                if (Environment.GetEnvironmentVariable("XKW_REPLAY_CLIPBOARD_ONLY") == "1")
+                {
+                    var copyOutcome = await Task.WhenAny(copied.Task, Task.Delay(3000));
+                    scrollThumbnail = null;
+                    text = string.Empty;
+                    Invalidate(); Update();
+                    double? ms = copyOutcome == copied.Task ? Stopwatch.GetElapsedTime(started, await copied.Task).TotalMilliseconds : null;
+                    Console.WriteLine(JsonSerializer.Serialize(new { sample = true, ok = ms.HasValue, copy_ms = ms, total_ms = ms }));
+                    continue;
+                }
+                var outcome = await Task.WhenAny(pasted.Task, Task.Delay(3000));
+                scrollThumbnail = null;
+                text = string.Empty;
+                Invalidate(); Update();
+                if (outcome != pasted.Task)
+                {
+                    Console.WriteLine(JsonSerializer.Serialize(new { sample = true, ok = false, copied = copied.Task.IsCompletedSuccessfully }));
+                    continue;
+                }
+                var result = await pasted.Task;
+                long? copiedAt = copied.Task.IsCompletedSuccessfully ? await copied.Task : null;
+                Console.WriteLine(JsonSerializer.Serialize(new { sample = true, ok = result.Key == key,
+                    copy_ms = copiedAt is long at ? Stopwatch.GetElapsedTime(started, at).TotalMilliseconds : (double?)null,
+                    bridge_ms = result.BridgeMs, total_ms = Stopwatch.GetElapsedTime(started, result.At).TotalMilliseconds }));
+            }
+        }
+        finally
+        {
+            watcher.Close(); watcher.Dispose();
+            if (touchedClipboard && NativeClipboard.TryGetText(Handle, out var current) && (current is First or Second || current is not null && written.Contains(current)))
+            {
+                if (previous is null) Clipboard.Clear();
+                else Clipboard.SetDataObject(previous, true);
+            }
+            Close();
+        }
+    }
+
+    private async Task RunSmallSample(string mode, int index, string key, Action<TaskCompletionSource<(string Key, long At, double BridgeMs)>> setConfirmation)
+    {
+        int width = Environment.GetEnvironmentVariable("XKW_SMALL_WIDTH") == "475" ? 475 : 330;
+        bool clipped = mode == "small-clipped", empty = mode == "small-empty";
+        bool negative = clipped || empty;
+        using var thumbnail = SmallThumbnailFixture.Create(key, index, width, clipped, empty);
+        smallThumbnail = null;
+        Invalidate(); Update();
+        await Task.Delay(850);
+        if (!NativeClipboard.TrySetAndVerify(Handle, Sentinel))
+            throw new InvalidOperationException("Clipboard de teste indisponível.");
+        written.Add(key);
+
+        var copied = new TaskCompletionSource<(long At, bool Exact)>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pasted = new TaskCompletionSource<(string Key, long At, double BridgeMs)>(TaskCreationOptions.RunContinuationsAsynchronously);
+        setConfirmation(pasted);
+        int wrongCopies = 0;
+        watcher.CopiedForIntegrationTest = found =>
+        {
+            bool exact = found == key;
+            if (!exact) Interlocked.Increment(ref wrongCopies);
+            copied.TrySetResult((Stopwatch.GetTimestamp(), exact));
+        };
+        Point location = SmallThumbnailFixture.ThumbnailLocation;
+        smallThumbnail = thumbnail;
+        if (mode is "small-settled" or "small-brief")
+        {
+            int bottom = SmallThumbnailFixture.ChannelSize.Height;
+            int textTop = (int)Math.Round((117 + (index % 3 - 1) * 12) * width / 330f);
+            foreach (int y in new[] { bottom - 14, bottom - thumbnail.Height / 3, bottom - textTop - 4 })
+            {
+                smallLocation = new Point(location.X, y);
+                Invalidate(); Update();
+                await Task.Delay(24);
+            }
+        }
+        smallLocation = location;
+        long started = Stopwatch.GetTimestamp();
+        Invalidate(); Update();
+        Task timeout = Task.Delay(negative ? 1800 : 3000);
+        if (mode == "small-brief")
+        {
+            await Task.Delay(120);
+            smallThumbnail = null;
+            Invalidate(); Update();
+        }
+        bool acknowledged = await Task.WhenAny(pasted.Task, timeout) == pasted.Task;
+        var copy = copied.Task.IsCompletedSuccessfully ? copied.Task.Result : default;
+        var ack = acknowledged ? pasted.Task.Result : default;
+        smallThumbnail = null;
+        Invalidate(); Update();
+        watcher.CopiedForIntegrationTest = null;
+        bool hasCopy = copied.Task.IsCompletedSuccessfully;
+        bool wrongCopy = Volatile.Read(ref wrongCopies) != 0;
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            sample = true,
+            ok = negative ? !hasCopy && !acknowledged : acknowledged && ack.Key == key && copy.Exact && !wrongCopy && copy.At >= started,
+            width,
+            height = thumbnail.Height,
+            copied = hasCopy,
+            wrong_copy = wrongCopy,
+            early_copy = hasCopy && copy.At < started,
+            acknowledged,
+            copy_ms = hasCopy ? Stopwatch.GetElapsedTime(started, copy.At).TotalMilliseconds : (double?)null,
+            bridge_ms = acknowledged ? ack.BridgeMs : (double?)null,
+            total_ms = acknowledged ? Stopwatch.GetElapsedTime(started, ack.At).TotalMilliseconds : (double?)null,
+        }));
+    }
+
+    private async Task RunBacklogSample(int index, Action<TaskCompletionSource<(string Key, long At, double BridgeMs)>> setConfirmation)
+    {
+        string? manifest = Environment.GetEnvironmentVariable("XKW_BACKLOG_MANIFEST");
+        var fixture = manifest is null
+            ? (Frame: BacklogFixture.Draw(BacklogFixture.Key(index), int.TryParse(Environment.GetEnvironmentVariable("XKW_BACKLOG_EDGE"), out int edge) ? edge : 184),
+                Key: BacklogFixture.Key(index), Location: new Point(185, 230))
+            : BacklogFixture.ManifestFrame(manifest, int.Parse(Environment.GetEnvironmentVariable("XKW_BACKLOG_FIXTURE") ?? "0"));
+        using var oldFrame = fixture.Frame;
+        bool control = Environment.GetEnvironmentVariable("XKW_BACKLOG_CONTROL") == "1";
+        using var nextFrame = control ? new Bitmap(oldFrame) : BacklogFixture.Draw(fixture.Key, location: fixture.Location);
+        if (control)
+        {
+            using var graphics = Graphics.FromImage(nextFrame);
+            graphics.FillRectangle(Brushes.Teal, nextFrame.Width - 70, 18, 35, 28);
+        }
+        text = string.Empty;
+        Invalidate(); Update();
+        await Task.Delay(850);
+        if (!NativeClipboard.TrySetAndVerify(Handle, Sentinel))
+            throw new InvalidOperationException("Clipboard de teste indisponível.");
+        written.Add(fixture.Key);
+
+        var checkpoint = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var copied = new TaskCompletionSource<(long At, bool Exact)>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pasted = new TaskCompletionSource<(string Key, long At, double BridgeMs)>(TaskCreationOptions.RunContinuationsAsynchronously);
+        setConfirmation(pasted);
+        int wrongCopies = 0;
+        watcher.CopiedForIntegrationTest = key =>
+        {
+            bool exact = key == fixture.Key;
+            if (!exact) Interlocked.Increment(ref wrongCopies);
+            copied.TrySetResult((Stopwatch.GetTimestamp(), exact));
+        };
+        int priorityBefore = watcher.PrioritizedReadsForIntegrationTest;
+        watcher.BeforeWideFallbackForIntegrationTest = () => checkpoint.TrySetResult() ? release.Task : Task.CompletedTask;
+
+        long started = 0;
+        bool reached = false, queued = false, pendingAtCheckpoint = false;
+        try
+        {
+            backlogFrame = oldFrame;
+            Invalidate(); Update();
+            reached = await Task.WhenAny(checkpoint.Task, copied.Task, Task.Delay(1500)) == checkpoint.Task;
+            if (reached)
+            {
+                pendingAtCheckpoint = watcher.HasPendingFrameForIntegrationTest;
+                long beforeDrawVersion = watcher.ReceivedFrameVersionForIntegrationTest;
+                backlogFrame = nextFrame;
+                started = Stopwatch.GetTimestamp();
+                Invalidate(); Update();
+                long waitStarted = Stopwatch.GetTimestamp();
+                while (watcher.ReceivedFrameVersionForIntegrationTest <= beforeDrawVersion && Stopwatch.GetElapsedTime(waitStarted).TotalMilliseconds < 450)
+                    await Task.Delay(1);
+                queued = watcher.ReceivedFrameVersionForIntegrationTest > beforeDrawVersion && watcher.HasPendingFrameForIntegrationTest;
+            }
+        }
+        finally
+        {
+            watcher.BeforeWideFallbackForIntegrationTest = null;
+            release.TrySetResult();
+        }
+
+        bool acknowledged = reached && await Task.WhenAny(pasted.Task, Task.Delay(3000)) == pasted.Task;
+        var copy = copied.Task.IsCompletedSuccessfully ? copied.Task.Result : default;
+        var ack = acknowledged ? pasted.Task.Result : default;
+        backlogFrame = null;
+        Invalidate(); Update();
+        watcher.CopiedForIntegrationTest = null;
+        int prioritizedReads = watcher.PrioritizedReadsForIntegrationTest - priorityBefore;
+        bool hasCopy = copied.Task.IsCompletedSuccessfully;
+        bool wrongCopy = Volatile.Read(ref wrongCopies) != 0;
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            sample = true,
+            ok = reached && queued && (control
+                ? !acknowledged && !hasCopy && prioritizedReads == 0
+                : acknowledged && ack.Key == fixture.Key && copy.Exact && !wrongCopy && copy.At >= started),
+            checkpoint = reached,
+            queued,
+            pending_at_checkpoint = pendingAtCheckpoint,
+            prioritized_reads = prioritizedReads,
+            copied = hasCopy,
+            wrong_copy = wrongCopy,
+            early_copy = hasCopy && (started == 0 || copy.At < started),
+            acknowledged,
+            copy_ms = started > 0 && copy.At >= started ? Stopwatch.GetElapsedTime(started, copy.At).TotalMilliseconds : (double?)null,
+            bridge_ms = acknowledged ? ack.BridgeMs : (double?)null,
+            total_ms = acknowledged ? Stopwatch.GetElapsedTime(started, ack.At).TotalMilliseconds : (double?)null,
+        }));
+    }
+
+    private static Bitmap CreateScrollThumbnail(string key)
+    {
+        using var bitmap = new Bitmap(720, 170);
+        using (var graphics = Graphics.FromImage(bitmap))
+        using (var background = new System.Drawing.Drawing2D.LinearGradientBrush(
+            new Rectangle(0, 0, bitmap.Width, bitmap.Height), Color.MidnightBlue, Color.MediumVioletRed, 25f))
+        using (var font = new Font("Arial", 24, FontStyle.Bold))
+        {
+            graphics.FillRectangle(background, 0, 0, bitmap.Width, bitmap.Height);
+            graphics.FillEllipse(Brushes.Teal, 45, 8, 310, 155);
+            graphics.FillEllipse(Brushes.DarkSlateBlue, 360, 10, 240, 155);
+            graphics.FillRectangle(Brushes.Black, 10, 63, 700, 46);
+            graphics.DrawString(key, font, Brushes.White, 18, 67);
+        }
+        using var stream = new MemoryStream();
+        bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+        stream.Position = 0;
+        using var decoded = new Bitmap(stream);
+        return new Bitmap(decoded);
     }
 
     private async Task PublishAndCheck(string key)
