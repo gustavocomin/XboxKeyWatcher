@@ -30,6 +30,16 @@ try:
     warm=np.zeros((200,900,3),dtype=np.uint8)
     cv2.putText(warm,'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE',(20,105),cv2.FONT_HERSHEY_SIMPLEX,1.0,(255,255,255),2,cv2.LINE_AA)
     engine(warm)
+    recognizer = engine.text_recognizer
+    default_batch = recognizer.rec_batch_num
+
+    def recognize_regions(regions):
+        # The model pads each batch to its widest line. Use smaller batches
+        # in dense frames to reduce padding without dropping any region.
+        recognizer.rec_batch_num = 2 if len(regions) > default_batch else default_batch
+        return recognizer(regions)
+
+    engine.text_recognizer = recognize_regions
     reply({'ready':True})
     while True:
         header=read_exact(sys.stdin.buffer,12)
