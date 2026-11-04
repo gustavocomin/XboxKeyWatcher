@@ -9,7 +9,17 @@
     globalThis.xkwStopPaste?.();
     const real = redeemFrame;
     const page = location.href;
-    let stopped = false, timer, target, lastFilled, lastStatus;
+    let stopped = false, polling = false, timer, target, lastFilled, lastStatus;
+    function wakeWhenReady() {
+      if (polling || stopped) return;
+      if (real) target = findRedeemField();
+      if (!ready()) return;
+      clearTimeout(timer);
+      void poll();
+    }
+    document.addEventListener('input', wakeWhenReady);
+    document.addEventListener('focusin', wakeWhenReady);
+    document.addEventListener('visibilitychange', wakeWhenReady);
     function report(text) {
       if (text === lastStatus) return;
       lastStatus = text;
@@ -19,6 +29,9 @@
       stopped = true;
       clearTimeout(timer);
       document.removeEventListener('click', chooseField, true);
+      document.removeEventListener('input', wakeWhenReady);
+      document.removeEventListener('focusin', wakeWhenReady);
+      document.removeEventListener('visibilitychange', wakeWhenReady);
     }
     globalThis.xkwStopPaste = stop;
 
@@ -55,6 +68,8 @@
     }
 
     async function poll() {
+      if (stopped || polling) return;
+      polling = true;
       let delay = 125;
       try {
         if (location.href !== page || (!real && !target?.isConnected)) { stop(); return; }
@@ -85,7 +100,10 @@
           await chrome.runtime.sendMessage({ action: 'ack', id, offerId: offer.Id, filled });
         }
       } catch { report('Falha ao consultar a ponte local ou verificar o campo.'); }
-      finally { if (!stopped) timer = setTimeout(poll, delay); }
+      finally {
+        polling = false;
+        if (!stopped) timer = setTimeout(poll, delay);
+      }
     }
     return true;
   }
