@@ -6,81 +6,81 @@
   "false_positives": 0,
   "baseline_blocked": 10,
   "unsafe_baseline": 0,
-  "mean_ms": 105.35499,
-  "p50_ms": 95.0408,
-  "p95_ms": 169.9677,
-  "p99_ms": 169.9677,
-  "min_ms": 91.3525,
-  "max_ms": 169.9677,
-  "cpu_percent_one_core": 68.18053541759451,
-  "peak_working_set_bytes": 110030848,
+  "mean_ms": 100.83294000000001,
+  "p50_ms": 93.3718,
+  "p95_ms": 163.9786,
+  "p99_ms": 163.9786,
+  "min_ms": 91.8241,
+  "max_ms": 163.9786,
+  "cpu_percent_one_core": 60.39909042810577,
+  "peak_working_set_bytes": 109993984,
   "details": [
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 169.9677,
+      "elapsed_ms": 163.9786,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 94.2078,
+      "elapsed_ms": 92.5948,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 95.0408,
+      "elapsed_ms": 91.8241,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 91.3525,
+      "elapsed_ms": 93.3718,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 95.0298,
+      "elapsed_ms": 98.612,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 92.1664,
+      "elapsed_ms": 94.8876,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 95.1322,
+      "elapsed_ms": 93.8572,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 96.8794,
+      "elapsed_ms": 92.3042,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 111.8333,
+      "elapsed_ms": 93.7526,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/validation-holdout/08-full.png",
-      "elapsed_ms": 111.94,
+      "elapsed_ms": 93.1465,
       "correct": false,
       "found": [],
       "baseline_blocked": true

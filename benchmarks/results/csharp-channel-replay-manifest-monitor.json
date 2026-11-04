@@ -6,18 +6,18 @@
   "false_positives": 0,
   "baseline_blocked": 10,
   "unsafe_baseline": 0,
-  "mean_ms": 66.75057,
-  "p50_ms": 61.7504,
-  "p95_ms": 101.5913,
-  "p99_ms": 105.3494,
-  "min_ms": 39.351,
-  "max_ms": 105.3494,
-  "cpu_percent_one_core": 66.67408799954005,
-  "peak_working_set_bytes": 126468096,
+  "mean_ms": 59.184505,
+  "p50_ms": 60.0108,
+  "p95_ms": 78.5944,
+  "p99_ms": 81.253,
+  "min_ms": 38.6019,
+  "max_ms": 81.253,
+  "cpu_percent_one_core": 61.98749791827518,
+  "peak_working_set_bytes": 127369216,
   "details": [
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 61.7504,
+      "elapsed_ms": 60.0108,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -26,7 +26,7 @@
     },
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 43.2066,
+      "elapsed_ms": 43.3249,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -35,7 +35,7 @@
     },
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 42.8094,
+      "elapsed_ms": 42.7793,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -44,7 +44,7 @@
     },
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 42.6875,
+      "elapsed_ms": 40.8481,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -53,7 +53,7 @@
     },
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 39.351,
+      "elapsed_ms": 40.3785,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -62,7 +62,7 @@
     },
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 41.5913,
+      "elapsed_ms": 39.9224,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -71,7 +71,7 @@
     },
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 44.0116,
+      "elapsed_ms": 38.6019,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -80,7 +80,7 @@
     },
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 43.3409,
+      "elapsed_ms": 38.7845,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -89,7 +89,7 @@
     },
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 40.321,
+      "elapsed_ms": 38.9632,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -98,7 +98,7 @@
     },
     {
       "fixture": "fixtures/channel-replay/full.jpg",
-      "elapsed_ms": 41.3857,
+      "elapsed_ms": 41.9513,
       "correct": true,
       "found": [
         "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R"
@@ -107,70 +107,70 @@
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 83.8395,
+      "elapsed_ms": 81.253,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 78.4295,
+      "elapsed_ms": 76.8919,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 79.6684,
+      "elapsed_ms": 72.7902,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 84.0098,
+      "elapsed_ms": 78.5944,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 79.1882,
+      "elapsed_ms": 76.0262,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 97.7611,
+      "elapsed_ms": 76.7029,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 105.3494,
+      "elapsed_ms": 73.747,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 97.6634,
+      "elapsed_ms": 70.9024,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 101.5913,
+      "elapsed_ms": 74.9434,
       "correct": false,
       "found": [],
       "baseline_blocked": true
     },
     {
       "fixture": "fixtures/channel-replay/clipped.jpg",
-      "elapsed_ms": 87.0554,
+      "elapsed_ms": 76.2738,
       "correct": false,
       "found": [],
       "baseline_blocked": true

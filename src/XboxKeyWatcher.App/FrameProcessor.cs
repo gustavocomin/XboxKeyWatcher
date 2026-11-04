@@ -32,6 +32,7 @@ internal sealed class FrameProcessor
     private static readonly bool AcceptAgreementWithClearance = Environment.GetEnvironmentVariable("XKW_AGREEMENT_ACCEPT") != "0";
     private static readonly bool LineRereadTieBreak = Environment.GetEnvironmentVariable("XKW_LINE_REREAD") != "0";
     private static readonly bool MalformedNarrowBand = Environment.GetEnvironmentVariable("XKW_MALFORMED_BAND") != "0";
+    private static readonly bool RapidLineReread = Environment.GetEnvironmentVariable("XKW_RAPID_LINE_REREAD") != "0";
     private static readonly bool NarrowRapidBand = Environment.GetEnvironmentVariable("XKW_NARROW_RAPID_BAND") != "0";
     private readonly OcrEngine engine = OcrEngine.TryCreateFromUserProfileLanguages()
         ?? throw new InvalidOperationException("Nenhum idioma de OCR instalado no Windows.");
@@ -515,6 +516,24 @@ internal sealed class FrameProcessor
                     var tesseract = await Measure(() => Task.Run(() => TesseractOcr.Instance.Recognize(local, lineCrop.PixelWidth, lineCrop.PixelHeight)), ms => { if (timings is not null) timings.TesseractMs += ms; });
                     if (tesseract is { } reads && KeyParser.Extract(reads.Line).Contains(candidate) && KeyParser.Extract(reads.Block).Contains(candidate))
                         confirmed = malformed.Length == 0 || (TesseractEvidence.TryResolveMany(malformed, reads.Line, reads.Block, out var resolved) && resolved == candidate);
+                }
+                // Windows OCR can miss bold outlined fonts entirely (nothing key-like at 1x or 2x).
+                // Then accept only a confident RapidOCR line whose independent 2x re-read of just
+                // that line yields exactly the same single key (same rule as the channel bot).
+                if (!confirmed && RapidLineReread && malformed.Length == 0 && reading.Confidence >= .8)
+                {
+                    int tx0 = Math.Max(0, reading.Left - 4), ty0 = Math.Max(0, reading.Top - 4);
+                    int tx1 = Math.Min(bitmap.PixelWidth, reading.Right + 4), ty1 = Math.Min(bitmap.PixelHeight, reading.Bottom + 4);
+                    if (tx1 > tx0 && ty1 > ty0 && (tx1 - tx0) * 2 <= 4000)
+                    {
+                        using var tight = Crop(pixels, bitmap.PixelWidth, bitmap.PixelHeight, new Rectangle(tx0, ty0, tx1 - tx0, ty1 - ty0));
+                        var enlargedLine = ResizePixels(tight);
+                        var reread = await Measure(() => RapidOcrWorker.Instance.Recognize(enlargedLine, tight.PixelWidth * 2, tight.PixelHeight * 2, timings?.RapidPhases),
+                            ms => { if (timings is not null) timings.RapidMs += ms; });
+                        var again = reread?.Where(row => row.Confidence >= .75).SelectMany(row => KeyParser.Extract(row.Text)).Distinct(StringComparer.Ordinal).ToArray();
+                        confirmed = again is { Length: 1 } && again[0] == candidate;
+                        if (TraceOcr) Console.Error.WriteLine($"[ocr]   fullscan rapid line re-read keys={again?.Length} confirmed={confirmed}");
+                    }
                 }
                 if (confirmed) { safe.Add(candidate); rejected.Remove(candidate); unresolved = false; }
                 else rejected.Add(candidate);
