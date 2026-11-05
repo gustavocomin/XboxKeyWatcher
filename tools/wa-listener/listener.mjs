@@ -6,7 +6,7 @@
 //
 // Usage:  node listener.mjs --channel <invite link or code> [--auth auth-secundario]
 import makeWASocket, { Browsers, DisconnectReason, downloadMediaMessage, getBinaryNodeChild, proto, useMultiFileAuthState } from 'baileys';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { connect } from 'node:net';
 import { createHash } from 'node:crypto';
 import { constants as osConstants, setPriority as osPriority } from 'node:os';
@@ -386,6 +386,40 @@ const POLL_MS = Number(process.env.XKW_POLL_MS ?? 2000);
 const POLL_CHANNELS = process.env.XKW_POLL_CHANNELS ?? 'first';
 const pollsChannel = index => POLL_CHANNELS === 'all' || (POLL_CHANNELS === 'first' && index === 0)
   || (/^\d+(,\d+)*$/.test(POLL_CHANNELS) && POLL_CHANNELS.split(',').map(Number).includes(index + 1));
+// Fast windows: when the key time is known, poll faster around it. poll-rapido.txt holds one
+// time per line, "HH:MM" (every day) or "YYYY-MM-DD HH:MM", local time; from 1 min before to
+// 10 min after each, poll every XKW_FAST_POLL_MS (default 500). The file is re-read every
+// 15 s, so it can be edited with the bot running. A short window stays far from the limit
+// seen (500 errors after ~47 min at 3 queries/s).
+const FAST_POLL_MS = Number(process.env.XKW_FAST_POLL_MS ?? 500);
+const FAST_BEFORE_MS = 60_000, FAST_AFTER_MS = 10 * 60_000;
+const FAST_FILE = 'poll-rapido.txt';
+let fastTimes = [], fastFileStamp = null;
+function loadFastTimes() {
+  let text = '';
+  try { const st = statSync(FAST_FILE); if (st.mtimeMs === fastFileStamp) return; fastFileStamp = st.mtimeMs; text = readFileSync(FAST_FILE, 'utf8'); }
+  catch { if (fastFileStamp !== null) { fastTimes = []; fastFileStamp = null; log('fast-poll-times', { times: [] }); } return; }
+  fastTimes = text.split(/\r?\n/).map(l => l.replace(/#.*/, '').trim()).filter(Boolean).map(l => {
+    const m = l.match(/^(?:(\d{4})-(\d{2})-(\d{2})\s+)?(\d{1,2}):(\d{2})$/);
+    return m ? { date: m[1] ? [Number(m[1]), Number(m[2]) - 1, Number(m[3])] : null, h: Number(m[4]), min: Number(m[5]) } : null;
+  }).filter(Boolean);
+  log('fast-poll-times', { times: text.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#')) });
+}
+loadFastTimes(); setInterval(loadFastTimes, 15_000).unref?.();
+function inFastWindow(t = Date.now()) {
+  const d = new Date(t);
+  return fastTimes.some(x => {
+    for (const dayOffset of x.date ? [0] : [-1, 0, 1]) {
+      const at = x.date ? new Date(x.date[0], x.date[1], x.date[2], x.h, x.min).getTime()
+        : new Date(d.getFullYear(), d.getMonth(), d.getDate() + dayOffset, x.h, x.min).getTime();
+      if (t >= at - FAST_BEFORE_MS && t <= at + FAST_AFTER_MS) return true;
+    }
+    return false;
+  });
+}
+// Per-minute poll counts, so a slowdown or a limit shows up in the log.
+const pollStats = { ok: 0, err: 0, rttSum: 0 };
+setInterval(() => { if (pollStats.ok || pollStats.err) { log('poll-stats', { ok: pollStats.ok, err: pollStats.err, rttMs: pollStats.ok ? Math.round(pollStats.rttSum / pollStats.ok) : null, fast: inFastWindow() }); pollStats.ok = pollStats.err = pollStats.rttSum = 0; } }, 60_000).unref?.();
 const pollers = new Map();
 async function pollOnce(sock, jid) {
   const asked = now();
@@ -398,6 +432,7 @@ async function pollOnce(sock, jid) {
     else if (Array.isArray(node.content)) for (const child of node.content) walk(child);
   };
   walk(result);
+  pollStats.ok++; pollStats.rttSum += now() - asked;
   for (const node of found) {
     const sid = String(node.attrs.server_id);
     if (seen.has(`${jid}:${sid}`)) continue;
@@ -413,22 +448,26 @@ async function pollOnce(sock, jid) {
 function startPolling(sock, jid) {
   stopPolling(jid);
   if (!(POLL_MS > 0)) return;
-  const state = { delay: POLL_MS, errors: 0, timer: null, stopped: false };
+  const state = { delay: POLL_MS, errors: 0, timer: null, stopped: false, fast: null };
   pollers.set(jid, state);
   const tick = async () => {
     if (state.stopped) return;
     const started = now();
     try {
       await pollOnce(sock, jid);
-      if (state.errors) { log('poll-recovered', { jid, errors: state.errors }); state.errors = 0; state.delay = POLL_MS; }
+      if (state.errors) { log('poll-recovered', { jid, errors: state.errors }); state.errors = 0; }
+      const fast = inFastWindow();
+      if (fast !== state.fast) { state.fast = fast; log('poll-rate', { jid, intervalMs: fast ? FAST_POLL_MS : POLL_MS }); console.log(`${stamp(now())}  Poll a cada ${fast ? FAST_POLL_MS : POLL_MS} ms`); }
+      state.delay = fast ? FAST_POLL_MS : POLL_MS;
     } catch (error) {
-      // Back off on errors (a rate limit or a dropped connection): 30 s, doubling to 10 min.
-      state.errors++;
-      state.delay = Math.min(600_000, 30_000 * 2 ** (state.errors - 1));
+      // Back off on errors (a rate limit or a dropped connection): 30 s, doubling to 10 min;
+      // inside a fast window 5 s, doubling to 30 s, so the window is not lost to one error.
+      state.errors++; pollStats.err++;
+      state.delay = inFastWindow() ? Math.min(30_000, 5_000 * 2 ** (state.errors - 1)) : Math.min(600_000, 30_000 * 2 ** (state.errors - 1));
       if (state.errors <= 3 || state.errors % 20 === 0)
         log('poll-error', { jid, errors: state.errors, delayMs: state.delay, error: String(error?.output?.statusCode ?? error?.message ?? error) });
     }
-    // Period measured from the start of each query, so it stays POLL_MS whatever the round trip.
+    // Period measured from the start of each query, so it stays the interval whatever the round trip.
     if (!state.stopped) state.timer = setTimeout(tick, Math.max(0, state.delay - (now() - started)));
   };
   state.timer = setTimeout(tick, 0);
