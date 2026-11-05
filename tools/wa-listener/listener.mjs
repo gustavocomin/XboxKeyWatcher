@@ -319,10 +319,11 @@ async function handlePost(sock, msg, via, extra = {}) {
     return;
   }
   const start = arrived;
-  // Several bots (one per WhatsApp login) can follow the same channel; the first to get a
-  // post claims it and the others wait for its result instead of running a second OCR
-  // that would compete for the CPU. A claim with no result after CLAIM_WAIT_MS is ignored.
-  const claim = claimPost(jid, id);
+  // Several bots (one per WhatsApp login) can follow the same channel. Whichever has the
+  // complete image first reads it; a bot whose image arrives while another is already
+  // reading waits a little for that result instead of a second OCR (two at once made the
+  // first ~25 ms slower), and reads anyway if the result does not come.
+  const claim = claimFor(jid, id);
   try {
     let buffer, winner = 'baileys';
     if (download) ({ name: winner, body: buffer } = await download);
@@ -331,8 +332,8 @@ async function handlePost(sock, msg, via, extra = {}) {
     log('image', { id, winner, downloadMs: Math.round(downloaded - start), bytes: buffer.length, fromArrivalMs: Math.round(downloaded - arrived) });
     console.log(`${stamp(downloaded)}  IMAGEM (${winner}) baixada em ${Math.round(downloaded - start)} ms (${Math.round(buffer.length / 1024)} KB)`);
     let read = null;
-    if (!claim.mine) {
-      const other = await waitForClaim(claim);
+    if (claim) {
+      const other = await otherBotResult(claim);
       if (other) {
         lease?.release();
         log('ocr-skipped', { id, by: other.by, accepted: other.accepted, waitedMs: Math.round(now() - downloaded) });
@@ -373,35 +374,51 @@ async function handlePost(sock, msg, via, extra = {}) {
 }
 
 const SHARED_CLAIMS = process.env.XKW_SHARED_CLAIMS === '1';
-const CLAIM_WAIT_MS = 3000;
+// How long a bot with the image waits for another bot that is already reading it: one OCR
+// takes ~125-200 ms, so past this the other bot is stuck and this one reads.
+const OTHER_READ_WAIT_MS = 400;
 const CLAIM_DIR = 'claims';
 const me = authDir.replace(/[^a-z0-9-]/gi, '');
 if (SHARED_CLAIMS) {
   mkdirSync(CLAIM_DIR, { recursive: true });
   for (const f of readdirSync(CLAIM_DIR)) { try { if (Date.now() - statSync(join(CLAIM_DIR, f)).mtimeMs > 3_600_000) rmSync(join(CLAIM_DIR, f)); } catch { } }
 }
-function claimPost(jid, id) {
-  if (!SHARED_CLAIMS) return { mine: true };
-  const base = join(CLAIM_DIR, `${jid.split('@')[0]}-${id}`);
-  try { writeFileSync(`${base}.claim`, JSON.stringify({ by: me, at: Date.now() }), { flag: 'wx' }); return { mine: true, base }; }
-  catch { return { mine: false, base }; }
-}
+// Files per post in claims/: "<post>.reading-<bot>" (that bot has the image and is reading)
+// and "<post>.done" (a bot finished; holds its result).
+const claimFor = (jid, id) => SHARED_CLAIMS ? join(CLAIM_DIR, `${jid.split('@')[0]}-${id}`) : null;
 function finishClaim(claim, accepted) {
-  if (!claim?.mine || !claim.base) return;
-  try { writeFileSync(`${claim.base}.done`, JSON.stringify({ by: me, accepted })); } catch { }
+  if (!claim) return;
+  try { writeFileSync(`${claim}.done`, JSON.stringify({ by: me, accepted })); } catch { }
 }
-// The other bot's result, or null when it did not finish in time (then this bot reads).
-async function waitForClaim(claim) {
-  let since = Date.now();
-  try { since = JSON.parse(readFileSync(`${claim.base}.claim`, 'utf8')).at ?? since; } catch { }
-  while (Date.now() - since < CLAIM_WAIT_MS) {
-    try { return JSON.parse(readFileSync(`${claim.base}.done`, 'utf8')); } catch { }
-    await new Promise(r => setTimeout(r, 15));
+// Called when this bot's image is complete: another bot's result if one is done or comes
+// soon from a bot that started reading earlier; null means this bot reads now.
+async function otherBotResult(claim) {
+  const done = () => { try { return JSON.parse(readFileSync(`${claim}.done`, 'utf8')); } catch { return null; } };
+  const first = done();
+  if (first) return first;
+  const prefix = claim.split(/[\\/]/).pop() + '.reading-';
+  let readingSince = null;
+  try {
+    for (const f of readdirSync(CLAIM_DIR)) if (f.startsWith(prefix) && f !== prefix + me) {
+      const t = statSync(join(CLAIM_DIR, f)).mtimeMs; readingSince = readingSince === null ? t : Math.min(readingSince, t);
+    }
+  } catch { }
+  try { writeFileSync(`${claim}.reading-${me}`, ''); } catch { }
+  if (readingSince === null) return null;
+  while (Date.now() - readingSince < OTHER_READ_WAIT_MS) {
+    await new Promise(r => setTimeout(r, 5));
+    const d = done(); if (d) return d;
   }
-  log('claim-timeout', { claim: claim.base });
+  log('claim-timeout', { claim });
   return null;
 }
 
+// The first hand-off after hours idle took 843 ms in the app (the next ones 1 ms): a ping at
+// start and every 30 s keeps the app's inbox path (pipe, JSON, key parser) warm.
+if (sendToApp) {
+  const ping = () => sendKeyToApp(null, 'ping').then(r => { if (r !== 'pong' && !String(r).startsWith('app indisp')) log('app-ping', { result: r }); });
+  setTimeout(ping, 3000).unref?.(); setInterval(ping, 30_000).unref?.();
+}
 function sendKeyToApp(key, source) {
   return new Promise(resolve => {
     const socket = connect('\\\\.\\pipe\\xkw-bot-inbox');
@@ -409,7 +426,7 @@ function sendKeyToApp(key, source) {
     const done = value => { socket.destroy(); resolve(value); };
     socket.setTimeout(3000, () => done('timeout'));
     socket.on('error', error => done(`app indisponível (${error.code ?? error.message})`));
-    socket.on('connect', () => socket.write(JSON.stringify({ key, source }) + '\n'));
+    socket.on('connect', () => socket.write(JSON.stringify(key === null ? { ping: true } : { key, source }) + '\n'));
     socket.on('data', chunk => { reply += chunk; if (reply.includes('\n')) { try { done(JSON.parse(reply).result); } catch { done('resposta inválida'); } } });
   });
 }

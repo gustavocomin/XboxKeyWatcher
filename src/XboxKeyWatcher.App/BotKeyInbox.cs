@@ -40,6 +40,15 @@ internal sealed class BotKeyInbox : IDisposable
                 if (line is { Length: < 4096 })
                 {
                     using var json = JsonDocument.Parse(line);
+                    // Keep-warm ping from the bot: runs the same parsing path, accepts nothing.
+                    if (json.RootElement.TryGetProperty("ping", out _))
+                    {
+                        _ = KeyParser.Extract("BCDFG-HJKMN-PQRTV-WXYZ2-34678").Count();
+                        result = "pong";
+                        await writer.WriteLineAsync(JsonSerializer.Serialize(new { result }).AsMemory(), timeout.Token).ConfigureAwait(false);
+                        await writer.FlushAsync(timeout.Token).ConfigureAwait(false);
+                        continue;
+                    }
                     string? key = json.RootElement.TryGetProperty("key", out var k) ? k.GetString() : null;
                     string source = json.RootElement.TryGetProperty("source", out var s) ? s.GetString() ?? "bot" : "bot";
                     // Accept only a single well-formed key; never infer characters.
