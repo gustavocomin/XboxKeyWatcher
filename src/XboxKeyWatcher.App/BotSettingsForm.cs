@@ -16,10 +16,11 @@ internal sealed class BotSettingsForm : Form
     private readonly string? dir;
     private readonly TextBox channels = Editor();
     private readonly TextBox times = Editor();
-    private readonly ComboBox account = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 260 };
+    private readonly CheckedListBox accounts = new() { Dock = DockStyle.Fill, CheckOnClick = true, IntegralHeight = false };
     private readonly HotkeyPreferences hotkeyDraft;
     private readonly Func<HotkeyPreferences, string?> saveHotkeys;
-    private readonly string originalChannels, originalTimes, originalAccount;
+    private readonly string originalChannels, originalTimes;
+    private readonly List<string> originalAccounts;
 
     /// <summary>True when channels or account changed, so the bot must restart.</summary>
     public bool BotRestartNeeded { get; private set; }
@@ -38,7 +39,7 @@ internal sealed class BotSettingsForm : Form
 
         originalChannels = Read("canais.txt");
         originalTimes = Read("poll-rapido.txt");
-        originalAccount = Read("conta.txt").Split('\n').Select(l => l.Trim()).FirstOrDefault(l => l.Length > 0 && !l.StartsWith('#')) ?? "";
+        originalAccounts = dir is null ? [] : ChannelBot.ReadAccounts(dir);
         channels.Text = originalChannels.Replace("\r\n", "\n").Replace("\n", "\r\n");
         times.Text = originalTimes.Replace("\r\n", "\n").Replace("\n", "\r\n");
 
@@ -51,19 +52,18 @@ internal sealed class BotSettingsForm : Form
             "De 1 min antes até 10 min depois de cada horário o bot consulta o canal oficial a cada 0,5 s. " +
             "Vale sem reiniciar (o bot relê o arquivo a cada 15 s). Use janelas curtas: consultar rápido o dia todo leva o WhatsApp a recusar as consultas.", times));
 
-        var accountRow = new Panel { Dock = DockStyle.Top, Height = 40, Padding = new Padding(8, 6, 8, 6) };
-        account.Location = new Point(8, 6);
-        accountRow.Controls.Add(account);
-        var accountPage = new TabPage("Conta do bot");
-        accountPage.Controls.Add(accountRow);
-        accountPage.Controls.Add(Help("Login do WhatsApp que o bot usa. As pastas auth-* são logins já pareados " +
-            "(para parear um novo, feche o app e rode tools\\wa-listener\\iniciar-bot.cmd). Duas sessões do mesmo login se derrubam. Salvar reinicia o bot."));
+        var accountPage = new TabPage("Contas do bot");
+        accountPage.Controls.Add(accounts);
+        var accountHelp = Help("Marque os logins do WhatsApp em que o bot roda: um bot por login marcado. Com dois, as consultas ao " +
+            "canal se alternam e o primeiro a receber o post lê a key. As pastas auth-* são logins já pareados (para parear um novo, " +
+            "feche o app e rode tools\\wa-listener\\iniciar-bot.cmd). Não marque um login que outro bot usa fora deste app. Salvar reinicia os bots.");
+        accountHelp.Height = 78;
+        accountPage.Controls.Add(accountHelp);
         tabs.TabPages.Add(accountPage);
-        if (dir is not null)
-            foreach (var d in Directory.GetDirectories(dir, "auth-*").Select(Path.GetFileName).Where(n => n is not null && Regex.IsMatch(n, "^auth-[a-z0-9-]+$")).OrderBy(n => n))
-                account.Items.Add(d!);
-        if (originalAccount.Length > 0 && !account.Items.Contains(originalAccount)) account.Items.Add(originalAccount);
-        account.SelectedItem = originalAccount.Length > 0 ? originalAccount : account.Items.Count > 0 ? account.Items[0] : null;
+        var known = dir is null ? new List<string>() : Directory.GetDirectories(dir, "auth-*").Select(Path.GetFileName)
+            .Where(n => n is not null && Regex.IsMatch(n, "^auth-[a-z0-9-]+$") && !n.EndsWith("-copia")).Select(n => n!).OrderBy(n => n).ToList();
+        foreach (var a in originalAccounts.Where(a => !known.Contains(a))) known.Add(a);
+        foreach (var a in known) accounts.Items.Add(a, originalAccounts.Contains(a));
 
         var hotkeyPage = new TabPage("Atalhos");
         var grid = new PropertyGrid { SelectedObject = hotkeyDraft, Dock = DockStyle.Fill, HelpVisible = true, ToolbarVisible = false };
@@ -80,7 +80,7 @@ internal sealed class BotSettingsForm : Form
 
         if (dir is null)
         {
-            channels.Enabled = times.Enabled = account.Enabled = false;
+            channels.Enabled = times.Enabled = accounts.Enabled = false;
             channels.Text = "Pasta tools\\wa-listener não encontrada perto do app.";
         }
         Controls.Add(tabs); Controls.Add(buttons);
@@ -137,9 +137,10 @@ internal sealed class BotSettingsForm : Form
     private void Save()
     {
         string newChannels = channels.Text.Replace("\r\n", "\n"), newTimes = times.Text.Replace("\r\n", "\n");
-        string newAccount = account.SelectedItem as string ?? originalAccount;
+        var newAccounts = accounts.CheckedItems.Cast<string>().ToList();
         var problems = new List<string>();
         if (dir is not null) { problems.AddRange(CheckChannels(newChannels)); problems.AddRange(CheckTimes(newTimes)); }
+        if (dir is not null && newAccounts.Count == 0) problems.Add("Contas do bot: marque pelo menos um login.");
         if (!hotkeyDraft.TryBindings(out _)) problems.Add("Atalhos: use atalhos distintos com dois modificadores Ctrl, Alt ou Shift e uma tecla F1 a F24.");
         if (problems.Count > 0) { MessageBox.Show(this, string.Join(Environment.NewLine, problems), "Corrija antes de salvar"); return; }
 
@@ -150,13 +151,13 @@ internal sealed class BotSettingsForm : Form
             {
                 if (newChannels != originalChannels.Replace("\r\n", "\n")) { Write("canais.txt", newChannels); changed.Add("canais"); BotRestartNeeded = true; }
                 if (newTimes != originalTimes.Replace("\r\n", "\n")) { Write("poll-rapido.txt", newTimes); changed.Add("horários de key"); }
-                if (newAccount != originalAccount) { Write("conta.txt", $"# Login que o bot usa ao abrir o app: auth-secundario ou auth-principal\n{newAccount}\n"); changed.Add("conta"); BotRestartNeeded = true; }
+                if (!newAccounts.SequenceEqual(originalAccounts)) { Write("conta.txt", "# Logins em que o bot roda ao abrir o app, um por linha (um bot por login)\n" + string.Join("\n", newAccounts) + "\n"); changed.Add("contas"); BotRestartNeeded = true; }
             }
             string? hotkeyError = saveHotkeys(hotkeyDraft);
             if (hotkeyError is not null) { MessageBox.Show(this, hotkeyError, "Erro ao salvar atalhos"); return; }
         }
         catch (Exception e) { MessageBox.Show(this, e.Message, "Erro ao salvar"); return; }
-        Summary = changed.Count == 0 ? "Configurações salvas." : "Salvo: " + string.Join(", ", changed) + (BotRestartNeeded ? "; bot reiniciado." : ".");
+        Summary = changed.Count == 0 ? "Configurações salvas." : "Salvo: " + string.Join(", ", changed) + (BotRestartNeeded ? "; bots reiniciados." : ".");
         DialogResult = DialogResult.OK;
         Close();
     }

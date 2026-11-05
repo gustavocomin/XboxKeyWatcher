@@ -210,7 +210,7 @@ internal sealed class MainForm : Form
     private void StartBot()
     {
 #if !INTEGRATION_TEST
-        channelBot = new ChannelBot(text => Post(() => botStatus.Text = text.Length > 160 ? text[..160] : text));
+        channelBot = new ChannelBot(text => Post(() => botStatus.Text = text.Length > 240 ? text[..240] : text));
         channelBot.Start();
 #endif
     }

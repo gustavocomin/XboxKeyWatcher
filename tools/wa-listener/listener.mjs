@@ -6,7 +6,7 @@
 //
 // Usage:  node listener.mjs --channel <invite link or code> [--auth auth-secundario]
 import makeWASocket, { Browsers, DisconnectReason, downloadMediaMessage, getBinaryNodeChild, proto, useMultiFileAuthState } from 'baileys';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { connect } from 'node:net';
 import { createHash } from 'node:crypto';
 import { constants as osConstants, setPriority as osPriority } from 'node:os';
@@ -30,7 +30,7 @@ if (!channelArg) { console.error('Use: node listener.mjs --channel <link do cana
 const inviteCodes = channelArg.split(',').map(s => s.trim().replace(/^.*\/channel\//, '').replace(/[/?#].*$/, '')).filter(Boolean);
 
 mkdirSync('logs', { recursive: true }); mkdirSync('media', { recursive: true });
-const logFile = join('logs', `listener-${new Date().toISOString().replace(/[:.]/g, '-')}.jsonl`);
+const logFile = join('logs', `listener-${new Date().toISOString().replace(/[:.]/g, '-')}-${authDir.replace(/[^a-z0-9-]/gi, '')}.jsonl`);
 const now = () => performance.timeOrigin + performance.now();
 const KEY = /\b(?:[A-Z0-9]{5}-){4}[A-Z0-9]{5}\b/gi;
 const redact = text => typeof text === 'string' ? text.replace(KEY, k => `${k.slice(0, 2)}…${k.slice(-2)}`) : text;
@@ -319,6 +319,10 @@ async function handlePost(sock, msg, via, extra = {}) {
     return;
   }
   const start = arrived;
+  // Several bots (one per WhatsApp login) can follow the same channel; the first to get a
+  // post claims it and the others wait for its result instead of running a second OCR
+  // that would compete for the CPU. A claim with no result after CLAIM_WAIT_MS is ignored.
+  const claim = claimPost(jid, id);
   try {
     let buffer, winner = 'baileys';
     if (download) ({ name: winner, body: buffer } = await download);
@@ -327,6 +331,15 @@ async function handlePost(sock, msg, via, extra = {}) {
     log('image', { id, winner, downloadMs: Math.round(downloaded - start), bytes: buffer.length, fromArrivalMs: Math.round(downloaded - arrived) });
     console.log(`${stamp(downloaded)}  IMAGEM (${winner}) baixada em ${Math.round(downloaded - start)} ms (${Math.round(buffer.length / 1024)} KB)`);
     let read = null;
+    if (!claim.mine) {
+      const other = await waitForClaim(claim);
+      if (other) {
+        lease?.release();
+        log('ocr-skipped', { id, by: other.by, accepted: other.accepted, waitedMs: Math.round(now() - downloaded) });
+        console.log(`${stamp(now())}  OCR feito pelo bot ${other.by} (${other.accepted ? 'key' : 'sem key'})`);
+        return;
+      }
+    }
     if (partial.try) {
       const p = await partial.try;
       if (p?.candidate) {
@@ -337,6 +350,7 @@ async function handlePost(sock, msg, via, extra = {}) {
     if (!read?.key) read = lease ? await readKey(lease.worker, buffer, ocrOptions) : worker ? await readKeyPooled(buffer) : null;
     lease?.release();
     const ocrDone = now();
+    finishClaim(claim, !!read?.key);
     let appResult = null;
     if (read?.key && sendToApp) appResult = await sendKeyToApp(read.key, `canal ${id}`);
     const handed = now();
@@ -356,6 +370,36 @@ async function handlePost(sock, msg, via, extra = {}) {
     log('image-error', { id, error: String(error?.message ?? error) });
     console.log(`${stamp(now())}  ERRO no post: ${error?.message ?? error}`);
   } finally { lease?.release(); }
+}
+
+const SHARED_CLAIMS = process.env.XKW_SHARED_CLAIMS === '1';
+const CLAIM_WAIT_MS = 3000;
+const CLAIM_DIR = 'claims';
+const me = authDir.replace(/[^a-z0-9-]/gi, '');
+if (SHARED_CLAIMS) {
+  mkdirSync(CLAIM_DIR, { recursive: true });
+  for (const f of readdirSync(CLAIM_DIR)) { try { if (Date.now() - statSync(join(CLAIM_DIR, f)).mtimeMs > 3_600_000) rmSync(join(CLAIM_DIR, f)); } catch { } }
+}
+function claimPost(jid, id) {
+  if (!SHARED_CLAIMS) return { mine: true };
+  const base = join(CLAIM_DIR, `${jid.split('@')[0]}-${id}`);
+  try { writeFileSync(`${base}.claim`, JSON.stringify({ by: me, at: Date.now() }), { flag: 'wx' }); return { mine: true, base }; }
+  catch { return { mine: false, base }; }
+}
+function finishClaim(claim, accepted) {
+  if (!claim?.mine || !claim.base) return;
+  try { writeFileSync(`${claim.base}.done`, JSON.stringify({ by: me, accepted })); } catch { }
+}
+// The other bot's result, or null when it did not finish in time (then this bot reads).
+async function waitForClaim(claim) {
+  let since = Date.now();
+  try { since = JSON.parse(readFileSync(`${claim.base}.claim`, 'utf8')).at ?? since; } catch { }
+  while (Date.now() - since < CLAIM_WAIT_MS) {
+    try { return JSON.parse(readFileSync(`${claim.base}.done`, 'utf8')); } catch { }
+    await new Promise(r => setTimeout(r, 15));
+  }
+  log('claim-timeout', { claim: claim.base });
+  return null;
 }
 
 function sendKeyToApp(key, source) {
@@ -420,6 +464,13 @@ function inFastWindow(t = Date.now()) {
 // Per-minute poll counts, so a slowdown or a limit shows up in the log.
 const pollStats = { ok: 0, err: 0, rttSum: 0 };
 setInterval(() => { if (pollStats.ok || pollStats.err) { log('poll-stats', { ok: pollStats.ok, err: pollStats.err, rttMs: pollStats.ok ? Math.round(pollStats.rttSum / pollStats.ok) : null, fast: inFastWindow() }); pollStats.ok = pollStats.err = pollStats.rttSum = 0; } }, 60_000).unref?.();
+const POLL_PHASE = Math.min(1, Math.max(0, Number(process.env.XKW_POLL_PHASE ?? 0) || 0));
+function msToNextSlot(interval) {
+  const t = Date.now(), offset = POLL_PHASE * interval;
+  let next = Math.ceil((t - offset) / interval) * interval + offset;
+  if (next - t < 5) next += interval;
+  return next - t;
+}
 const pollers = new Map();
 async function pollOnce(sock, jid) {
   const asked = now();
@@ -467,10 +518,11 @@ function startPolling(sock, jid) {
       if (state.errors <= 3 || state.errors % 20 === 0)
         log('poll-error', { jid, errors: state.errors, delayMs: state.delay, error: String(error?.output?.statusCode ?? error?.message ?? error) });
     }
-    // Period measured from the start of each query, so it stays the interval whatever the round trip.
-    if (!state.stopped) state.timer = setTimeout(tick, Math.max(0, state.delay - (now() - started)));
+    // Next query on the wall-clock grid of the interval, shifted by XKW_POLL_PHASE (0..1):
+    // two bots on two logins with phases 0 and 0.5 then ask alternately and stay that way.
+    if (!state.stopped) state.timer = setTimeout(tick, msToNextSlot(state.delay));
   };
-  state.timer = setTimeout(tick, 0);
+  state.timer = setTimeout(tick, msToNextSlot(POLL_MS));
 }
 function stopPolling(jid) {
   const state = pollers.get(jid);
