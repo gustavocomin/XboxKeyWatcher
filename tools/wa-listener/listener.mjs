@@ -7,11 +7,12 @@
 // Usage:  node listener.mjs --channel <invite link or code> [--auth auth-secundario]
 import makeWASocket, { Browsers, DisconnectReason, downloadMediaMessage, getBinaryNodeChild, proto, useMultiFileAuthState } from 'baileys';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { connect } from 'node:net';
 import { createHash } from 'node:crypto';
 import { constants as osConstants, setPriority as osPriority } from 'node:os';
 import { Agent, fetch as mediaFetch } from 'undici';
 import { RapidWorker, readKey, confirmKey } from './bot-ocr.mjs';
+import { announcedKeyTime, isCountdown } from './channel-signals.mjs';
+import { sendToApp as sendToAppPipe, sendKeyWithRetry as sendKeyWithRetryPipe } from './app-inbox.mjs';
 import sharp from 'sharp';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,9 +38,16 @@ const redact = text => typeof text === 'string' ? text.replace(KEY, k => `${k.sl
 const stamp = t => new Date(t).toISOString().replace('T', ' ').replace('Z', '');
 function log(event, data = {}) {
   const t = now();
-  appendFileSync(logFile, JSON.stringify({ t, iso: new Date(t).toISOString(), event, ...data }) + '\n');
+  try { appendFileSync(logFile, JSON.stringify({ t, iso: new Date(t).toISOString(), event, ...data }) + '\n'); } catch { }
   return t;
 }
+// A stray error (a dropped pipe, a library callback) must not end the bot in the middle of a
+// key window: the app does not restart a bot that exits. Log it (keys masked) and go on.
+for (const kind of ['uncaughtException', 'unhandledRejection'])
+  process.on(kind, error => {
+    log('uncaught', { kind, error: redact(String(error?.stack ?? error)).slice(0, 600) });
+    console.log(`${stamp(now())}  erro interno ignorado (${kind}): ${redact(String(error?.message ?? error)).slice(0, 160)}`);
+  });
 
 const channelJids = []; const renewTimers = new Map(); const seen = new Set();
 
@@ -118,12 +126,20 @@ const worker = workers.length > 0;
 const PARTIAL_READ = process.env.XKW_PARTIAL_READ === '1';
 const PARTIAL_MIN_REST_MS = Number(process.env.XKW_PARTIAL_MIN_REST_MS ?? 60); // env only for tests
 const isProgressiveJpeg = b => { for (let i = 2; i < b.length - 1; i++) if (b[i] === 0xff && (b[i + 1] === 0xc2 || b[i + 1] === 0xc0 || b[i + 1] === 0xc1)) return b[i + 1] === 0xc2; return null; };
+// Edge veto (refuse a key line near the image border) stays off: the 02/11 Xbox key image
+// (1440x1079) had its key line 8 px from the right edge at 1000 px, so a 0.8% side margin
+// refused a real key, and on the fictitious corpus the 1 px rule caught no wrong key the
+// alphabet check did not. XKW_EDGE_VETO=1 (and XKW_EDGE_MARGIN, a fraction) for tests.
 const ocrOptions = { workers,
   parallelConfirm: process.env.XKW_PAR_CONFIRM !== '0',
   rgb: process.env.XKW_RGB_PIXELS !== '0',
-  xboxAlphabet: process.env.XKW_XBOX_ALPHABET !== '0' };
+  xboxAlphabet: process.env.XKW_XBOX_ALPHABET !== '0',
+  edgeVeto: process.env.XKW_EDGE_VETO === '1',
+  edgeMargin: Number(process.env.XKW_EDGE_MARGIN ?? 0) };
+// A worker that died is being restarted (bot-ocr.mjs): give posts to the live ones.
+const leastBusy = () => { const live = workers.filter(w => !w.dead); return (live.length ? live : workers).reduce((a, b) => (b.busy < a.busy ? b : a)); };
 async function readKeyPooled(buffer) {
-  const chosen = workers.reduce((a, b) => (b.busy < a.busy ? b : a));
+  const chosen = leastBusy();
   chosen.busy++;
   try { return await readKey(chosen, buffer, ocrOptions); } finally { chosen.busy--; }
 }
@@ -131,16 +147,30 @@ async function readKeyPooled(buffer) {
 // Waking an idle GPU here was measured and did not help, so it is not done.
 function leaseWorker() {
   if (!worker) return null;
-  const chosen = workers.reduce((a, b) => (b.busy < a.busy ? b : a));
+  const chosen = leastBusy();
   chosen.busy++;
   let released = false;
   return { worker: chosen, release() { if (!released) { released = true; chosen.busy--; } } };
 }
-Promise.all(workers.map(async w => {
-  await w.ready;
-  // Warm the recognizer on a key-like image so the first real post hits warm shapes.
-  try { const sample = readdirSync('test-images').find(f => f.endsWith('.jpg')); if (sample) await readKey(w, readFileSync(join('test-images', sample))); } catch { }
-})).then(() => { if (worker) console.log(`${stamp(now())}  OCR pronto (${workers.length} workers).`); });
+// The leased worker's read; if that worker died meanwhile, the same read on another one.
+async function readKeyLeased(lease, buffer) {
+  try { return await readKey(lease.worker, buffer, ocrOptions); }
+  catch (error) {
+    if (!/worker/i.test(String(error?.message))) throw error;
+    log('ocr-worker-lost', { error: String(error.message) });
+    return await readKeyPooled(buffer);
+  }
+}
+// Warm the recognizer on a key-like image so the first real post hits warm shapes; again
+// after a worker restart.
+const warmSample = (() => { try { const f = readdirSync('test-images').find(x => x.endsWith('.jpg')); return f ? readFileSync(join('test-images', f)) : null; } catch { return null; } })();
+const warmWorker = async w => { try { await w.ready; if (warmSample) await readKey(w, warmSample); } catch { } };
+for (const w of workers) w.onRestart = count => {
+  log('ocr-worker-restart', { count });
+  console.log(`${stamp(now())}  worker de OCR reiniciado (${count}ª vez)`);
+  warmWorker(w).catch(() => {});
+};
+Promise.all(workers.map(warmWorker)).then(() => { if (worker) console.log(`${stamp(now())}  OCR pronto (${workers.length} workers).`); });
 const historyCount = Number(arg('history') ?? 0);
 
 // Fetch the last posts of a channel (the query WhatsApp Web uses to open a
@@ -260,9 +290,18 @@ function raceMediaSources(image, id, arrived, onProgress = null) {
   return firstFull;
 }
 
+// Only the channels listed (active) in canais.txt are read. The account may follow other
+// channels, and WhatsApp delivers their posts too: a key image there must never reach the
+// app, and an unchecked channel in Configurações must not be read. A post of a listed
+// channel that comes before the list is resolved (while connecting) is left to the poll.
+const ignoredJids = new Set();
 async function handlePost(sock, msg, via, extra = {}) {
   const arrived = now();
   const jid = msg.key?.remoteJid;
+  if (!channelJids.includes(jid)) {
+    if (channelJids.length >= inviteCodes.length && !ignoredJids.has(jid)) { ignoredJids.add(jid); log('channel-ignored', { jid, via }); }
+    return;
+  }
   // The same post can come from the raw frame and again from Baileys' upsert: dedupe on
   // every id it may carry (server id as string or Long, message id).
   const ids = [msg.key?.server_id, msg.newsletterServerId, msg.key?.id].filter(x => x != null && x !== '').map(x => `${jid}:${String(x)}`);
@@ -312,6 +351,8 @@ async function handlePost(sock, msg, via, extra = {}) {
     thumbnailBytes: image?.jpegThumbnail?.length ?? 0, width: image?.width, height: image?.height,
     hasMediaKey: !!image?.mediaKey?.length, hasDirectPath: !!image?.directPath });
   console.log(`${stamp(arrived)}  POST via=${via}${first ? '' : ' (repetido)'} tipo=${type} atraso≈${lagS}s (resolução de 1 s)`);
+  // The channel announces each key ~15 min ahead and counts down just before it: poll fast then.
+  if (first && polledJids.has(jid)) noteChannelSignals(image?.caption ?? content.conversation ?? content.extendedTextMessage?.text ?? '', sentAt, id);
   if (!image || !first) return;
   if (stale) {
     log('stale', { id, ageS: Math.round((arrived - sentAt) / 1000) });
@@ -348,12 +389,12 @@ async function handlePost(sock, msg, via, extra = {}) {
         read = { ...p, ...c, viaPartial: true };
       }
     }
-    if (!read?.key) read = lease ? await readKey(lease.worker, buffer, ocrOptions) : worker ? await readKeyPooled(buffer) : null;
+    if (!read?.key) read = lease ? await readKeyLeased(lease, buffer) : worker ? await readKeyPooled(buffer) : null;
     lease?.release();
     const ocrDone = now();
     finishClaim(claim, !!read?.key);
     let appResult = null;
-    if (read?.key && sendToApp) appResult = await sendKeyToApp(read.key, `canal ${id}`);
+    if (read?.key && sendToApp) appResult = await sendKeyWithRetry(read.key, `canal ${id}`);
     const handed = now();
     log('ocr', { id, accepted: !!read?.key, key: read?.key ? redact(read.key) : null, candidates: read?.candidates, disagreed: !!read?.disagreed, rejected: read?.rejected ?? null, parallel: !!read?.parallel, viaPartial: !!read?.viaPartial,
       partialAtMs: partial.at ? Math.round(partial.at - arrived) : null, partialFraction: partial.fraction != null ? Math.round(partial.fraction * 100) / 100 : null, progressive: partial.progressive, overlap: read?.overlap != null ? Math.round(read.overlap * 1000) / 1000 : null,
@@ -415,21 +456,18 @@ async function otherBotResult(claim) {
 
 // The first hand-off after hours idle took 843 ms in the app (the next ones 1 ms): a ping at
 // start and every 30 s keeps the app's inbox path (pipe, JSON, key parser) warm.
+// A change between answered and failed pings is logged, so a lost app shows in the log.
 if (sendToApp) {
-  const ping = () => sendKeyToApp(null, 'ping').then(r => { if (r !== 'pong' && !String(r).startsWith('app indisp')) log('app-ping', { result: r }); });
+  let lastPing = null;
+  const ping = () => sendToAppPipe(null, 'ping').then(r => {
+    const ok = r === 'pong';
+    if (ok !== lastPing) log('app-ping', { ok, result: r });
+    lastPing = ok;
+  });
   setTimeout(ping, 3000).unref?.(); setInterval(ping, 30_000).unref?.();
 }
-function sendKeyToApp(key, source) {
-  return new Promise(resolve => {
-    const socket = connect('\\\\.\\pipe\\xkw-bot-inbox');
-    let reply = '';
-    const done = value => { socket.destroy(); resolve(value); };
-    socket.setTimeout(3000, () => done('timeout'));
-    socket.on('error', error => done(`app indisponível (${error.code ?? error.message})`));
-    socket.on('connect', () => socket.write(JSON.stringify(key === null ? { ping: true } : { key, source }) + '\n'));
-    socket.on('data', chunk => { reply += chunk; if (reply.includes('\n')) { try { done(JSON.parse(reply).result); } catch { done('resposta inválida'); } } });
-  });
-}
+// A key is retried for a moment if the app's pipe was between two connections (app-inbox.mjs).
+const sendKeyWithRetry = (key, source) => sendKeyWithRetryPipe(key, source, { onRetry: info => log('app-retry', info) });
 
 // Channel poll. On the official channel (many followers) the push frame reached this
 // account 8-11 s after the post's server time, and another account 18-22 s after, while
@@ -479,7 +517,32 @@ function loadFastTimes() {
   log('fast-poll-times', { times: text.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#')) });
 }
 loadFastTimes(); setInterval(loadFastTimes, 15_000).unref?.();
+// Fast-poll windows the polled channel itself announces (channel-signals.mjs), so no key time
+// has to be typed in: the key time of an "KEY ... XBOX ... Liberação de HH:MM" post (from
+// PollMinutesBefore before to MinutesAfter after) and 3 min after a countdown post
+// ("PREPARADOS???", "3..."). They only change the poll rate, never what is accepted.
+const COUNTDOWN_FAST_MS = Number(process.env.XKW_COUNTDOWN_FAST_MS ?? 3 * 60_000);
+const autoWindows = [], polledJids = new Set();
+const hhmm = ms => new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+function addAutoWindow(from, to, why, post) {
+  const t = Date.now();
+  for (let i = autoWindows.length - 1; i >= 0; i--) if (autoWindows[i].to < t) autoWindows.splice(i, 1);
+  if (autoWindows.some(w => w.why === why && Math.abs(w.from - from) < 1000 && Math.abs(w.to - to) < 1000)) return;
+  autoWindows.push({ from, to, why });
+  log('auto-window', { why, post, from: new Date(from).toISOString(), to: new Date(to).toISOString() });
+  console.log(`${stamp(now())}  ${why === 'anuncio' ? `Key anunciada no canal para ${hhmm(from + FAST_BEFORE_MS)}` : 'Contagem no canal'}: consulta rápida de ${hhmm(from)} a ${hhmm(to)}`);
+  kickPollers();
+}
+function noteChannelSignals(text, sentAt, post) {
+  try {
+    const t = Date.now();
+    const at = announcedKeyTime(text, sentAt, t);
+    if (at) addAutoWindow(at - FAST_BEFORE_MS, at + FAST_AFTER_MS, 'anuncio', post);
+    else if (isCountdown(text) && (!sentAt || t - sentAt < 60_000)) addAutoWindow(t, t + COUNTDOWN_FAST_MS, 'contagem', post);
+  } catch { }
+}
 function inFastWindow(t = Date.now()) {
+  if (autoWindows.some(w => t >= w.from && t <= w.to)) return true;
   const d = new Date(t);
   return fastTimes.some(x => {
     for (const dayOffset of x.date ? [0] : [-1, 0, 1]) {
@@ -501,10 +564,21 @@ function msToNextSlot(interval) {
   return next - t;
 }
 const pollers = new Map();
-async function pollOnce(sock, jid) {
+// A query answers in ~0.2-0.4 s; one that hangs would otherwise hold this bot's poll for
+// Baileys' 60 s default. The first query after (re)connecting asks for more posts, so a key
+// announcement made while the bot was off still sets the fast window.
+const POLL_TIMEOUT_MS = Number(process.env.XKW_POLL_TIMEOUT_MS ?? 4000);
+const FIRST_POLL_COUNT = Number(process.env.XKW_FIRST_POLL_COUNT ?? 10);
+// A key announcement or countdown seen now: queries switch to the fast grid at once (a poll
+// pausing after an error keeps its pause).
+function kickPollers() {
+  for (const state of pollers.values())
+    if (!state.stopped && !state.inFlight && !state.errors && state.tick) { clearTimeout(state.timer); state.timer = setTimeout(state.tick, msToNextSlot(FAST_POLL_MS)); }
+}
+async function pollOnce(sock, jid, count = 3) {
   const asked = now();
   const result = await sock.query({ tag: 'iq', attrs: { id: sock.generateMessageTag(), type: 'get', xmlns: 'newsletter', to: 's.whatsapp.net' },
-    content: [{ tag: 'messages', attrs: { type: 'jid', jid, count: '3' } }] });
+    content: [{ tag: 'messages', attrs: { type: 'jid', jid, count: String(count) } }] }, POLL_TIMEOUT_MS);
   const found = [];
   const walk = node => {
     if (!node || typeof node !== 'object') return;
@@ -514,23 +588,36 @@ async function pollOnce(sock, jid) {
   walk(result);
   pollStats.ok++; pollStats.rttSum += now() - asked;
   for (const node of found) {
-    const sid = String(node.attrs.server_id);
-    if (seen.has(`${jid}:${sid}`)) continue;
+    const sid = String(node.attrs.server_id), postKey = `${jid}:${sid}`;
+    const known = seen.has(postKey);
+    // An edited post comes back with edit="3" and the time of the edit as its t. The 04/11 key
+    // announcement was edited ("Editada 17:15"), so an edit's text is read again, for the
+    // announcement and countdown signals only: a key is never taken from an edit.
+    const editedNow = node.attrs.edit === '3' && editsSeen.get(postKey) !== node.attrs.t;
+    if (known && !editedNow) continue;
     const plaintext = getBinaryNodeChild(node, 'plaintext');
     if (!plaintext?.content) continue;
     let message;
     try { message = proto.Message.decode(typeof plaintext.content === 'string' ? Buffer.from(plaintext.content, 'binary') : Buffer.from(plaintext.content)); }
     catch { continue; }
+    if (node.attrs.edit === '3') editsSeen.set(postKey, node.attrs.t);
+    if (known) {
+      const t = Number(node.attrs.t ?? 0) * 1000;
+      log('post-edited', { id: sid, editedAt: t, type: Object.keys(message)[0] ?? 'unknown' });
+      noteChannelSignals(message.imageMessage?.caption ?? message.conversation ?? message.extendedTextMessage?.text ?? '', t, sid);
+      continue;
+    }
     handlePost(sock, { key: { remoteJid: jid, server_id: sid }, message, messageTimestamp: Number(node.attrs.t ?? 0) }, 'poll', { pollRttMs: Math.round(now() - asked) })
       .catch(() => {});
   }
 }
+const editsSeen = new Map();
 function startPolling(sock, jid) {
   stopPolling(jid);
   if (!(POLL_MS > 0)) return;
-  const state = { delay: POLL_MS, errors: 0, timer: null, stopped: false, fast: null };
-  pollers.set(jid, state);
-  const tick = async () => {
+  const state = { delay: POLL_MS, errors: 0, timer: null, stopped: false, fast: null, first: true, inFlight: false, tick: null };
+  pollers.set(jid, state); polledJids.add(jid);
+  const tick = state.tick = async () => {
     if (state.stopped) return;
     const started = now();
     try {
@@ -544,9 +631,12 @@ function startPolling(sock, jid) {
         console.log(`${stamp(now())}  ${idle ? 'Poll em espera até o horário da key (só push)' : `Poll a cada ${fast ? FAST_POLL_MS : POLL_MS} ms`}`);
       }
       if (idle) { state.delay = 1000; if (!state.stopped) state.timer = setTimeout(tick, 1000); return; }
-      await pollOnce(sock, jid);
+      state.inFlight = true;
+      try { await pollOnce(sock, jid, state.first ? FIRST_POLL_COUNT : 3); } finally { state.inFlight = false; }
+      state.first = false;
       if (state.errors) { log('poll-recovered', { jid, errors: state.errors }); state.errors = 0; }
-      state.delay = fast ? FAST_POLL_MS : POLL_MS;
+      // Checked again after the query: its answer may have carried the key announcement.
+      state.delay = inFastWindow() ? FAST_POLL_MS : POLL_MS;
     } catch (error) {
       // Back off on errors (a rate limit or a dropped connection): 30 s, doubling to 10 min;
       // inside a fast window 5 s, doubling to 30 s, so the window is not lost to one error.

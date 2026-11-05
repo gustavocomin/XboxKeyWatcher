@@ -24,6 +24,7 @@ const OPTIONS = {
   det480: { env: { XKW_DET_LIMIT: '480' } },
   alpha: { opts: { xboxAlphabet: true } },
   edge: { opts: { edgeVeto: true } },
+  edge8: { opts: { edgeVeto: true, edgeMargin: 0.008 } },
   ov05: { opts: { overlapVeto: 0.05 } },
   ov15: { opts: { overlapVeto: 0.15 } },
   ov30: { opts: { overlapVeto: 0.3 } },

@@ -8,7 +8,7 @@ Versão atual: **V3.3** (app) e **0.3.3** (extensão). O histórico das versões
 
 Dois caminhos rodam juntos. O que tiver a key primeiro preenche o Chrome; o outro é descartado como repetido.
 
-1. **Bots do canal** (caminho principal, `tools\wa-listener`): um bot por login do WhatsApp marcado nas Configurações, hoje a conta principal e a secundária. Cada bot ouve o post pelo push e também consulta a lista de posts do canal oficial. Ele baixa a imagem e lê a key com RapidOCR, aceitando só quando duas leituras concordam (imagem inteira e linha ampliada 2x). Também recusa keys com letras que códigos Xbox não usam (A, E, I, O, U, L, S, 0, 1, 5) e linhas encostadas na borda da imagem.
+1. **Bots do canal** (caminho principal, `tools\wa-listener`): um bot por login do WhatsApp marcado nas Configurações, hoje a conta principal e a secundária. Cada bot ouve o post pelo push e também consulta a lista de posts do canal oficial. Ele baixa a imagem e lê a key com RapidOCR, aceitando só quando duas leituras concordam (imagem inteira e linha ampliada 2x). Também recusa keys com letras que códigos Xbox não usam (A, E, I, O, U, L, S, 0, 1, 5). Só lê os canais ativos de `canais.txt` e liga a consulta rápida sozinho quando o canal avisa a key ("KEY … XBOX ⏳ Liberação de HH:MM") ou começa a contagem ("PREPARADOS???", "3...").
 2. **Leitura pela tela** (reserva): lê a janela do WhatsApp Desktop com Windows OCR, RapidOCR e Tesseract.
 
 A key vai para a área de transferência e, pela ponte nativa, para a extensão do Chrome, que preenche o campo de resgate.

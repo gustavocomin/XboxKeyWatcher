@@ -35,23 +35,44 @@ export function extractKeys(text, lenient = false) {
 
 export class RapidWorker {
   constructor(command, args = [], cwd = undefined, env = undefined) {
-    this.proc = spawn(command, args, { cwd: cwd ?? command.replace(/[\\/][^\\/]+$/, ''), env, stdio: ['pipe', 'pipe', 'ignore'] });
-    this.buffer = Buffer.alloc(0); this.waiters = []; this.chain = Promise.resolve();
-    this.proc.stdout.on('data', chunk => { this.buffer = Buffer.concat([this.buffer, chunk]); this.drain(); });
-    this.ready = this.next();
+    this.spawnArgs = [command, args, { cwd: cwd ?? command.replace(/[\\/][^\\/]+$/, ''), env, stdio: ['pipe', 'pipe', 'ignore'] }];
+    this.chain = Promise.resolve(); this.restarts = 0; this.closed = false;
+    this.start();
+  }
+  // (Re)starts the Python process. A worker that exits (a crash, a frame it refuses) fails
+  // the requests it held and comes back by itself (onRestart is called with the count); a
+  // write to its dead pipe no longer throws, which used to end the whole bot.
+  start() {
+    const proc = spawn(...this.spawnArgs);
+    this.proc = proc; this.buffer = Buffer.alloc(0); this.waiters = []; this.dead = false;
+    proc.stdout.on('data', chunk => { if (this.proc !== proc) return; this.buffer = Buffer.concat([this.buffer, chunk]); this.drain(); });
+    proc.stdin.on('error', () => { });
+    proc.on('error', () => this.exited(proc));
+    proc.on('exit', () => this.exited(proc));
+    this.ready = this.next(); this.ready.catch(() => { });
+    if (this.restarts) this.onRestart?.(this.restarts);
+  }
+  exited(proc) {
+    if (this.proc !== proc || this.dead) return;
+    this.dead = true;
+    for (const w of this.waiters.splice(0)) w.reject(new Error('OCR worker exited'));
+    if (this.closed) return;
+    this.restarts++;
+    setTimeout(() => { if (!this.closed) this.start(); }, Math.min(5000, 250 * this.restarts));
   }
   drain() {
     while (this.buffer.length >= 4) {
       const n = this.buffer.readUInt32LE(0); if (this.buffer.length < 4 + n) return;
       const json = JSON.parse(this.buffer.subarray(4, 4 + n).toString('utf8')); this.buffer = this.buffer.subarray(4 + n);
-      this.waiters.shift()?.(json);
+      this.waiters.shift()?.resolve(json);
     }
   }
-  next() { return new Promise(resolve => this.waiters.push(resolve)); }
+  next() { return new Promise((resolve, reject) => this.waiters.push({ resolve, reject })); }
   // Requests queued here run in order; `pending` counts the ones not answered yet.
   send(width, heightAndFlags, payload) {
     this.pending = (this.pending ?? 0) + 1;
     const run = async () => {
+      if (this.dead) throw new Error('OCR worker exited');
       const header = Buffer.alloc(12); header.writeUInt32LE(width, 0); header.writeUInt32LE(heightAndFlags >>> 0, 4); header.writeUInt32LE(payload?.length ?? 0, 8);
       const reply = this.next(); this.proc.stdin.write(header); if (payload?.length) this.proc.stdin.write(payload); return reply;
     };
@@ -76,7 +97,7 @@ export class RapidWorker {
     this.warmFrame ??= Buffer.alloc(960 * 320 * 4);
     return this.recognize(this.warmFrame, 960, 320, true).catch(() => null);
   }
-  close() { this.proc.stdin.end(); }
+  close() { this.closed = true; try { this.proc.stdin.end(); } catch { } }
 }
 
 async function toBgra(input, maxWidth, rgb = false, partial = false) {
@@ -169,13 +190,16 @@ export function z7Evidence(image, row, { white = 225, pad = 4 } = {}) {
   });
 }
 
-export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0.75, keyLinesOnly = true, lenient = false, confirm = '2x', overlapVeto = 0, xboxAlphabet = false, edgeVeto = false, parallelConfirm = false, workers = null, rgb = false, partial = false, firstOnly = false } = {}) {
+export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0.75, keyLinesOnly = true, lenient = false, confirm = '2x', overlapVeto = 0, xboxAlphabet = false, edgeVeto = false, edgeMargin = 0, parallelConfirm = false, workers = null, rgb = false, partial = false, firstOnly = false } = {}) {
   const t0 = performance.now();
   // The full-resolution decode for the confirmation runs while the worker reads the image.
   const original = confirm !== '2x'
     ? sharp(jpeg).ensureAlpha().raw().toBuffer({ resolveWithObject: true }).catch(() => null) : null;
   const image = await toBgra(jpeg, maxWidth, rgb, partial);
   const t1 = performance.now();
+  // The worker exits on a frame over 10000 px (a very tall promo strip): nothing to read there.
+  if (image.width > 10000 || image.height > 10000)
+    return { key: null, candidates: 0, rejected: 'size', decodeMs: t1 - t0, ocrMs: 0, confirmMs: 0, totalMs: performance.now() - t0 };
   const pad = 4;
   // The confirmation view: the line re-cropped from the decoded image and upscaled 2x.
   const lineCrop2x = ([l, t, r, b]) => {
@@ -187,7 +211,7 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
   // parallelConfirm: when another worker is idle, start the confirmation there as soon as
   // the detector has located a single key-shaped line, while this worker recognizes it.
   // Same two reads on the same pixels as the sequential path, only overlapped in time.
-  const helper = parallelConfirm && keyLinesOnly && confirm === '2x' && !firstOnly ? (workers ?? []).find(w => w !== worker && !w.pending) : null;
+  const helper = parallelConfirm && keyLinesOnly && confirm === '2x' && !firstOnly ? (workers ?? []).find(w => w !== worker && !w.pending && !w.dead) : null;
   let first = null, early = null;
   if (helper) {
     const { detection, recognition } = worker.detectThenRecognize(image.data, image.width, image.height, rgb);
@@ -236,7 +260,11 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
   // a key line box that touches the image edge means the glyphs come close to it, where a
   // cut character can still read as a whole one (Q cut at the bottom read as O). Channel
   // keys sit well inside the image; refuse such a line instead of risking a wrong key.
-  if (edgeVeto && (l <= 1 || t <= 1 || r >= image.width - 2 || b >= image.height - 2)) {
+  // edgeMargin (fraction of the width) widens it on the left and right: a key pushed past the
+  // side edge kept a line box 2-4 px inside it and was read as a whole wrong key (fictitious
+  // corpus, 2 of 1572). Not used by the bot: a real channel key (02/11) came 8 px from the edge.
+  const side = Math.max(1, Math.round(edgeMargin * image.width));
+  if (edgeVeto && (l <= side || t <= 1 || r >= image.width - 1 - side || b >= image.height - 2)) {
     if (early) await early.reply.catch(() => null);
     return { ...result, rejected: 'edge', totalMs: performance.now() - t0 };
   }
@@ -265,9 +293,10 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
       .extract({ left, top, width: w, height: h }).raw().toBuffer({ resolveWithObject: true });
   })();
   const confirmWith = async (view, secondModel = false) => {
-    let second;
-    if (view === upscaled && sameBox) { second = await early.reply; result.parallel = true; }
-    else {
+    let second = null;
+    // The helper's read, if it answered; if that worker died, the same read here.
+    if (view === upscaled && sameBox) { second = await early.reply.catch(() => null); if (second) result.parallel = true; }
+    if (!second) {
       const crop = await view();
       if (!crop) return false;
       second = await worker.recognize(crop.data, crop.info.width, crop.info.height, false, secondModel, rgb && view === upscaled);

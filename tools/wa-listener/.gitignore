@@ -8,3 +8,6 @@ bot.pid
 claims/
 poll-rapido.txt
 agenda.json
+bench-real/
+media-real/
+bench-*/
