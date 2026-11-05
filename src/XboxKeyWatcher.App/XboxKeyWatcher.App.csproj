@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup><ProjectReference Include="../XboxKeyWatcher.Core/XboxKeyWatcher.Core.csproj" /></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="app.ico" LogicalName="XboxKeyWatcher.App.app.ico" /></ItemGroup>
 </Project>

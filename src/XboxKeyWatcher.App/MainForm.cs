@@ -80,7 +80,10 @@ internal sealed class MainForm : Form
     private readonly SemaphoreSlim clipboardWriter = new(1, 1);
     private SemaphoreSlim recognition = new(1, 1);
     private nint clipboardOwner;
-    private readonly NotifyIcon tray = new() { Icon = SystemIcons.Application, Text = "XboxKeyWatcher", Visible = true };
+    // App icon (embedded app.ico) for the window and the tray; the generic icon if it is missing.
+    private static readonly Icon AppIcon = LoadAppIcon();
+    private static Icon LoadAppIcon() { try { using var s = typeof(MainForm).Assembly.GetManifestResourceStream("XboxKeyWatcher.App.app.ico"); return s is null ? SystemIcons.Application : new Icon(s); } catch { return SystemIcons.Application; } }
+    private readonly NotifyIcon tray = new() { Icon = AppIcon, Text = "XboxKeyWatcher", Visible = true };
     private readonly string settingsPath = Path.Combine(AppContext.BaseDirectory, "settings.json");
     private readonly string hotkeysPath = Path.Combine(AppContext.BaseDirectory, "hotkeys.json");
     private HotkeyPreferences hotkeys = new();
@@ -96,6 +99,7 @@ internal sealed class MainForm : Form
         Text = "XboxKeyWatcher — Release - V3.2";
 #endif
         ClientSize = new Size(920, 680);
+        Icon = AppIcon;
         var bar = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40 };
         var select = new Button { Text = "Selecionar janela", AutoSize = true };
         var start = new Button { Text = "Iniciar", AutoSize = true };
