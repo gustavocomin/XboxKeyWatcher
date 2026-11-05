@@ -11,7 +11,7 @@ import { connect } from 'node:net';
 import { createHash } from 'node:crypto';
 import { constants as osConstants, setPriority as osPriority } from 'node:os';
 import { Agent, fetch as mediaFetch } from 'undici';
-import { RapidWorker, readKey } from './bot-ocr.mjs';
+import { RapidWorker, readKey, confirmKey } from './bot-ocr.mjs';
 import sharp from 'sharp';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -48,7 +48,7 @@ const channelJids = []; const renewTimers = new Map(); const seen = new Set();
 const MEDIA_HOST = 'https://mmg.whatsapp.net';
 // Keys are redeemed within about a minute; live posts arrived 1-3 s after being sent
 // (the slowest seen: ~26 s). Anything older is catch-up and must not be copied.
-const STALE_POST_MS = 45_000;
+const STALE_POST_MS = Number(process.env.XKW_STALE_MS ?? 45_000); // env only for tests
 // Post fields come from whoever publishes in the channel: only ever fetch HTTPS
 // URLs on WhatsApp's media hosts, built from a plain path, without redirects.
 const DIRECT_PATH = /^\/[A-Za-z0-9._~\/-]+(\?[A-Za-z0-9._~=&%-]*)?$/;
@@ -113,6 +113,9 @@ const worker = workers.length > 0;
 // OCR options (each can be turned off with =0): confirmation on the idle second worker in
 // parallel with the first read (same two reads), RGB pixels without the byte swap, and the
 // Xbox code alphabet check (a read with A E I L O S U 0 1 5 is refused, never filled).
+const PARTIAL_READ = process.env.XKW_PARTIAL_READ !== '0';
+const PARTIAL_MIN_REST_MS = Number(process.env.XKW_PARTIAL_MIN_REST_MS ?? 60); // env only for tests
+const isProgressiveJpeg = b => { for (let i = 2; i < b.length - 1; i++) if (b[i] === 0xff && (b[i + 1] === 0xc2 || b[i + 1] === 0xc0 || b[i + 1] === 0xc1)) return b[i + 1] === 0xc2; return null; };
 const ocrOptions = { workers,
   parallelConfirm: process.env.XKW_PAR_CONFIRM !== '0',
   rgb: process.env.XKW_RGB_PIXELS !== '0',
@@ -176,7 +179,7 @@ async function fetchHistory(sock, jid) {
 // Channel media is not end-to-end encrypted: plain GETs over kept-alive connections.
 // Race every source the post offers plus the same path on the extra media hosts; most
 // of the wait is the CDN's first byte. Resolves with the first complete full image.
-function raceMediaSources(image, id, arrived) {
+function raceMediaSources(image, id, arrived, onProgress = null) {
   const sources = {};
   const direct = safeMediaUrl(image.directPath, true), url = safeMediaUrl(image.url), preview = safeMediaUrl(image.thumbnailDirectPath, true);
   if (direct) sources.direct = direct;
@@ -193,7 +196,14 @@ function raceMediaSources(image, id, arrived) {
     const response = await mediaFetch(href, { dispatcher: mediaAgent, redirect: 'manual', headers: range ? { range: `bytes=${range[0]}-${range[1]}` } : undefined });
     timing[name] = { ttfbMs: Math.round(now() - s), status: response.status };
     if (range ? response.status !== 206 : !response.ok) { await response.body?.dump?.(); throw new Error(`${name} HTTP ${response.status}`); }
-    const body = Buffer.from(await response.arrayBuffer());
+    let body;
+    if (range || !onProgress || !response.body) body = Buffer.from(await response.arrayBuffer());
+    else {
+      // Whole image: read it as it streams, so a first OCR read can start before the end.
+      const chunks = []; let received = 0;
+      for await (const chunk of response.body) { chunks.push(Buffer.from(chunk)); received += chunk.length; onProgress(name, chunks, received, s); }
+      body = Buffer.concat(chunks, received);
+    }
     if (range && body.length !== range[1] - range[0] + 1) throw new Error(`${name} tamanho ${body.length}`);
     Object.assign(timing[name], { totalMs: Math.round(now() - s), bytes: body.length });
     return { name, body };
@@ -264,7 +274,28 @@ async function handlePost(sock, msg, via, extra = {}) {
   const stale = !!sentAt && arrived - sentAt > STALE_POST_MS;
   const direct = !!image?.directPath && !image.mediaKey?.length;
   // Start the download before any disk write or console output.
-  const download = first && image && !stale && direct ? raceMediaSources(image, id, arrived) : null;
+  // Partial read: channel images are mostly progressive JPEGs (28 of 33 on the official
+  // channel), which arrive whole at low quality first; the key line was readable from ~36-48%
+  // of the file. So when enough has arrived and the rest is still a while away, the first
+  // OCR read runs on what has arrived. Reads on a partial image gave wrong keys the complete
+  // image did not (2 of 160 bench images), so the candidate is only accepted after the key
+  // line re-read 2x from the complete image agrees (confirmKey). XKW_PARTIAL_READ=0 turns it off.
+  const partial = { try: null, at: null, fraction: null, progressive: null };
+  const expectedLen = Number(image?.fileLength ?? 0);
+  const onProgress = PARTIAL_READ && expectedLen > 64 * 1024 ? (name, chunks, received, startedAt) => {
+    if (partial.try || received >= expectedLen) return;
+    if (partial.progressive === null && received >= 4096) partial.progressive = isProgressiveJpeg(Buffer.concat(chunks, received)) ?? (received > 65536 ? false : null);
+    if (partial.progressive === null) return;
+    const need = (partial.progressive ? 0.5 : 0.75) * expectedLen;
+    if (received < need) return;
+    // Only worth it when the rest of the file is still >= ~60 ms away at the current rate.
+    const elapsed = now() - startedAt, rate = received / Math.max(1, elapsed);
+    if ((expectedLen - received) / Math.max(rate, 1e-6) < PARTIAL_MIN_REST_MS) return;
+    partial.at = now(); partial.fraction = received / expectedLen;
+    const cut = Buffer.concat([...chunks, Buffer.from([0xff, 0xd9])]);
+    partial.try = lease ? readKey(lease.worker, cut, { ...ocrOptions, partial: true, firstOnly: true }).catch(() => null) : null;
+  } : null;
+  const download = first && image && !stale && direct ? raceMediaSources(image, id, arrived, onProgress) : null;
   download?.catch(() => {});
   const lease = download ? leaseWorker() : null;
   const type = Object.keys(content)[0] ?? 'unknown';
@@ -293,13 +324,22 @@ async function handlePost(sock, msg, via, extra = {}) {
     const downloaded = now();
     log('image', { id, winner, downloadMs: Math.round(downloaded - start), bytes: buffer.length, fromArrivalMs: Math.round(downloaded - arrived) });
     console.log(`${stamp(downloaded)}  IMAGEM (${winner}) baixada em ${Math.round(downloaded - start)} ms (${Math.round(buffer.length / 1024)} KB)`);
-    const read = lease ? await readKey(lease.worker, buffer, ocrOptions) : worker ? await readKeyPooled(buffer) : null;
+    let read = null;
+    if (partial.try) {
+      const p = await partial.try;
+      if (p?.candidate) {
+        const c = await confirmKey(lease.worker, buffer, p, ocrOptions);
+        read = { ...p, ...c, viaPartial: true };
+      }
+    }
+    if (!read?.key) read = lease ? await readKey(lease.worker, buffer, ocrOptions) : worker ? await readKeyPooled(buffer) : null;
     lease?.release();
     const ocrDone = now();
     let appResult = null;
     if (read?.key && sendToApp) appResult = await sendKeyToApp(read.key, `canal ${id}`);
     const handed = now();
-    log('ocr', { id, accepted: !!read?.key, key: read?.key ? redact(read.key) : null, candidates: read?.candidates, disagreed: !!read?.disagreed, rejected: read?.rejected ?? null, parallel: !!read?.parallel, overlap: read?.overlap != null ? Math.round(read.overlap * 1000) / 1000 : null,
+    log('ocr', { id, accepted: !!read?.key, key: read?.key ? redact(read.key) : null, candidates: read?.candidates, disagreed: !!read?.disagreed, rejected: read?.rejected ?? null, parallel: !!read?.parallel, viaPartial: !!read?.viaPartial,
+      partialAtMs: partial.at ? Math.round(partial.at - arrived) : null, partialFraction: partial.fraction != null ? Math.round(partial.fraction * 100) / 100 : null, progressive: partial.progressive, overlap: read?.overlap != null ? Math.round(read.overlap * 1000) / 1000 : null,
       ocrMs: Math.round(ocrDone - downloaded), appMs: Math.round(handed - ocrDone), appResult, arrivalToAppMs: Math.round(handed - arrived) });
     console.log(`${stamp(handed)}  OCR ${read?.key ? 'KEY ' + redact(read.key) : 'sem key'} em ${Math.round(ocrDone - downloaded)} ms` +
       (appResult ? ` | app: ${appResult} | chegada→app ${Math.round(handed - arrived)} ms` : ''));

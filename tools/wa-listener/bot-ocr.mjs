@@ -79,9 +79,10 @@ export class RapidWorker {
   close() { this.proc.stdin.end(); }
 }
 
-async function toBgra(input, maxWidth, rgb = false) {
+async function toBgra(input, maxWidth, rgb = false, partial = false) {
   // rgb: 3-channel RGB straight from sharp (the worker converts it), no byte swap here.
-  const pipeline = sharp(input).resize({ width: maxWidth, withoutEnlargement: true });
+  // partial: an image still downloading (truncated JPEG); decode what has arrived.
+  const pipeline = sharp(input, partial ? { failOn: 'none' } : undefined).resize({ width: maxWidth, withoutEnlargement: true });
   const { data, info } = await (rgb ? pipeline.removeAlpha().toColourspace('srgb') : pipeline.ensureAlpha()).raw().toBuffer({ resolveWithObject: true });
   if (!rgb) for (let i = 0; i < data.length; i += 4) { const r = data[i]; data[i] = data[i + 2]; data[i + 2] = r; }
   return { data, width: info.width, height: info.height, channels: info.channels };
@@ -92,12 +93,88 @@ async function toBgra(input, maxWidth, rgb = false) {
 const NOT_IN_XBOX_CODES = /[AEILOSU015]/;
 export const impossibleXboxKey = key => NOT_IN_XBOX_CODES.test(key.replace(/-/g, ''));
 
-export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0.75, keyLinesOnly = true, lenient = false, confirm = '2x', overlapVeto = 0, xboxAlphabet = false, edgeVeto = false, parallelConfirm = false, workers = null, rgb = false } = {}) {
+// 7 versus Z by shape. Both reads come from the same network and, in condensed bold fonts,
+// can agree on Z for a 7. In the channel style each character is white fill inside a black
+// outline, so its fill is one blob of the line: Z has a bar along its foot, 7 only a stem.
+// For every Z or 7 of the line, find its blob from the recognizer's CTC step (8 px of the
+// 48 px-high line) and measure how much of the blob's width its bottom fifth covers.
+// Returns [{ ch, bottom }] (bottom null when no blob was found at that position).
+export function z7Evidence(image, row, { white = 225, pad = 4 } = {}) {
+  const text = String(row.text ?? '').toUpperCase(), chars = row.chars;
+  if (!Array.isArray(chars) || chars.length !== text.length) return null;
+  const wanted = [...text].map((c, k) => (c === 'Z' || c === '7') ? k : -1).filter(k => k >= 0);
+  if (!wanted.length) return [];
+  const [l0, t0, r0, b0] = row.bounds;
+  const l = Math.max(0, l0 - pad), t = Math.max(0, t0 - pad), r = Math.min(image.width, r0 + pad), b = Math.min(image.height, b0 + pad);
+  const W = r - l, H = b - t, ch = image.channels ?? 4;
+  if (W < 8 || H < 8) return null;
+  const mask = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = ((t + y) * image.width + (l + x)) * ch;
+    if (Math.min(image.data[i], image.data[i + 1], image.data[i + 2]) > white) mask[y * W + x] = 1;
+  }
+  const label = new Int32Array(W * H).fill(-1), blobs = [], stack = [];
+  for (let p = 0; p < W * H; p++) {
+    if (!mask[p] || label[p] >= 0) continue;
+    const blob = { x0: W, x1: 0, y0: H, y1: 0, area: 0, pixels: [] };
+    label[p] = blobs.length; stack.push(p);
+    while (stack.length) {
+      const q = stack.pop(), x = q % W, y = (q / W) | 0;
+      blob.area++; blob.pixels.push(q);
+      if (x < blob.x0) blob.x0 = x; if (x > blob.x1) blob.x1 = x; if (y < blob.y0) blob.y0 = y; if (y > blob.y1) blob.y1 = y;
+      if (x > 0 && mask[q - 1] && label[q - 1] < 0) { label[q - 1] = label[p]; stack.push(q - 1); }
+      if (x < W - 1 && mask[q + 1] && label[q + 1] < 0) { label[q + 1] = label[p]; stack.push(q + 1); }
+      if (y > 0 && mask[q - W] && label[q - W] < 0) { label[q - W] = label[p]; stack.push(q - W); }
+      if (y < H - 1 && mask[q + W] && label[q + W] < 0) { label[q + W] = label[p]; stack.push(q + W); }
+    }
+    blobs.push(blob);
+  }
+  const big = blobs.filter(o => o.area >= 30);
+  const tallest = big.map(o => o.y1 - o.y0 + 1).sort((a, c) => c - a).slice(0, 25);
+  const charH = tallest[Math.floor(tallest.length / 2)] ?? 0;
+  const tall = big.filter(o => { const h = o.y1 - o.y0 + 1; return h >= 0.7 * charH && h <= 1.3 * charH; });
+  const centers = tall.map(o => (o.y0 + o.y1) / 2).sort((a, c) => a - c);
+  const mid = centers[Math.floor(centers.length / 2)] ?? 0;
+  const glyphs = tall.filter(o => Math.abs((o.y0 + o.y1) / 2 - mid) <= 0.25 * charH);
+  const lineW = r0 - l0, lineH = b0 - t0, resizedW = Math.ceil(48 * lineW / Math.max(1, lineH));
+  // Align the line's characters (in reading order, at the x their CTC step points to) with
+  // the blobs (left to right), allowing extra blobs (art) and missing ones (merged glyphs).
+  const idx = [...text].map((c, k) => /[A-Z0-9]/.test(c) ? k : -1).filter(k => k >= 0);
+  if (idx.some(k => !Array.isArray(chars[k]) || chars[k].length < 3)) return wanted.map(k => ({ ch: text[k], bottom: null }));
+  const xs = idx.map(k => (l0 - l) + (chars[k][2] + 0.5) * 8 * (lineW / resizedW));
+  const G = glyphs.map(o => ({ o, c: (o.x0 + o.x1) / 2 })).sort((a, c) => a.c - c.c);
+  const cw = G.length ? G.map(g => g.o.x1 - g.o.x0 + 1).sort((a, c) => a - c)[Math.floor(G.length / 2)] : 1;
+  const n = xs.length, m = G.length, INF = 1e9;
+  const cost = Array.from({ length: n + 1 }, () => new Float64Array(m + 1).fill(INF)), move = Array.from({ length: n + 1 }, () => new Int8Array(m + 1));
+  cost[0][0] = 0;
+  for (let i = 0; i <= n; i++) for (let j = 0; j <= m; j++) {
+    const cur = cost[i][j]; if (cur >= INF) continue;
+    if (i < n && j < m) { const c = cur + Math.min(2, Math.abs(xs[i] - G[j].c) / cw); if (c < cost[i + 1][j + 1]) { cost[i + 1][j + 1] = c; move[i + 1][j + 1] = 1; } }
+    if (i < n && cur + 1 < cost[i + 1][j]) { cost[i + 1][j] = cur + 1; move[i + 1][j] = 2; }      // character without blob
+    if (j < m && cur + 0.5 < cost[i][j + 1]) { cost[i][j + 1] = cur + 0.5; move[i][j + 1] = 3; } // blob without character
+  }
+  const matched = new Map();
+  for (let i = n, j = m; i > 0 || j > 0;) {
+    const mv = move[i][j];
+    if (mv === 1) { if (Math.abs(xs[i - 1] - G[j - 1].c) <= 0.6 * cw) matched.set(idx[i - 1], G[j - 1].o); i--; j--; }
+    else if (mv === 2) i--; else j--;
+  }
+  return wanted.map(k => {
+    const hit = matched.get(k);
+    if (!hit) return { ch: text[k], bottom: null };
+    const h = hit.y1 - hit.y0 + 1, w = hit.x1 - hit.x0 + 1;
+    let minX = W, maxX = -1;
+    for (const q of hit.pixels) { const y = (q / W) | 0; if (y >= hit.y0 + 0.82 * h) { const xx = q % W; if (xx < minX) minX = xx; if (xx > maxX) maxX = xx; } }
+    return { ch: text[k], bottom: maxX < 0 ? 0 : (maxX - minX + 1) / w };
+  });
+}
+
+export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0.75, keyLinesOnly = true, lenient = false, confirm = '2x', overlapVeto = 0, xboxAlphabet = false, edgeVeto = false, parallelConfirm = false, workers = null, rgb = false, partial = false, firstOnly = false } = {}) {
   const t0 = performance.now();
   // The full-resolution decode for the confirmation runs while the worker reads the image.
   const original = confirm !== '2x'
     ? sharp(jpeg).ensureAlpha().raw().toBuffer({ resolveWithObject: true }).catch(() => null) : null;
-  const image = await toBgra(jpeg, maxWidth, rgb);
+  const image = await toBgra(jpeg, maxWidth, rgb, partial);
   const t1 = performance.now();
   const pad = 4;
   // The confirmation view: the line re-cropped from the decoded image and upscaled 2x.
@@ -110,7 +187,7 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
   // parallelConfirm: when another worker is idle, start the confirmation there as soon as
   // the detector has located a single key-shaped line, while this worker recognizes it.
   // Same two reads on the same pixels as the sequential path, only overlapped in time.
-  const helper = parallelConfirm && keyLinesOnly && confirm === '2x' ? (workers ?? []).find(w => w !== worker && !w.pending) : null;
+  const helper = parallelConfirm && keyLinesOnly && confirm === '2x' && !firstOnly ? (workers ?? []).find(w => w !== worker && !w.pending) : null;
   let first = null, early = null;
   if (helper) {
     const { detection, recognition } = worker.detectThenRecognize(image.data, image.width, image.height, rgb);
@@ -134,6 +211,7 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
   if (xboxAlphabet && impossibleXboxKey(keys[0])) return { ...result, rejected: 'alphabet', totalMs: performance.now() - t0 };
   const row = rows.find(r => extractKeys(r.text, lenient).includes(keys[0]));
   result.confidence = row.confidence; result.bounds = row.bounds;
+  result.z7 = z7Evidence(image, row);
   // A key drawn over other text (a logo, a chat bubble) can borrow its strokes: 7 read as
   // Z, C read as G, and both reads and other engines agree on the wrong character. The
   // detector sees that text as separate boxes: when the key line covers more than
@@ -150,6 +228,9 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
     result.overlap = overlap;
     if (overlapVeto > 0 && overlap > overlapVeto) return { ...result, rejected: 'overlap', totalMs: performance.now() - t0 };
   }
+  // firstOnly: stop after the first read (an image still downloading); the caller confirms
+  // the candidate on the complete image with confirmKey.
+  if (firstOnly) return { ...result, candidate: keys[0], row, totalMs: performance.now() - t0 };
   const [l, t, r, b] = row.bounds;
   // The detector grows each text box by its unclip margin and then clips it to the image:
   // a key line box that touches the image edge means the glyphs come close to it, where a
@@ -206,3 +287,25 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
   if (!result.key) result.disagreed = true;
   return { ...result, totalMs: performance.now() - t0 };
 }
+
+// Confirmation of a candidate read on a partial image (still downloading): the key line,
+// at the same place, re-read 2x from the complete image must give exactly the same key, and
+// the edge and 7/Z checks run on the complete image. Accepts nothing on its own.
+export async function confirmKey(worker, jpeg, first, { maxWidth = 1000, minConfidence = 0.75, lenient = false, rgb = false, edgeVeto = false, z7Check = false } = {}) {
+  const t0 = performance.now();
+  const image = await toBgra(jpeg, maxWidth, rgb);
+  const [l, t, r, b] = first.bounds, pad = 4;
+  const out = { key: null, confirmMs: 0 };
+  if (edgeVeto && (l <= 1 || t <= 1 || r >= image.width - 2 || b >= image.height - 2)) return { ...out, rejected: 'edge', confirmMs: performance.now() - t0 };
+  if (z7Check && first.row) { const ev = z7Evidence(image, first.row); out.z7 = ev; if (z7Refuses(ev)) return { ...out, rejected: 'z7', confirmMs: performance.now() - t0 }; }
+  const left = Math.max(0, l - pad), top = Math.max(0, t - pad);
+  const w = Math.min(image.width, r + pad) - left, h = Math.min(image.height, b + pad) - top;
+  const crop = await sharp(image.data, { raw: { width: image.width, height: image.height, channels: image.channels } })
+    .extract({ left, top, width: w, height: h }).resize({ width: w * 2, kernel: 'cubic' }).raw().toBuffer({ resolveWithObject: true });
+  const second = await worker.recognize(crop.data, crop.info.width, crop.info.height, false, false, rgb);
+  const keys = [...new Set((second.readings ?? []).filter(x => x.confidence >= minConfidence).flatMap(x => extractKeys(x.text, lenient)))];
+  if (keys.length === 1 && keys[0] === first.candidate) out.key = first.candidate; else out.disagreed = true;
+  return { ...out, confirmMs: performance.now() - t0 };
+}
+// Placeholder rule until the 7/Z evaluation decides one: never refuses.
+export const z7Refuses = () => false;

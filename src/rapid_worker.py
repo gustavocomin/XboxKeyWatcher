@@ -167,7 +167,7 @@ try:
                         frame = t + int(np.argmax(preds[b, t:end + 1, k]))
                         row = preds[b, frame]
                         p1 = float(row[k]); p2 = float(np.partition(row, -2)[-2])
-                        probs.append((round(p1, 4), round(p1 - p2, 4)))
+                        probs.append((round(p1, 4), round(p1 - p2, 4), frame))  # frame: CTC step (8 px of the 48 px-high line)
                     t = end + 1
                 char_evidence[text] = probs
             return results
