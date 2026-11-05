@@ -20,6 +20,10 @@ internal sealed class BotSettingsForm : Form
     private readonly HotkeyPreferences hotkeyDraft;
     private readonly Func<HotkeyPreferences, string?> saveHotkeys;
     private readonly string originalChannels, originalTimes;
+    private readonly KeySchedule.Agenda originalAgenda;
+    private readonly NumericUpDown botBefore = new() { Minimum = 1, Maximum = 60, Width = 52 };
+    private readonly NumericUpDown pollBefore = new() { Minimum = 0, Maximum = 30, Width = 52 };
+    private readonly NumericUpDown after = new() { Minimum = 1, Maximum = 60, Width = 52 };
     private readonly List<string> originalAccounts;
 
     /// <summary>True when channels or account changed, so the bot must restart.</summary>
@@ -41,16 +45,28 @@ internal sealed class BotSettingsForm : Form
         originalTimes = Read("poll-rapido.txt");
         originalAccounts = dir is null ? [] : ChannelBot.ReadAccounts(dir);
         channels.Text = originalChannels.Replace("\r\n", "\n").Replace("\n", "\r\n");
-        times.Text = originalTimes.Replace("\r\n", "\n").Replace("\n", "\r\n");
+        originalAgenda = dir is null ? new KeySchedule.Agenda() : KeySchedule.LoadAgenda(dir);
+        // Dated key times whose window ended more than a day ago are dropped (saved on Salvar).
+        string shownTimes = KeySchedule.DropExpired(originalTimes, originalAgenda, DateTime.Now) ?? originalTimes;
+        times.Text = shownTimes.Replace("\r\n", "\n").Replace("\n", "\r\n");
 
         var tabs = new TabControl { Dock = DockStyle.Fill };
         tabs.TabPages.Add(Page("Canais",
             "Um link de canal do WhatsApp por linha (linhas com # são comentários). O primeiro canal é o oficial: " +
-            "o bot consulta a lista de posts dele a cada 2 s, e a cada 0,5 s nos horários de key. Salvar reinicia o bot.", channels));
-        tabs.TabPages.Add(Page("Horários de key",
-            "Um horário por linha, na hora deste PC: 10:00 (todo dia) ou 2026-11-06 10:00 (só nesse dia). " +
-            "De 1 min antes até 10 min depois de cada horário o bot consulta o canal oficial a cada 0,5 s. " +
-            "Vale sem reiniciar (o bot relê o arquivo a cada 15 s). Use janelas curtas: consultar rápido o dia todo leva o WhatsApp a recusar as consultas.", times));
+            "o bot consulta a lista de posts dele (a cada 2 s sem horário de key; com horário, só na janela, a cada 0,5 s). Salvar reinicia o bot.", channels));
+        var timesPage = Page("Horários de key",
+            "Um horário por linha, na hora deste PC: 10:00 (todo dia) ou 2026-11-06 10:00 (só nesse dia). Com horário cadastrado o app se " +
+            "prepara sozinho: liga os bots antes, consulta o canal oficial a cada 0,5 s e liga a leitura pela tela nos tempos acima, e desliga " +
+            "tudo depois. Sem horário, os bots ficam ligados o tempo todo e consultam a cada 2 s.", times);
+        var timing = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 38, Padding = new Padding(4, 6, 4, 0), WrapContents = false };
+        timing.Controls.Add(new Label { Text = "Ligar bots", AutoSize = true, Margin = new Padding(0, 6, 4, 0) });
+        timing.Controls.Add(botBefore); timing.Controls.Add(new Label { Text = "min antes;  consulta rápida e tela", AutoSize = true, Margin = new Padding(4, 6, 4, 0) });
+        timing.Controls.Add(pollBefore); timing.Controls.Add(new Label { Text = "min antes até", AutoSize = true, Margin = new Padding(4, 6, 4, 0) });
+        timing.Controls.Add(after); timing.Controls.Add(new Label { Text = "min depois", AutoSize = true, Margin = new Padding(4, 6, 0, 0) });
+        botBefore.Value = originalAgenda.BotMinutesBefore; pollBefore.Value = originalAgenda.PollMinutesBefore; after.Value = originalAgenda.MinutesAfter;
+        timesPage.Controls.Add(timing);
+        timing.SendToBack(); // docked before the help text and the editor: the row sits on top
+        tabs.TabPages.Add(timesPage);
 
         var accountPage = new TabPage("Contas do bot");
         accountPage.Controls.Add(accounts);
@@ -141,6 +157,7 @@ internal sealed class BotSettingsForm : Form
         var problems = new List<string>();
         if (dir is not null) { problems.AddRange(CheckChannels(newChannels)); problems.AddRange(CheckTimes(newTimes)); }
         if (dir is not null && newAccounts.Count == 0) problems.Add("Contas do bot: marque pelo menos um login.");
+        if (pollBefore.Value > botBefore.Value) problems.Add("Horários de key: os bots precisam ligar antes (ou junto) da consulta rápida.");
         if (!hotkeyDraft.TryBindings(out _)) problems.Add("Atalhos: use atalhos distintos com dois modificadores Ctrl, Alt ou Shift e uma tecla F1 a F24.");
         if (problems.Count > 0) { MessageBox.Show(this, string.Join(Environment.NewLine, problems), "Corrija antes de salvar"); return; }
 
@@ -151,6 +168,9 @@ internal sealed class BotSettingsForm : Form
             {
                 if (newChannels != originalChannels.Replace("\r\n", "\n")) { Write("canais.txt", newChannels); changed.Add("canais"); BotRestartNeeded = true; }
                 if (newTimes != originalTimes.Replace("\r\n", "\n")) { Write("poll-rapido.txt", newTimes); changed.Add("horários de key"); }
+                var newAgenda = new KeySchedule.Agenda((int)botBefore.Value, (int)pollBefore.Value, (int)after.Value);
+                if (newAgenda != originalAgenda || !File.Exists(Path.Combine(dir, KeySchedule.AgendaFile)))
+                { Write(KeySchedule.AgendaFile, JsonSerializer.Serialize(newAgenda) + "\n"); if (newAgenda != originalAgenda) changed.Add("janela da key"); }
                 if (!newAccounts.SequenceEqual(originalAccounts)) { Write("conta.txt", "# Logins em que o bot roda ao abrir o app, um por linha (um bot por login)\n" + string.Join("\n", newAccounts) + "\n"); changed.Add("contas"); BotRestartNeeded = true; }
             }
             string? hotkeyError = saveHotkeys(hotkeyDraft);

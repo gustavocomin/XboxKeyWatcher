@@ -105,7 +105,6 @@ internal sealed class MainForm : Form
         var start = new Button { Text = "Iniciar", AutoSize = true };
         var stop = new Button { Text = "Parar", AutoSize = true };
         var clear = new Button { Text = "Limpar histórico", AutoSize = true };
-        var paste = new Button { Text = "Colagem assistida", AutoSize = true };
         var settings = new Button { Text = "Configurações", AutoSize = true };
         try { if (File.Exists(hotkeysPath)) { var saved = JsonSerializer.Deserialize<HotkeyPreferences>(File.ReadAllText(hotkeysPath)); if (saved is not null && saved.TryBindings(out _)) hotkeys = saved; else status.Text = "Atalhos inválidos; usando padrões."; } }
         catch (Exception e) { status.Text = "Erro ao carregar atalhos: " + e.Message; }
@@ -113,9 +112,8 @@ internal sealed class MainForm : Form
         start.Click += async (_, _) => { try { await StartMonitoring(); } catch (Exception e) { StopMonitoring(); status.Text = "Erro no baseline: " + e.Message; } };
         stop.Click += (_, _) => StopMonitoring();
         clear.Click += (_, _) => { StopMonitoring(); lock (sync) { gate.ClearHistory(); copiedKeys.Clear(); } status.Text = "Histórico limpo. Inicie novamente para estabelecer baseline."; };
-        paste.Click += (_, _) => ConfigurePasteBridge();
         settings.Click += (_, _) => EditSettings();
-        bar.Controls.Add(select); bar.Controls.Add(start); bar.Controls.Add(stop); bar.Controls.Add(clear); bar.Controls.Add(paste); bar.Controls.Add(settings);
+        bar.Controls.Add(select); bar.Controls.Add(start); bar.Controls.Add(stop); bar.Controls.Add(clear); bar.Controls.Add(settings);
         Controls.Add(preview); Controls.Add(details); Controls.Add(health); Controls.Add(botStatus); Controls.Add(status); Controls.Add(bar);
         preview.MouseDown += (_, e) => { dragging = true; dragStart = e.Location; };
         preview.MouseUp += (_, e) => SelectRegion(e.Location);
@@ -133,30 +131,28 @@ internal sealed class MainForm : Form
         SystemEvents.SessionSwitch += OnSessionSwitch;
         botInbox = new BotKeyInbox(AcceptBotKey);
 #if !INTEGRATION_TEST
-        Shown += (_, _) => StartBot();
+        // The Chrome fill is always on, and a scheduler starts the bots, the fast poll and the
+        // screen reading around the key times (KeySchedule). Without key times the bots run all
+        // the time, as before.
+        Shown += (_, _) => { EnablePasteBridge(); _ = TickSchedule(); scheduleTimer.Start(); };
+        scheduleTimer.Tick += async (_, _) => await TickSchedule();
 #endif
-        FormClosed += (_, _) => { channelBot?.Dispose(); botInbox?.Dispose(); watchdog.Stop(); watchdog.Dispose(); SystemEvents.SessionSwitch -= OnSessionSwitch; tray.Visible = false; tray.Dispose(); capture?.Dispose(); preview.Image?.Dispose(); pasteBridge?.Dispose(); };
+        FormClosed += (_, _) => { scheduleTimer.Stop(); channelBot?.Dispose(); botInbox?.Dispose(); watchdog.Stop(); watchdog.Dispose(); SystemEvents.SessionSwitch -= OnSessionSwitch; tray.Visible = false; tray.Dispose(); capture?.Dispose(); preview.Image?.Dispose(); pasteBridge?.Dispose(); };
     }
 
-    private void ConfigurePasteBridge()
+    private void EnablePasteBridge()
     {
         try
         {
             lock (sync)
             {
-                if (pasteBridge is not null)
-                {
-                    pasteBridge.Dispose();
-                    pasteBridge = null;
-                    status.Text = "Colagem assistida desativada.";
-                    return;
-                }
+                if (pasteBridge is not null) return;
                 pasteBridge = new PasteBridge(
                     key => NativeClipboard.TryGetText(clipboardOwner, out var value) && value == key,
                     (key, elapsed, delivery) => LogDetection("pasted", key, elapsed, true, null, delivery.OfferId, delivery),
                     native: true, http: false);
             }
-            status.Text = "Ponte nativa ativa. Ative o preenchimento na extensão do Chrome.";
+            status.Text = "Colagem no Chrome ligada (a extensão preenche o campo de resgate vazio).";
         }
         catch (Exception error) { status.Text = "Colagem assistida indisponível: " + error.Message; }
     }
@@ -229,8 +225,82 @@ internal sealed class MainForm : Form
             catch (Exception e) { return e.Message; }
         });
         if (dialog.ShowDialog(this) != DialogResult.OK) return;
-        if (dialog.BotRestartNeeded) { channelBot?.Dispose(); channelBot = null; StartBot(); }
+        // The scheduler starts the bots again if the new settings want them running now.
+        if (dialog.BotRestartNeeded) { channelBot?.Dispose(); channelBot = null; }
         status.Text = dialog.Summary;
+        _ = TickSchedule();
+    }
+
+    private readonly System.Windows.Forms.Timer scheduleTimer = new() { Interval = 2000 };
+    private bool scheduleBusy, autoScreenStarted;
+    private DateTime autoScreenRetryAt;
+
+    // Every 2 s: bots on inside [key - BotMinutesBefore, key + MinutesAfter] (always, when no
+    // key time is set); screen reading on inside [key - PollMinutesBefore, key + MinutesAfter]
+    // and off again after it, if the scheduler was the one that turned it on.
+    private async Task TickSchedule()
+    {
+        if (scheduleBusy) return;
+        scheduleBusy = true;
+        try
+        {
+            string? dir = ChannelBot.FindListenerDir();
+            var schedule = KeySchedule.Load(dir);
+            var now = DateTime.Now;
+            bool wantBots = !schedule.HasTimes || schedule.InBotWindow(now);
+            if (wantBots && channelBot is null) StartBot();
+            else if (!wantBots && channelBot is not null) { channelBot.Dispose(); channelBot = null; }
+            if (!wantBots)
+                botStatus.Text = schedule.Next(now) is { } next
+                    ? $"Bots desligados até {next.AddMinutes(-schedule.Times.BotMinutesBefore):HH:mm} (key às {next:dd/MM HH:mm}); a colagem no Chrome está ligada."
+                    : "Bots desligados: nenhum horário de key pela frente (Configurações > Horários de key).";
+
+            bool wantScreen = schedule.HasTimes && schedule.InPollWindow(now);
+            if (wantScreen && !monitoring && now >= autoScreenRetryAt) await AutoStartScreen();
+            else if (!wantScreen && autoScreenStarted)
+            {
+                autoScreenStarted = false;
+                if (monitoring) { StopMonitoring(); status.Text = "Leitura pela tela desligada (fim da janela do horário da key)."; }
+            }
+        }
+        catch (Exception e) { status.Text = "Agenda: " + e.Message; }
+        finally { scheduleBusy = false; }
+    }
+
+    // Turns the screen reading on without the window picker: finds the WhatsApp window saved
+    // with the region (settings.json), restores the region and runs the baseline. On any
+    // problem it says what to fix and tries again in 30 s; the bots keep working meanwhile.
+    private async Task AutoStartScreen()
+    {
+        autoScreenRetryAt = DateTime.Now.AddSeconds(30);
+        SavedRegion? saved;
+        try { saved = File.Exists(settingsPath) ? JsonSerializer.Deserialize<SavedRegion>(File.ReadAllText(settingsPath)) : null; }
+        catch { saved = null; }
+        if (saved is null) { status.Text = "Leitura pela tela: selecione a janela e a região uma vez (Selecionar janela) para ela ligar sozinha."; return; }
+        if (capture is null || selectedItem is null || selectedTitle != saved.Title)
+        {
+            nint hwnd = WindowCapture.FindWindowByTitle(saved.Title, out bool minimized);
+            if (hwnd == 0) { status.Text = $"Leitura pela tela: janela \"{saved.Title}\" não encontrada; abra o WhatsApp Desktop."; return; }
+            if (minimized) { status.Text = $"Leitura pela tela: a janela \"{saved.Title}\" está minimizada; restaure-a."; return; }
+            var item = WindowCapture.ItemForWindow(hwnd);
+            selectedItem = item; selectedTitle = item.DisplayName; savedRegion = saved;
+            var newProcessor = new FrameProcessor();
+            status.Text = "Leitura pela tela: preparando o OCR...";
+            await newProcessor.WarmUp();
+            processor = newProcessor;
+            StartCapture(item, false);
+        }
+        for (int i = 0; i < 40; i++)
+        {
+            bool ready; lock (sync) ready = pixels is not null && !selection.IsEmpty;
+            if (ready) break;
+            await Task.Delay(250);
+        }
+        bool hasRegion; lock (sync) hasRegion = pixels is not null && !selection.IsEmpty;
+        if (!hasRegion) { status.Text = "Leitura pela tela: a região salva não serve para o tamanho atual da janela; selecione a região de novo."; return; }
+        await StartMonitoring();
+        autoScreenStarted = monitoring;
+        if (monitoring) status.Text = "Leitura pela tela ligada pela agenda. " + status.Text;
     }
 
     private void EditHotkeys()
@@ -610,18 +680,19 @@ internal sealed class MainForm : Form
         long current; bool isNew;
         lock (sync)
         {
-            if (!monitoring) return "not_monitoring";
+            // Bot keys are accepted whenever the app is open: they come from the channel post
+            // itself, so they do not need the screen reading (monitoring) to be on. The gate
+            // only records the key, so the screen reading does not copy it a second time.
             current = generation;
             // Each channel post is a distinct event (the listener drops repeated deliveries
             // of the same post), so a key is copied again even if it was read before.
             isNew = gate.TryAccept(current, key);
         }
-        bool copied = await CopyKey(key, current);
+        bool copied = await CopyKey(key, current, manual: true);
         string? offerId = null;
         if (copied)
         {
             lock (sync)
-                if (monitoring && generation == current)
                 {
                     copiedKeys.Add(key);
                     botOfferKey = key;

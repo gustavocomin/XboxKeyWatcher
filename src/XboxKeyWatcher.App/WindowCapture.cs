@@ -37,6 +37,47 @@ internal sealed class WindowCapture : IDisposable
     [DllImport("d3d11.dll", ExactSpelling = true)]
     private static extern int CreateDirect3D11DeviceFromDXGIDevice(nint dxgiDevice, out nint graphicsDevice);
 
+    [ComImport, Guid("3628E81B-3CAC-4C60-B7F4-23CE0E0C3356"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IGraphicsCaptureItemInterop
+    {
+        nint CreateForWindow(nint window, ref Guid iid);
+        nint CreateForMonitor(nint monitor, ref Guid iid);
+    }
+    private delegate bool EnumWindowsProc(nint hwnd, nint lParam);
+    [DllImport("user32.dll")] private static extern bool EnumWindows(EnumWindowsProc callback, nint lParam);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetWindowText(nint hwnd, System.Text.StringBuilder text, int max);
+    [DllImport("user32.dll")] private static extern bool IsWindowVisible(nint hwnd);
+    [DllImport("user32.dll")] private static extern bool IsIconic(nint hwnd);
+
+    /// <summary>A visible top-level window with exactly this title, or 0. Minimized windows are
+    /// reported through <paramref name="minimized"/> (they send no frames).</summary>
+    public static nint FindWindowByTitle(string title, out bool minimized)
+    {
+        nint found = 0; bool iconic = false;
+        EnumWindows((hwnd, _) =>
+        {
+            if (!IsWindowVisible(hwnd)) return true;
+            var text = new System.Text.StringBuilder(256);
+            GetWindowText(hwnd, text, text.Capacity);
+            if (text.ToString() != title) return true;
+            found = hwnd; iconic = IsIconic(hwnd); return false;
+        }, 0);
+        minimized = iconic;
+        return found;
+    }
+
+    /// <summary>Capture item for a window handle, without the picker (the app already knows
+    /// the window from the saved region).</summary>
+    public static GraphicsCaptureItem ItemForWindow(nint hwnd)
+    {
+        var factory = ActivationFactory.Get("Windows.Graphics.Capture.GraphicsCaptureItem");
+        var interop = factory.AsInterface<IGraphicsCaptureItemInterop>();
+        var iid = new Guid("79C3F95B-31F7-4EC2-A464-632EF5D30760"); // IGraphicsCaptureItem
+        nint pointer = interop.CreateForWindow(hwnd, ref iid);
+        try { return GraphicsCaptureItem.FromAbi(pointer); }
+        finally { Marshal.Release(pointer); }
+    }
+
     public void Start(GraphicsCaptureItem item)
     {
         if (!GraphicsCaptureSession.IsSupported()) throw new NotSupportedException("Captura de janela indisponível neste dispositivo.");

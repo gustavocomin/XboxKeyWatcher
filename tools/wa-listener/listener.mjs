@@ -447,16 +447,28 @@ const POLL_MS = Number(process.env.XKW_POLL_MS ?? 2000);
 const POLL_CHANNELS = process.env.XKW_POLL_CHANNELS ?? 'first';
 const pollsChannel = index => POLL_CHANNELS === 'all' || (POLL_CHANNELS === 'first' && index === 0)
   || (/^\d+(,\d+)*$/.test(POLL_CHANNELS) && POLL_CHANNELS.split(',').map(Number).includes(index + 1));
-// Fast windows: when the key time is known, poll faster around it. poll-rapido.txt holds one
-// time per line, "HH:MM" (every day) or "YYYY-MM-DD HH:MM", local time; from 1 min before to
-// 10 min after each, poll every XKW_FAST_POLL_MS (default 500). The file is re-read every
-// 15 s, so it can be edited with the bot running. A short window stays far from the limit
-// seen (500 errors after ~47 min at 3 queries/s).
+// Key times: poll-rapido.txt holds one time per line, "HH:MM" (every day) or
+// "YYYY-MM-DD HH:MM", local time. With times set, the channel is polled only inside each
+// window, every XKW_FAST_POLL_MS (default 500), from agenda.json's PollMinutesBefore
+// (default 2) before to MinutesAfter (default 10) after; outside them the bot only listens
+// to the push. Without times it polls every POLL_MS all the time (the key time is unknown).
+// Both files are re-read every 15 s. A short window stays far from the limit seen (500
+// errors after ~47 min at 3 queries/s).
 const FAST_POLL_MS = Number(process.env.XKW_FAST_POLL_MS ?? 500);
-const FAST_BEFORE_MS = 60_000, FAST_AFTER_MS = 10 * 60_000;
+let FAST_BEFORE_MS = 2 * 60_000, FAST_AFTER_MS = 10 * 60_000;
 const FAST_FILE = 'poll-rapido.txt';
-let fastTimes = [], fastFileStamp = null;
+let fastTimes = [], fastFileStamp = null, agendaStamp = null;
+function loadAgenda() {
+  try {
+    const st = statSync('agenda.json'); if (st.mtimeMs === agendaStamp) return; agendaStamp = st.mtimeMs;
+    const a = JSON.parse(readFileSync('agenda.json', 'utf8'));
+    const clamp = (v, lo, hi, d) => Number.isFinite(Number(v)) ? Math.min(hi, Math.max(lo, Number(v))) : d;
+    FAST_BEFORE_MS = clamp(a.PollMinutesBefore, 0, 30, 2) * 60_000; FAST_AFTER_MS = clamp(a.MinutesAfter, 1, 60, 10) * 60_000;
+    log('agenda', { pollBeforeMin: FAST_BEFORE_MS / 60_000, afterMin: FAST_AFTER_MS / 60_000 });
+  } catch { }
+}
 function loadFastTimes() {
+  loadAgenda();
   let text = '';
   try { const st = statSync(FAST_FILE); if (st.mtimeMs === fastFileStamp) return; fastFileStamp = st.mtimeMs; text = readFileSync(FAST_FILE, 'utf8'); }
   catch { if (fastFileStamp !== null) { fastTimes = []; fastFileStamp = null; log('fast-poll-times', { times: [] }); } return; }
@@ -522,10 +534,18 @@ function startPolling(sock, jid) {
     if (state.stopped) return;
     const started = now();
     try {
+      const fast = inFastWindow();
+      // With key times set, poll only inside their windows; outside, check again in 1 s.
+      const idle = fastTimes.length > 0 && !fast;
+      const mode = idle ? 'off' : fast ? 'fast' : 'normal';
+      if (mode !== state.fast) {
+        state.fast = mode;
+        log('poll-rate', { jid, intervalMs: idle ? null : fast ? FAST_POLL_MS : POLL_MS });
+        console.log(`${stamp(now())}  ${idle ? 'Poll em espera até o horário da key (só push)' : `Poll a cada ${fast ? FAST_POLL_MS : POLL_MS} ms`}`);
+      }
+      if (idle) { state.delay = 1000; if (!state.stopped) state.timer = setTimeout(tick, 1000); return; }
       await pollOnce(sock, jid);
       if (state.errors) { log('poll-recovered', { jid, errors: state.errors }); state.errors = 0; }
-      const fast = inFastWindow();
-      if (fast !== state.fast) { state.fast = fast; log('poll-rate', { jid, intervalMs: fast ? FAST_POLL_MS : POLL_MS }); console.log(`${stamp(now())}  Poll a cada ${fast ? FAST_POLL_MS : POLL_MS} ms`); }
       state.delay = fast ? FAST_POLL_MS : POLL_MS;
     } catch (error) {
       // Back off on errors (a rate limit or a dropped connection): 30 s, doubling to 10 min;
