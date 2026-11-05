@@ -211,7 +211,7 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
   if (xboxAlphabet && impossibleXboxKey(keys[0])) return { ...result, rejected: 'alphabet', totalMs: performance.now() - t0 };
   const row = rows.find(r => extractKeys(r.text, lenient).includes(keys[0]));
   result.confidence = row.confidence; result.bounds = row.bounds;
-  result.z7 = z7Evidence(image, row);
+  if (process.env.XKW_Z7_EVIDENCE === '1') result.z7 = z7Evidence(image, row); // measurement only (off by default)
   // A key drawn over other text (a logo, a chat bubble) can borrow its strokes: 7 read as
   // Z, C read as G, and both reads and other engines agree on the wrong character. The
   // detector sees that text as separate boxes: when the key line covers more than
