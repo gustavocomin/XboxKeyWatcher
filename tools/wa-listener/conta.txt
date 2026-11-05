@@ -1,2 +1,3 @@
-# Login que o bot usa ao abrir o app: auth-secundario ou auth-principal
+# Logins em que o bot roda ao abrir o app, um por linha (um bot por login)
 auth-principal
+auth-secundario
