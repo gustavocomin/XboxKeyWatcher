@@ -112,7 +112,7 @@ const workers = process.argv.includes('--no-ocr') ? []
 const worker = workers.length > 0;
 // OCR options (each can be turned off with =0): confirmation on the idle second worker in
 // parallel with the first read (same two reads), RGB pixels without the byte swap, and the
-// Xbox code alphabet check (a read with A E I O U L N S 0 1 5 is refused, never filled).
+// Xbox code alphabet check (a read with A E I L O S U 0 1 5 is refused, never filled).
 const ocrOptions = { workers,
   parallelConfirm: process.env.XKW_PAR_CONFIRM !== '0',
   rgb: process.env.XKW_RGB_PIXELS !== '0',

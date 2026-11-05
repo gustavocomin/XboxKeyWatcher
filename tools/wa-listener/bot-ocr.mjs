@@ -87,9 +87,9 @@ async function toBgra(input, maxWidth, rgb = false) {
   return { data, width: info.width, height: info.height, channels: info.channels };
 }
 
-// Xbox 5x5 codes never contain A, E, I, O, U, L, N, S, 0, 1 or 5 (Z does occur). A read
+// Xbox 5x5 codes never contain A, E, I, L, O, S, U, 0, 1 or 5 (N and Z do occur). A read
 // with one of them is certainly wrong, so it is refused instead of filled.
-const NOT_IN_XBOX_CODES = /[AEIOULNS015]/;
+const NOT_IN_XBOX_CODES = /[AEILOSU015]/;
 export const impossibleXboxKey = key => NOT_IN_XBOX_CODES.test(key.replace(/-/g, ''));
 
 export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0.75, keyLinesOnly = true, lenient = false, confirm = '2x', overlapVeto = 0, xboxAlphabet = false, edgeVeto = false, parallelConfirm = false, workers = null, rgb = false } = {}) {

@@ -11,8 +11,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 out, clean_bg, promo_dir = sys.argv[1], sys.argv[2], sys.argv[3]
 rnd = random.Random(int(sys.argv[4]) if len(sys.argv) > 4 else 7)
 os.makedirs(out, exist_ok=True)
-# Xbox 5x5 codes never use A E I O U L N S 0 1 5 (Z does occur in channel keys).
-ALPHA = 'BCDFGHJKMPQRTVWXYZ2346789'
+# Xbox 5x5 codes never use A E I L O S U 0 1 5 (N and Z do occur).
+ALPHA = 'BCDFGHJKMNPQRTVWXYZ2346789'
 FONTS = [r'C:\Windows\Fonts\segoeuib.ttf', r'C:\Windows\Fonts\arialbd.ttf', r'C:\Windows\Fonts\verdanab.ttf', r'C:\Windows\Fonts\impact.ttf']
 promos = sorted(p for p in glob.glob(os.path.join(promo_dir, '*.jpg'))
                 if not p.endswith(('-thumb.jpg', '-preview.jpg')) and not os.path.basename(p).split('-')[1].startswith(('10', '11')))
