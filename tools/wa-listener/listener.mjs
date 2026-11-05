@@ -5,13 +5,16 @@
 // It never sends messages, never reacts and never prints a full key.
 //
 // Usage:  node listener.mjs --channel <invite link or code> [--auth auth-secundario]
-import makeWASocket, { Browsers, DisconnectReason, downloadMediaMessage, proto, useMultiFileAuthState } from 'baileys';
-import { appendFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import makeWASocket, { Browsers, DisconnectReason, downloadMediaMessage, getBinaryNodeChild, proto, useMultiFileAuthState } from 'baileys';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { connect } from 'node:net';
+import { createHash } from 'node:crypto';
+import { constants as osConstants, setPriority as osPriority } from 'node:os';
 import { Agent, fetch as mediaFetch } from 'undici';
 import { RapidWorker, readKey } from './bot-ocr.mjs';
 import sharp from 'sharp';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import pino from 'pino';
 import qrcode from 'qrcode-terminal';
@@ -49,27 +52,77 @@ const STALE_POST_MS = 45_000;
 // Post fields come from whoever publishes in the channel: only ever fetch HTTPS
 // URLs on WhatsApp's media hosts, built from a plain path, without redirects.
 const DIRECT_PATH = /^\/[A-Za-z0-9._~\/-]+(\?[A-Za-z0-9._~=&%-]*)?$/;
-function safeMediaUrl(value, isPath = false) {
+const WA_HOST = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.whatsapp\.net$/;
+function safeMediaUrl(value, isPath = false, host = MEDIA_HOST) {
   if (typeof value !== 'string' || (isPath && !DIRECT_PATH.test(value))) return null;
   try {
-    const u = new URL(isPath ? MEDIA_HOST + value : value);
-    return u.protocol === 'https:' && /^[a-z0-9-]+(\.[a-z0-9-]+)*\.whatsapp\.net$/.test(u.hostname) ? u.href : null;
+    const u = new URL(isPath ? host + value : value);
+    return u.protocol === 'https:' && WA_HOST.test(u.hostname) ? u.href : null;
   } catch { return null; }
 }
 const mediaAgent = new Agent({ keepAliveTimeout: 120_000, keepAliveMaxTimeout: 600_000, connections: 4 });
-setInterval(() => mediaFetch(`${MEDIA_HOST}/`, { dispatcher: mediaAgent, method: 'HEAD' }).then(r => r.body?.dump?.()).catch(() => {}), 20_000).unref?.();
-mediaFetch(`${MEDIA_HOST}/`, { dispatcher: mediaAgent, method: 'HEAD' }).then(r => r.body?.dump?.()).catch(() => {});
+// A new image is in no CDN cache yet: each cache server fetches it from storage on the
+// first request, and that first byte took 250-650 ms with a wide spread between sources
+// (same file: 402 ms on one URL, 1345 ms on the other). The same path is served by
+// WhatsApp's own media hosts (the media_conn list), so racing a few of them adds
+// independent tries. XKW_EXTRA_MEDIA_HOSTS=0 turns this off.
+// Hosts checked to serve the same channel paths (São Paulo edges and an ISP cache); the
+// media_conn hosts WhatsApp hands out at connect time go first.
+const STATIC_MEDIA_HOSTS = ['media-gru1-1.cdn.whatsapp.net', 'media-gru2-1.cdn.whatsapp.net', 'media.fgru5-1.fna.whatsapp.net'];
+const MAX_EXTRA_HOSTS = process.env.XKW_EXTRA_MEDIA_HOSTS === '0' ? 0 : 6;
+const extraHosts = STATIC_MEDIA_HOSTS.slice(0, MAX_EXTRA_HOSTS);
+const warmHosts = () => {
+  for (const h of [MEDIA_HOST, ...extraHosts.map(x => `https://${x}`)])
+    mediaFetch(`${h}/`, { dispatcher: mediaAgent, method: 'HEAD' }).then(r => r.body?.dump?.()).catch(() => {});
+};
+setInterval(warmHosts, 20_000).unref?.();
+warmHosts();
+async function loadMediaHosts(sock) {
+  if (!MAX_EXTRA_HOSTS) return;
+  try {
+    const conn = await sock.refreshMediaConn(true);
+    const given = (conn?.hosts ?? []).map(h => h?.hostname)
+      .filter(h => typeof h === 'string' && WA_HOST.test(h) && `https://${h}` !== MEDIA_HOST);
+    const merged = [...new Set([...given, ...STATIC_MEDIA_HOSTS])].slice(0, MAX_EXTRA_HOSTS);
+    extraHosts.splice(0, extraHosts.length, ...merged);
+    log('media-hosts', { hosts: extraHosts });
+    warmHosts();
+  } catch (error) { log('media-hosts-error', { error: String(error?.message ?? error) }); }
+}
 const sendToApp = !process.argv.includes('--no-app');
 // Worker from the repo script: it supports the key-lines-only mode used by readKey.
-const repoRoot = 'C:\\Repos\\XboxKeyWatcher';
+const repoRoot = process.env.XKW_BOT_REPO ?? join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+// OCR on the CPU by default. Key posts are clean images, and posts arrive seconds apart:
+// after a few idle seconds the GPU took ~310 ms per image against ~195 ms on the CPU,
+// even when woken at post arrival. The GPU only paid off on text-heavy images.
+// XKW_BOT_GPU=1 opts in (DirectML venv: GPU detector, GPU recognizer for 8+ lines).
+const wantGpu = process.env.XKW_BOT_GPU === '1';
+const pythonCandidates = [process.env.XKW_BOT_PYTHON, wantGpu ? join(repoRoot, '.venv-dml', 'Scripts', 'python.exe') : null, join(repoRoot, '.venv', 'Scripts', 'python.exe')].filter(Boolean);
+const botPython = pythonCandidates.find(p => existsSync(p)) ?? pythonCandidates.at(-1);
+const gpuOcr = botPython.includes('.venv-dml');
+// High CPU priority for the bot and its OCR workers (each worker raises itself): with the
+// CPU saturated, OCR went from 303 to 218 ms (p50) and 451 to 242 ms (max). Never realtime.
+const highPriority = process.env.XKW_PRIORITY !== 'normal';
+if (highPriority) { try { osPriority(0, osConstants.priority.PRIORITY_HIGH); } catch { } }
+const ocrEnv = { ...process.env, XKW_DET_BUCKETS: '1', XKW_DET_FASTNORM: '1', ...(highPriority ? { XKW_PRIORITY: 'high' } : {}),
+  ...(gpuOcr ? { XKW_RAPID_PROVIDER: 'dml-det', XKW_REC_GPU_MIN_LINES: '8' } : {}) };
 // Two workers: a text-heavy promo post (1-2 s of OCR) must not queue a key post behind it.
 const workers = process.argv.includes('--no-ocr') ? []
-  : [0, 1].map(() => Object.assign(new RapidWorker(join(repoRoot, '.venv', 'Scripts', 'python.exe'), ['-u', join(repoRoot, 'src', 'rapid_worker.py')], repoRoot), { busy: 0 }));
+  : [0, 1].map(() => Object.assign(new RapidWorker(botPython, ['-u', join(repoRoot, 'src', 'rapid_worker.py')], repoRoot, ocrEnv), { busy: 0 }));
 const worker = workers.length > 0;
 async function readKeyPooled(buffer) {
   const chosen = workers.reduce((a, b) => (b.busy < a.busy ? b : a));
   chosen.busy++;
   try { return await readKey(chosen, buffer); } finally { chosen.busy--; }
+}
+// Pick the worker for a post as soon as it arrives (the image is still downloading).
+// Waking an idle GPU here was measured and did not help, so it is not done.
+function leaseWorker() {
+  if (!worker) return null;
+  const chosen = workers.reduce((a, b) => (b.busy < a.busy ? b : a));
+  chosen.busy++;
+  let released = false;
+  return { worker: chosen, release() { if (!released) { released = true; chosen.busy--; } } };
 }
 Promise.all(workers.map(async w => {
   await w.ready;
@@ -113,15 +166,101 @@ async function fetchHistory(sock, jid) {
   console.log(`${stamp(now())}  Histórico ${jid}: ${found.length} posts lidos, ${saved} imagens salvas em media\\history`);
 }
 
+// Channel media is not end-to-end encrypted: plain GETs over kept-alive connections.
+// Race every source the post offers plus the same path on the extra media hosts; most
+// of the wait is the CDN's first byte. Resolves with the first complete full image.
+function raceMediaSources(image, id, arrived) {
+  const sources = {};
+  const direct = safeMediaUrl(image.directPath, true), url = safeMediaUrl(image.url), preview = safeMediaUrl(image.thumbnailDirectPath, true);
+  if (direct) sources.direct = direct;
+  if (url && url !== direct) sources.url = url;
+  if (direct) for (const host of extraHosts) {
+    const alt = safeMediaUrl(image.directPath, true, `https://${host}`);
+    if (alt) sources[`host:${host}`] = alt;
+  }
+  if (preview) sources.preview = preview;
+  if (!sources.direct && !sources.url) return Promise.reject(new Error('post sem endereço de mídia válido do WhatsApp'));
+  const timing = {};
+  const fetchPart = async (name, href, range = null) => {
+    const s = now();
+    const response = await mediaFetch(href, { dispatcher: mediaAgent, redirect: 'manual', headers: range ? { range: `bytes=${range[0]}-${range[1]}` } : undefined });
+    timing[name] = { ttfbMs: Math.round(now() - s), status: response.status };
+    if (range ? response.status !== 206 : !response.ok) { await response.body?.dump?.(); throw new Error(`${name} HTTP ${response.status}`); }
+    const body = Buffer.from(await response.arrayBuffer());
+    if (range && body.length !== range[1] - range[0] + 1) throw new Error(`${name} tamanho ${body.length}`);
+    Object.assign(timing[name], { totalMs: Math.round(now() - s), bytes: body.length });
+    return { name, body };
+  };
+  const rangesOnly = process.env.XKW_MEDIA_MODE === 'ranges-only';
+  const names = Object.keys(sources).filter(n => !rangesOnly || n === 'preview');
+  const attempts = names.map(name => fetchPart(name, sources[name]));
+  const fulls = attempts.filter((_, i) => names[i] !== 'preview');
+  const allTries = [...attempts];
+  // Off by default (XKW_MEDIA_RANGES=1 enables): on 4 new posts the quarters were never
+  // faster than the best whole copy, since each quarter pays the first-byte wait again.
+  // Split download: the first requester of a new image gets it at the pace storage feeds
+  // the cache server (one post: first byte at 476 ms, done at 930 ms for ~270 KB), so ask
+  // several servers for a quarter each, every quarter on two hosts, and join the first
+  // copy of each. Used only when it matches the post's length and SHA-256 exactly.
+  const length = Number(image.fileLength ?? 0);
+  const sha = image.fileSha256?.length ? Buffer.from(image.fileSha256) : null;
+  const hosts = [MEDIA_HOST, ...extraHosts.map(h => `https://${h}`)];
+  if (direct && length >= 64 * 1024 && hosts.length >= 2 && process.env.XKW_MEDIA_RANGES === '1') {
+    const PARTS = 4, size = Math.ceil(length / PARTS);
+    const parts = Array.from({ length: PARTS }, (_, i) => {
+      const range = [i * size, Math.min(length, (i + 1) * size) - 1];
+      const tries = [hosts[i % hosts.length], hosts[(i + 1) % hosts.length]].map(h => {
+        const href = safeMediaUrl(image.directPath, true, h);
+        return href ? fetchPart(`part${i}@${new URL(h).hostname}`, href, range) : Promise.reject(new Error('host'));
+      });
+      allTries.push(...tries);
+      return Promise.any(tries);
+    });
+    fulls.push(Promise.all(parts).then(pieces => {
+      const body = Buffer.concat(pieces.map(p => p.body));
+      if (body.length !== length) throw new Error('remontagem com tamanho errado');
+      if (sha ? !createHash('sha256').update(body).digest().equals(sha) : !(body[0] === 0xff && body[1] === 0xd8 && body.at(-2) === 0xff && body.at(-1) === 0xd9))
+        throw new Error('remontagem não confere');
+      return { name: `partes(${pieces.map(p => p.name.split('@')[1].replace('.whatsapp.net', '')).join(',')})`, body };
+    }));
+  }
+  // OCR uses the first complete image; the preview is only measured (size and timing).
+  const firstFull = Promise.any(fulls);
+  firstFull.catch(() => null).then(won => Promise.allSettled(allTries).then(async results => {
+    // Diagnostic: does the post's SHA-256 match what the CDN served (whole image)?
+    const shaCheck = sha && won ? createHash('sha256').update(won.body).digest().equals(sha) : null;
+    timing.sha = shaCheck;
+    for (const r of results) if (r.status === 'fulfilled' && r.value.name === 'preview') {
+      const meta = await sharp(r.value.body).metadata().catch(() => ({}));
+      Object.assign(timing.preview, { width: meta.width, height: meta.height });
+      writeFileSync(join('media', `${Math.round(arrived)}-${id}-preview.jpg`), r.value.body);
+    }
+    log('download-sources', { id, winner: won?.name ?? null, timing });
+    console.log(`  fontes: ${Object.entries(timing).filter(([, t]) => t && typeof t === 'object').map(([n, t]) => `${n} ttfb=${t.ttfbMs} total=${t.totalMs ?? '-'}${t.width ? ` ${t.width}x${t.height}` : ''}`).join(' | ')}`);
+  }));
+  return firstFull;
+}
+
 async function handlePost(sock, msg, via) {
   const arrived = now();
+  const jid = msg.key?.remoteJid;
+  // The same post can come from the raw frame and again from Baileys' upsert: dedupe on
+  // every id it may carry (server id as string or Long, message id).
+  const ids = [msg.key?.server_id, msg.newsletterServerId, msg.key?.id].filter(x => x != null && x !== '').map(x => `${jid}:${String(x)}`);
   const id = String(msg.key?.server_id ?? msg.newsletterServerId ?? msg.key?.id);
-  const dedupe = `${msg.key?.remoteJid}:${id}`;
-  const first = !seen.has(dedupe); seen.add(dedupe);
+  const first = !ids.some(x => seen.has(x)); for (const x of ids) seen.add(x);
   const content = msg.message ?? {};
-  const type = Object.keys(content)[0] ?? 'unknown';
   const image = content.imageMessage;
   const sentAt = Number(msg.messageTimestamp ?? 0) * 1000;
+  // Posts delivered on (re)connect are catch-up from while the bot was offline: an old
+  // key must never be copied. Live posts arrive ~1-3 s after they were sent (rarely ~25 s).
+  const stale = !!sentAt && arrived - sentAt > STALE_POST_MS;
+  const direct = !!image?.directPath && !image.mediaKey?.length;
+  // Start the download before any disk write or console output.
+  const download = first && image && !stale && direct ? raceMediaSources(image, id, arrived) : null;
+  download?.catch(() => {});
+  const lease = download ? leaseWorker() : null;
+  const type = Object.keys(content)[0] ?? 'unknown';
   const caption = redact(image?.caption ?? content.conversation ?? content.extendedTextMessage?.text ?? '');
   const lagS = sentAt ? ((arrived - sentAt) / 1000).toFixed(1) : '?';
   let thumbFile = null;
@@ -129,72 +268,45 @@ async function handlePost(sock, msg, via) {
     thumbFile = join('media', `${Math.round(arrived)}-${id}-thumb.jpg`);
     writeFileSync(thumbFile, Buffer.from(image.jpegThumbnail));
   }
-  log('post', { via, first, jid: msg.key?.remoteJid, thumbFile, id, type, sentAt, lagFromSentSecondResolution: lagS, caption,
+  log('post', { via, first, jid, thumbFile, id, type, sentAt, lagFromSentSecondResolution: lagS, caption,
     thumbnailBytes: image?.jpegThumbnail?.length ?? 0, width: image?.width, height: image?.height,
     hasMediaKey: !!image?.mediaKey?.length, hasDirectPath: !!image?.directPath });
   console.log(`${stamp(arrived)}  POST via=${via}${first ? '' : ' (repetido)'} tipo=${type} atraso≈${lagS}s (resolução de 1 s)`);
   if (!image || !first) return;
-  // Posts delivered on (re)connect are catch-up from while the bot was offline: an old
-  // key must never be copied. Live posts arrive ~1-3 s after they were sent (rarely ~25 s).
-  if (sentAt && arrived - sentAt > STALE_POST_MS) {
+  if (stale) {
     log('stale', { id, ageS: Math.round((arrived - sentAt) / 1000) });
     console.log(`${stamp(arrived)}  post antigo (${Math.round((arrived - sentAt) / 1000)} s) ignorado`);
     return;
   }
-  const start = now();
+  const start = arrived;
   try {
     let buffer, winner = 'baileys';
-    if (image.directPath && !image.mediaKey?.length) {
-      // Channel media is not end-to-end encrypted: plain GETs over kept-alive connections.
-      // Race every source the post offers; most of the wait is the CDN's first byte.
-      const sources = {};
-      const direct = safeMediaUrl(image.directPath, true), url = safeMediaUrl(image.url), preview = safeMediaUrl(image.thumbnailDirectPath, true);
-      if (direct) sources.direct = direct;
-      if (url && url !== direct) sources.url = url;
-      if (preview) sources.preview = preview;
-      if (!sources.direct && !sources.url) throw new Error('post sem endereço de mídia válido do WhatsApp');
-      const timing = {};
-      const attempts = Object.entries(sources).map(async ([name, href]) => {
-        const s = now();
-        const response = await mediaFetch(href, { dispatcher: mediaAgent, redirect: 'manual' });
-        timing[name] = { ttfbMs: Math.round(now() - s), status: response.status };
-        if (!response.ok) { await response.body?.dump?.(); throw new Error(`${name} HTTP ${response.status}`); }
-        const body = Buffer.from(await response.arrayBuffer());
-        Object.assign(timing[name], { totalMs: Math.round(now() - s), bytes: body.length });
-        return { name, body };
-      });
-      // OCR uses the first full image; the preview is only measured (size and timing) for now.
-      const firstFull = Promise.any(attempts.filter((_, i) => Object.keys(sources)[i] !== 'preview'));
-      ({ name: winner, body: buffer } = await firstFull);
-      Promise.allSettled(attempts).then(async results => {
-        for (const r of results) if (r.status === 'fulfilled' && r.value.name === 'preview') {
-          const meta = await sharp(r.value.body).metadata().catch(() => ({}));
-          Object.assign(timing.preview, { width: meta.width, height: meta.height });
-          writeFileSync(join('media', `${Math.round(arrived)}-${id}-preview.jpg`), r.value.body);
-        }
-        log('download-sources', { id, winner, timing });
-        console.log(`  fontes: ${Object.entries(timing).map(([n, t]) => `${n} ttfb=${t.ttfbMs} total=${t.totalMs ?? '-'}${t.width ? ` ${t.width}x${t.height}` : ''}`).join(' | ')}`);
-      });
-    } else {
-      buffer = await downloadMediaMessage(msg, 'buffer', {}, { logger: pino({ level: 'silent' }), reuploadRequest: sock.updateMediaMessage });
-    }
+    if (download) ({ name: winner, body: buffer } = await download);
+    else buffer = await downloadMediaMessage(msg, 'buffer', {}, { logger: pino({ level: 'silent' }), reuploadRequest: sock.updateMediaMessage });
     const downloaded = now();
     log('image', { id, winner, downloadMs: Math.round(downloaded - start), bytes: buffer.length, fromArrivalMs: Math.round(downloaded - arrived) });
     console.log(`${stamp(downloaded)}  IMAGEM (${winner}) baixada em ${Math.round(downloaded - start)} ms (${Math.round(buffer.length / 1024)} KB)`);
-    const read = worker ? await readKeyPooled(buffer) : null;
+    const read = lease ? await readKey(lease.worker, buffer) : worker ? await readKeyPooled(buffer) : null;
+    lease?.release();
     const ocrDone = now();
     let appResult = null;
     if (read?.key && sendToApp) appResult = await sendKeyToApp(read.key, `canal ${id}`);
     const handed = now();
-    log('ocr', { id, accepted: !!read?.key, key: read?.key ? redact(read.key) : null, candidates: read?.candidates, disagreed: !!read?.disagreed,
+    log('ocr', { id, accepted: !!read?.key, key: read?.key ? redact(read.key) : null, candidates: read?.candidates, disagreed: !!read?.disagreed, overlap: read?.overlap != null ? Math.round(read.overlap * 1000) / 1000 : null,
       ocrMs: Math.round(ocrDone - downloaded), appMs: Math.round(handed - ocrDone), appResult, arrivalToAppMs: Math.round(handed - arrived) });
     console.log(`${stamp(handed)}  OCR ${read?.key ? 'KEY ' + redact(read.key) : 'sem key'} em ${Math.round(ocrDone - downloaded)} ms` +
       (appResult ? ` | app: ${appResult} | chegada→app ${Math.round(handed - arrived)} ms` : ''));
+    // A key drawn over other text is where both reads can agree on a wrong character
+    // (bench: 7 read as Z, C as G). Channel keys so far had overlap 0; flag any that do not.
+    if (read?.key && read.overlap > 0.05) {
+      log('overlap-warning', { id, overlap: Math.round(read.overlap * 1000) / 1000, key: redact(read.key) });
+      console.log(`${stamp(now())}  ATENÇÃO: key ${redact(read.key)} sobre outro texto da imagem (sobreposição ${read.overlap.toFixed(2)}); confira antes de resgatar.`);
+    }
     writeFileSync(join('media', `${Math.round(arrived)}-${id}.jpg`), buffer);
   } catch (error) {
     log('image-error', { id, error: String(error?.message ?? error) });
     console.log(`${stamp(now())}  ERRO no post: ${error?.message ?? error}`);
-  }
+  } finally { lease?.release(); }
 }
 
 function sendKeyToApp(key, source) {
@@ -235,11 +347,30 @@ async function start() {
     shouldSyncHistoryMessage: () => false,
   });
   sock.ev.on('creds.update', saveCreds);
+  // Earliest point a channel post is visible: the raw <message> frame. Baileys only emits
+  // messages.upsert after its message mutex, the ack round trip and its event-buffer
+  // flush. Channel posts are plaintext protobuf, so decode it here and start at once;
+  // the upsert that follows is deduplicated (and logged, so the gap stays measurable).
+  // Offline (catch-up) frames are left to the upsert path and its age check.
+  const onFrame = node => {
+    try {
+      const from = node?.attrs?.from;
+      if (typeof from !== 'string' || !from.endsWith('@newsletter') || node.attrs.offline) return;
+      const plaintext = getBinaryNodeChild(node, 'plaintext');
+      if (!plaintext?.content) return;
+      const bytes = typeof plaintext.content === 'string' ? Buffer.from(plaintext.content, 'binary') : Buffer.from(plaintext.content);
+      const message = proto.Message.decode(bytes);
+      handlePost(sock, { key: { remoteJid: from, id: node.attrs.id, server_id: node.attrs.server_id }, message,
+        messageTimestamp: Number(node.attrs.t ?? 0) }, 'frame').catch(() => {});
+    } catch { /* the upsert path still handles the post */ }
+  };
+  if (process.env.XKW_FRAME_HOOK !== '0') (sock.ws.prependListener ?? sock.ws.on).call(sock.ws, 'CB:message', onFrame);
   sock.ev.process(async events => {
     const update = events['connection.update'];
     if (update?.qr) { console.log('\nEscaneie no celular: WhatsApp > Aparelhos conectados > Conectar aparelho\n'); qrcode.generate(update.qr, { small: true }); }
     if (update?.connection === 'open') {
       log('connected');
+      loadMediaHosts(sock);
       console.log(`${stamp(now())}  Conectado.`);
       for (const inviteCode of inviteCodes) {
         try {

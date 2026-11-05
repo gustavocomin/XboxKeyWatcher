@@ -7,9 +7,28 @@ import rapidocr_onnxruntime.utils as rapid_utils
 from rapidocr_onnxruntime import RapidOCR
 
 original_session = rapid_utils.InferenceSession
+# XKW_PRIORITY=high: this worker asks Windows for HIGH_PRIORITY_CLASS for itself (a child
+# process does not inherit the parent's class, so the listener cannot set it on spawn).
+if os.environ.get('XKW_PRIORITY') == 'high' and os.name == 'nt':
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+    kernel32.SetPriorityClass(ctypes.c_void_p(kernel32.GetCurrentProcess()), 0x00000080)
+RAPID_THREADS = int(os.environ.get('XKW_RAPID_THREADS', '4'))
+RAPID_PROVIDER = os.environ.get('XKW_RAPID_PROVIDER', 'cpu')
+RAPID_SPIN = os.environ.get('XKW_RAPID_SPIN', '0')
 def bounded_session(*args, **kwargs):
-    options = kwargs['sess_options']; options.intra_op_num_threads = 4
-    options.add_session_config_entry('session.intra_op.allow_spinning', '0')
+    options = kwargs['sess_options']; options.intra_op_num_threads = RAPID_THREADS
+    options.add_session_config_entry('session.intra_op.allow_spinning', RAPID_SPIN)
+    model_path = str(args[0]) if args else ''
+    # 'dml-det': only the detector on the GPU; recognition stays on the CPU, where
+    # small line batches are faster than a GPU round trip.
+    if RAPID_PROVIDER == 'dml' or (RAPID_PROVIDER == 'dml-det' and '_det_' in model_path):
+        # DirectML wants sequential execution and no memory pattern.
+        options.enable_mem_pattern = False
+        from onnxruntime import ExecutionMode
+        options.execution_mode = ExecutionMode.ORT_SEQUENTIAL
+        kwargs['providers'] = [('DmlExecutionProvider', {'device_id': 0}), 'CPUExecutionProvider']
     return original_session(*args, **kwargs)
 rapid_utils.InferenceSession = bounded_session
 
@@ -38,7 +57,7 @@ def timed_stage(run, timings, name):
 
 try:
     cv2.setNumThreads(1)
-    engine = RapidOCR(use_angle_cls=False, det_model_path=None, det_limit_side_len=960, det_limit_type='max')
+    engine = RapidOCR(use_angle_cls=False, det_model_path=None, det_limit_side_len=int(os.environ.get('XKW_DET_LIMIT', '960')), det_limit_type='max')
     warm=np.zeros((200,900,3),dtype=np.uint8)
     cv2.putText(warm,'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE',(20,105),cv2.FONT_HERSHEY_SIMPLEX,1.0,(255,255,255),2,cv2.LINE_AA)
     engine(warm)
@@ -58,13 +77,100 @@ try:
             padded = np.zeros((bucket_n, c, h, bucket_w), dtype=np.float32)
             padded[:n, :, :, :w] = batch
             batch = padded
-        output = raw_rec_session(batch)
+        output = (gpu_rec_session if rec_state['gpu'] and gpu_rec_session else raw_rec_session)(batch)
         return [output[0][:n]]
+    # Adaptive recognition device: a GPU round trip costs more than a few CPU lines, but
+    # wins clearly on text-heavy images (30+ lines). XKW_REC_GPU_MIN_LINES=N sends frames
+    # with at least N detected lines to a DirectML copy of the recognizer.
+    rec_state = {'gpu': False}
+    gpu_rec_session = None
+    gpu_min_lines = int(os.environ.get('XKW_REC_GPU_MIN_LINES', '0'))
+    if gpu_min_lines > 0:
+        import onnxruntime as ort
+        gpu_options = ort.SessionOptions(); gpu_options.enable_mem_pattern = False
+        gpu_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+        gpu_ort = ort.InferenceSession(raw_rec_session.session._model_path, sess_options=gpu_options,
+                                       providers=[('DmlExecutionProvider', {'device_id': 0}), 'CPUExecutionProvider'])
+        gpu_input = gpu_ort.get_inputs()[0].name; gpu_outputs = [o.name for o in gpu_ort.get_outputs()]
+        gpu_rec_session = lambda batch: gpu_ort.run(gpu_outputs, {gpu_input: batch})
+        for warm_n in rec_batches:
+            for warm_w in rec_widths[:9]:
+                gpu_rec_session(np.zeros((warm_n, 3, 48, warm_w), dtype=np.float32))
     if os.environ.get('XKW_RAPID_SHAPE_BUCKETS') != '0':
         engine.text_recognizer.session = bucketed_rec_session
         for warm_n, warm_widths in ((1, rec_widths[:10]), (2, (640, 768, 896, 1024, 1280))):
             for warm_w in warm_widths:
                 raw_rec_session(np.zeros((warm_n, 3, 48, warm_w), dtype=np.float32))
+    # Same idea for the detector: its input follows each image's aspect ratio, so a new
+    # post usually meant a new shape and a cold plan (+40-60 ms on the CPU). Pad the
+    # normalized input at the bottom/right to a few fixed sizes, pre-run them, and crop
+    # the probability map back so the postprocessing sees the original size.
+    if os.environ.get('XKW_DET_BUCKETS') == '1':
+        det_sizes = (320, 416, 512, 608, 704, 800, 896, 960)
+        raw_det_infer = engine.text_detector.infer
+        def bucketed_det_infer(batch):
+            n, c, h, w = batch.shape
+            bh = next((x for x in det_sizes if x >= h), h)
+            bw = next((x for x in det_sizes if x >= w), w)
+            if (bh, bw) != (h, w):
+                padded = np.zeros((n, c, bh, bw), dtype=batch.dtype)
+                padded[:, :, :h, :w] = batch
+                batch = padded
+            out = raw_det_infer(batch)
+            return [out[0][:, :, :h, :w]] + list(out[1:])
+        engine.text_detector.infer = bucketed_det_infer
+        for long_side in (960,):
+            for short in det_sizes:
+                raw_det_infer(np.zeros((1, 3, short, long_side), dtype=np.float32))
+                raw_det_infer(np.zeros((1, 3, long_side, short), dtype=np.float32))
+    # Detector normalization through a per-channel lookup table: the same float32 math
+    # ((v * 1/255 - mean) / std) evaluated once for each of the 256 byte values, written
+    # straight into CHW order. Bit-identical input, ~15 ms less per image.
+    if os.environ.get('XKW_DET_FASTNORM') == '1':
+        ops = engine.text_detector.preprocess_op
+        norm = next(op for op in ops if type(op).__name__ == 'NormalizeImage')
+        values = np.arange(256, dtype=np.float32).reshape(256, 1)
+        lut = ((values * norm.scale - norm.mean.reshape(1, 3)) / norm.std.reshape(1, 3)).astype(np.float32).reshape(1, 256, 3)
+        class FastNormCHW:
+            def __call__(self, data):
+                img = data['image']
+                if img.dtype != np.uint8:
+                    img = np.array(img).astype(np.float32)
+                    data['image'] = ((img * norm.scale - norm.mean) / norm.std).transpose((2, 0, 1))
+                    return data
+                data['image'] = np.ascontiguousarray(cv2.LUT(img, lut).transpose(2, 0, 1))
+                return data
+        class Identity:
+            def __call__(self, data): return data
+        engine.text_detector.preprocess_op = [FastNormCHW() if type(op).__name__ == 'NormalizeImage'
+            else Identity() if type(op).__name__ == 'ToCHWImage' else op for op in ops]
+    # Per-character evidence: RapidOCR only returns the mean probability of a line, which
+    # hides one doubtful character among 25 confident ones. Keep, for every recognized
+    # text, each character's probability and its margin over the runner-up class.
+    char_evidence = {}
+    def with_char_evidence(decoder):
+        ignored = set(decoder.get_ignored_tokens())
+        def run(preds):
+            results = decoder(preds)
+            best = preds.argmax(axis=2)
+            for b, (text, _) in enumerate(results):
+                if sum(ch.isalnum() for ch in text) < 20: continue  # cannot be a key line
+                # One entry per emitted character: its strongest frame in the CTC run.
+                probs = []
+                t, T = 0, best.shape[1]
+                while t < T:
+                    k = best[b, t]; end = t
+                    while end + 1 < T and best[b, end + 1] == k: end += 1
+                    if k not in ignored:
+                        frame = t + int(np.argmax(preds[b, t:end + 1, k]))
+                        row = preds[b, frame]
+                        p1 = float(row[k]); p2 = float(np.partition(row, -2)[-2])
+                        probs.append((round(p1, 4), round(p1 - p2, 4)))
+                    t = end + 1
+                char_evidence[text] = probs
+            return results
+        return run
+    engine.text_recognizer.postprocess_op = with_char_evidence(engine.text_recognizer.postprocess_op)
     phases ={'DetectionMs': 0.0, 'RecognitionMs': 0.0}
     engine.text_detector = timed_stage(engine.text_detector, phases, 'DetectionMs')
     engine.text_recognizer = timed_stage(engine.text_recognizer, phases, 'RecognitionMs')
@@ -74,9 +180,15 @@ try:
     # otherwise spend most of their time recognizing lines that cannot be keys.
     key_lines_only = False
     raw_sorted_boxes = engine.sorted_boxes
+    all_boxes = []  # every detected text box of the last frame (bounds), for overlap checks
     def key_line_boxes(dt_boxes):
         boxes = raw_sorted_boxes(dt_boxes)
+        all_boxes.clear()
+        for box in boxes:
+            pts = np.asarray(box, dtype=np.float32)
+            all_boxes.append([int(pts[:,0].min()), int(pts[:,1].min()), int(pts[:,0].max()), int(pts[:,1].max())])
         if not key_lines_only:
+            rec_state['gpu'] = gpu_min_lines > 0 and len(boxes) >= gpu_min_lines
             return boxes
         kept = []
         for box in boxes:
@@ -85,20 +197,49 @@ try:
             box_h = float(np.linalg.norm(points[0] - points[3]))
             if box_h > 0 and box_w / box_h >= 8:
                 kept.append(box)
+        rec_state['gpu'] = gpu_min_lines > 0 and len(kept) >= gpu_min_lines
         return kept
     engine.sorted_boxes = key_line_boxes
+    # Optional second recognition model for confirmations (bit 30 of the height field):
+    # reads the whole frame as one text line with a different network (PP-OCRv4 rec),
+    # so a confirmation does not repeat the first model's own mistakes.
+    second_rec = None
+    second_model = os.environ.get('XKW_CONFIRM_REC_MODEL')
+    if second_model:
+        second_rec = RapidOCR(use_angle_cls=False, rec_model_path=second_model).text_recognizer
+        raw_second = second_rec.session
+        def bucketed_second(batch):
+            n, c, h, w = batch.shape
+            bucket_w = next((x for x in rec_widths if x >= w), w)
+            if bucket_w != w:
+                padded = np.zeros((n, c, h, bucket_w), dtype=np.float32); padded[:, :, :, :w] = batch; batch = padded
+            return [raw_second(batch)[0]]
+        second_rec.session = bucketed_second
+        for warm_w in rec_widths[:10]:
+            raw_second(np.zeros((1, 3, 48, warm_w), dtype=np.float32))
     reply({'ready':True})
     while True:
         header=read_exact(sys.stdin.buffer,12)
         width,height,length=struct.unpack('<III',header)
         key_lines_only = bool(height & 0x80000000)
-        height &= 0x7FFFFFFF
+        second_line = bool(height & 0x40000000)
+        height &= 0x3FFFFFFF
+        if second_line:
+            if second_rec is None: raise ValueError('second model not loaded')
+            if width<1 or height<1 or width>10000 or height>10000 or length!=width*height*4: raise ValueError('invalid frame size')
+            bgra=np.frombuffer(read_exact(sys.stdin.buffer,length),dtype=np.uint8).reshape(height,width,4)
+            start = perf_counter_ns()
+            rec,_ = second_rec([cv2.cvtColor(bgra,cv2.COLOR_BGRA2BGR)])
+            reply({'readings':[{'text':rec[0][0],'confidence':float(rec[0][1]),'chars':char_evidence.get(rec[0][0]),'bounds':[0,0,width,height]}], 'timings':{'WorkerMs':(perf_counter_ns()-start)/1_000_000}})
+            continue
         if width<1 or height<1 or width>10000 or height>10000 or length!=width*height*4 or length>100_000_000:
             raise ValueError('invalid frame size')
         bgra=np.frombuffer(read_exact(sys.stdin.buffer,length),dtype=np.uint8).reshape(height,width,4)
         start = perf_counter_ns()
         phases['DetectionMs'] = phases['RecognitionMs'] = 0.0
+        rec_state['gpu'] = False
         phases['TextRegions'] = 0
+        char_evidence.clear(); all_boxes.clear()
         image=cv2.cvtColor(bgra,cv2.COLOR_BGRA2BGR)
         phases['ConversionMs'] = (perf_counter_ns() - start) / 1_000_000
         try:
@@ -109,9 +250,9 @@ try:
         readings=[]
         for row in (results or []):
             points=np.asarray(row[0],dtype=float)
-            readings.append({'text':row[1], 'confidence':float(row[2]), 'bounds':[int(points[:,0].min()),int(points[:,1].min()),int(points[:,0].max()),int(points[:,1].max())]})
+            readings.append({'text':row[1], 'confidence':float(row[2]), 'chars':char_evidence.get(row[1]), 'bounds':[int(points[:,0].min()),int(points[:,1].min()),int(points[:,0].max()),int(points[:,1].max())]})
         phases['WorkerMs'] = (perf_counter_ns() - start) / 1_000_000
-        reply({'readings':readings, 'timings':phases})
+        reply({'readings':readings, 'timings':phases, 'boxes':list(all_boxes) if key_lines_only else None})
 except EOFError:
     pass
 except Exception as exc:
