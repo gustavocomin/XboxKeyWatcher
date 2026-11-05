@@ -338,9 +338,12 @@ function sendKeyToApp(key, source) {
 // answering 500 after ~27 min. So by default only the first channel of canais.txt (the
 // official one, where the push is slow) is polled, every XKW_POLL_MS (default 2000), and
 // any error pauses the poll for 30 s, doubling up to 10 min; the push keeps working.
-// XKW_POLL_CHANNELS=all polls every channel; XKW_POLL_MS=0 turns polling off.
+// XKW_POLL_CHANNELS=all polls every channel, "1,2" the channels at those positions in
+// canais.txt (1 = first); XKW_POLL_MS=0 turns polling off.
 const POLL_MS = Number(process.env.XKW_POLL_MS ?? 2000);
 const POLL_CHANNELS = process.env.XKW_POLL_CHANNELS ?? 'first';
+const pollsChannel = index => POLL_CHANNELS === 'all' || (POLL_CHANNELS === 'first' && index === 0)
+  || (/^\d+(,\d+)*$/.test(POLL_CHANNELS) && POLL_CHANNELS.split(',').map(Number).includes(index + 1));
 const pollers = new Map();
 async function pollOnce(sock, jid) {
   const asked = now();
@@ -455,7 +458,7 @@ async function start() {
           console.log(`${stamp(now())}  Canal: ${name} (${jid})`);
           try { await sock.newsletterFollow(jid); console.log('  Seguindo o canal.'); } catch { console.log('  (já seguia o canal ou não foi preciso seguir)'); }
           await subscribe(sock, jid);
-          if (POLL_CHANNELS === 'all' || (POLL_CHANNELS === 'first' && inviteCode === inviteCodes[0])) startPolling(sock, jid);
+          if (pollsChannel(inviteCodes.indexOf(inviteCode))) startPolling(sock, jid);
           if (historyCount > 0) await fetchHistory(sock, jid).catch(error => console.log(`  Histórico indisponível: ${error?.message ?? error}`));
         } catch (error) {
           log('channel-error', { inviteCode, error: String(error?.message ?? error) });
