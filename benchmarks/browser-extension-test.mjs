@@ -231,7 +231,7 @@ try {
     const acknowledged = await until(async () => (await fetch('http://127.0.0.1:47183/pending',
       { headers: { Authorization: `Bearer ${token}` } })).status === 204, 'A extensão não confirmou o preenchimento.');
     const noSubmission = await evaluate(sendPage, `location.href === ${JSON.stringify(page)} && document.forms.length === 0`);
-    // A newer key replaces a complete key already in the field; partial text is left alone.
+    // A newer key replaces whatever the field holds: an earlier key, or any other text.
     const second = 'W3H9K-PQ7XB-M2CRT-6YFDV-B8JGH';
     await evaluate(sendPage, `navigator.clipboard.writeText(${JSON.stringify(second)})`);
     bridge.stdin.write('offer2\n');
@@ -240,12 +240,11 @@ try {
     await evaluate(sendPage, 'document.querySelector("#redeem").value = "T7Q4M-V9K"');
     await evaluate(sendPage, `navigator.clipboard.writeText(${JSON.stringify(fixture)})`);
     bridge.stdin.write('offer\n');
-    await wait(500);
-    const heldPartialText = await evaluate(sendPage, 'document.querySelector("#redeem").value === "T7Q4M-V9K"');
+    const replacedOtherText = Boolean(await until(() => evaluate(sendPage, `document.querySelector("#redeem").value === ${JSON.stringify(fixture)}`), 'A extensão não trocou o texto do campo pela key.'));
     bridge.stdin.write('clear\n');
     await evaluate(sendPage, 'document.querySelector("#redeem").value = ""');
-    console.log(JSON.stringify({ heldWhileOtherTab, heldWhileOtherField, heldWhenClipboardChanged, exact: true, acknowledged, noSubmission, replacedOldKey: Boolean(replacedOldKey), heldPartialText }));
-    if (!heldWhileOtherTab || !heldWhileOtherField || !heldWhenClipboardChanged || !noSubmission || !heldPartialText) process.exitCode = 1;
+    console.log(JSON.stringify({ heldWhileOtherTab, heldWhileOtherField, heldWhenClipboardChanged, exact: true, acknowledged, noSubmission, replacedOldKey: Boolean(replacedOldKey), replacedOtherText }));
+    if (!heldWhileOtherTab || !heldWhileOtherField || !heldWhenClipboardChanged || !noSubmission || !replacedOtherText) process.exitCode = 1;
     if (process.argv.includes('--field-ready') && !process.exitCode) {
       await evaluate(sendPage, `(() => {
         const field = document.querySelector("#redeem");
