@@ -57,7 +57,8 @@ def timed_stage(run, timings, name):
 
 try:
     cv2.setNumThreads(1)
-    engine = RapidOCR(use_angle_cls=False, det_model_path=None, det_limit_side_len=int(os.environ.get('XKW_DET_LIMIT', '960')), det_limit_type='max')
+    DET_LIMIT = int(os.environ.get('XKW_DET_LIMIT', '960'))
+    engine = RapidOCR(use_angle_cls=False, det_model_path=None, det_limit_side_len=DET_LIMIT, det_limit_type='max')
     warm=np.zeros((200,900,3),dtype=np.uint8)
     cv2.putText(warm,'AAAAA-BBBBB-CCCCC-DDDDD-EEEEE',(20,105),cv2.FONT_HERSHEY_SIMPLEX,1.0,(255,255,255),2,cv2.LINE_AA)
     engine(warm)
@@ -106,7 +107,8 @@ try:
     # normalized input at the bottom/right to a few fixed sizes, pre-run them, and crop
     # the probability map back so the postprocessing sees the original size.
     if os.environ.get('XKW_DET_BUCKETS') == '1':
-        det_sizes = (320, 416, 512, 608, 704, 800, 896, 960)
+        # Buckets up to the detector's long side (XKW_DET_LIMIT, a multiple of 32).
+        det_sizes = tuple(sorted({s for s in (320, 416, 512, 608, 704, 800, 896, 960) if s < DET_LIMIT} | {DET_LIMIT}))
         raw_det_infer = engine.text_detector.infer
         def bucketed_det_infer(batch):
             n, c, h, w = batch.shape
@@ -119,7 +121,7 @@ try:
             out = raw_det_infer(batch)
             return [out[0][:, :, :h, :w]] + list(out[1:])
         engine.text_detector.infer = bucketed_det_infer
-        for long_side in (960,):
+        for long_side in (DET_LIMIT,):
             for short in det_sizes:
                 raw_det_infer(np.zeros((1, 3, short, long_side), dtype=np.float32))
                 raw_det_infer(np.zeros((1, 3, long_side, short), dtype=np.float32))
@@ -217,31 +219,68 @@ try:
         second_rec.session = bucketed_second
         for warm_w in rec_widths[:10]:
             raw_second(np.zeros((1, 3, 48, warm_w), dtype=np.float32))
+    cached = {'image': None, 'boxes': []}
     reply({'ready':True})
     while True:
         header=read_exact(sys.stdin.buffer,12)
         width,height,length=struct.unpack('<III',header)
         key_lines_only = bool(height & 0x80000000)
         second_line = bool(height & 0x40000000)
-        height &= 0x3FFFFFFF
+        # Split read (bits 29 and 28), so the caller can start the confirmation on another
+        # worker as soon as the key line is located: "det-only" detects and keeps the image
+        # and its key-shaped boxes; "rec-cached" (no payload) then recognizes those boxes.
+        # Same detector, crops and recognizer as one full call, so the same readings.
+        det_only = bool(height & 0x20000000)
+        rec_cached = bool(height & 0x10000000)
+        rgb_input = bool(height & 0x08000000)  # 3-channel RGB pixels instead of BGRA
+        height &= 0x07FFFFFF
+        if rec_cached:
+            start = perf_counter_ns()
+            phases['RecognitionMs'] = 0.0
+            char_evidence.clear()
+            readings=[]
+            if cached['boxes']:
+                crops = engine.get_crop_img_list(cached['image'], cached['boxes'])
+                rec_res, _ = engine.text_recognizer(crops)
+                boxes, rec_res = engine.filter_boxes_rec_by_score(cached['boxes'], rec_res)
+                for box, (text, score) in zip(boxes, rec_res):
+                    points=np.asarray(box,dtype=float)
+                    readings.append({'text':text, 'confidence':float(score), 'chars':char_evidence.get(text), 'bounds':[int(points[:,0].min()),int(points[:,1].min()),int(points[:,0].max()),int(points[:,1].max())]})
+            phases['WorkerMs'] = (perf_counter_ns() - start) / 1_000_000
+            reply({'readings':readings, 'timings':dict(phases)})
+            continue
+        channels = 3 if rgb_input else 4
         if second_line:
             if second_rec is None: raise ValueError('second model not loaded')
-            if width<1 or height<1 or width>10000 or height>10000 or length!=width*height*4: raise ValueError('invalid frame size')
-            bgra=np.frombuffer(read_exact(sys.stdin.buffer,length),dtype=np.uint8).reshape(height,width,4)
+            if width<1 or height<1 or width>10000 or height>10000 or length!=width*height*channels: raise ValueError('invalid frame size')
+            bgra=np.frombuffer(read_exact(sys.stdin.buffer,length),dtype=np.uint8).reshape(height,width,channels)
             start = perf_counter_ns()
-            rec,_ = second_rec([cv2.cvtColor(bgra,cv2.COLOR_BGRA2BGR)])
+            rec,_ = second_rec([cv2.cvtColor(bgra,cv2.COLOR_RGB2BGR if rgb_input else cv2.COLOR_BGRA2BGR)])
             reply({'readings':[{'text':rec[0][0],'confidence':float(rec[0][1]),'chars':char_evidence.get(rec[0][0]),'bounds':[0,0,width,height]}], 'timings':{'WorkerMs':(perf_counter_ns()-start)/1_000_000}})
             continue
-        if width<1 or height<1 or width>10000 or height>10000 or length!=width*height*4 or length>100_000_000:
+        if width<1 or height<1 or width>10000 or height>10000 or length!=width*height*channels or length>100_000_000:
             raise ValueError('invalid frame size')
-        bgra=np.frombuffer(read_exact(sys.stdin.buffer,length),dtype=np.uint8).reshape(height,width,4)
+        bgra=np.frombuffer(read_exact(sys.stdin.buffer,length),dtype=np.uint8).reshape(height,width,channels)
         start = perf_counter_ns()
         phases['DetectionMs'] = phases['RecognitionMs'] = 0.0
         rec_state['gpu'] = False
         phases['TextRegions'] = 0
         char_evidence.clear(); all_boxes.clear()
-        image=cv2.cvtColor(bgra,cv2.COLOR_BGRA2BGR)
+        image=cv2.cvtColor(bgra,cv2.COLOR_RGB2BGR if rgb_input else cv2.COLOR_BGRA2BGR)
         phases['ConversionMs'] = (perf_counter_ns() - start) / 1_000_000
+        if det_only:
+            key_lines_only = True
+            cached['image'] = image; cached['boxes'] = []
+            h, w = image.shape[:2]
+            if h > engine.min_height and w / h <= engine.width_height_ratio:
+                dt_boxes, _ = engine.text_detector(image)
+                if dt_boxes is not None and len(dt_boxes) > 0:
+                    cached['boxes'] = engine.sorted_boxes(dt_boxes)
+                reply({'keyBoxes':[[int(np.asarray(b)[:,0].min()),int(np.asarray(b)[:,1].min()),int(np.asarray(b)[:,0].max()),int(np.asarray(b)[:,1].max())] for b in cached['boxes']],
+                       'boxes':list(all_boxes), 'timings':dict(phases, WorkerMs=(perf_counter_ns() - start) / 1_000_000)})
+            else:
+                reply({'unsupported':True})
+            continue
         try:
             results,_=engine(image)
         except Exception:

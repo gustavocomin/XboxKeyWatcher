@@ -48,13 +48,26 @@ export class RapidWorker {
     }
   }
   next() { return new Promise(resolve => this.waiters.push(resolve)); }
-  recognize(bgra, width, height, keyLinesOnly = false, secondModel = false) {
+  // Requests queued here run in order; `pending` counts the ones not answered yet.
+  send(width, heightAndFlags, payload) {
+    this.pending = (this.pending ?? 0) + 1;
     const run = async () => {
-      const flags = (keyLinesOnly ? 0x80000000 : 0) | (secondModel ? 0x40000000 : 0);
-      const header = Buffer.alloc(12); header.writeUInt32LE(width, 0); header.writeUInt32LE((height | flags) >>> 0, 4); header.writeUInt32LE(bgra.length, 8);
-      const reply = this.next(); this.proc.stdin.write(header); this.proc.stdin.write(bgra); return reply;
+      const header = Buffer.alloc(12); header.writeUInt32LE(width, 0); header.writeUInt32LE(heightAndFlags >>> 0, 4); header.writeUInt32LE(payload?.length ?? 0, 8);
+      const reply = this.next(); this.proc.stdin.write(header); if (payload?.length) this.proc.stdin.write(payload); return reply;
     };
-    const result = this.chain.then(run); this.chain = result.catch(() => {}); return result;
+    const result = this.chain.then(run); this.chain = result.catch(() => {});
+    result.finally(() => { this.pending--; }).catch(() => {});
+    return result;
+  }
+  recognize(pixels, width, height, keyLinesOnly = false, secondModel = false, rgb = false) {
+    return this.send(width, height | (keyLinesOnly ? 0x80000000 : 0) | (secondModel ? 0x40000000 : 0) | (rgb ? 0x08000000 : 0), pixels);
+  }
+  // Split key-lines read: the detection answer (key-shaped boxes) comes back first and the
+  // recognition of those boxes second. Both are queued together, so nothing runs between.
+  detectThenRecognize(pixels, width, height, rgb = false) {
+    const detection = this.send(width, height | 0x80000000 | 0x20000000 | (rgb ? 0x08000000 : 0), pixels);
+    const recognition = this.send(0, 0x10000000, null);
+    return { detection, recognition };
   }
   // After a few seconds idle the GPU needs ~130 ms to wake for the first detection. The
   // listener calls this when a post arrives, so the wake overlaps the image download:
@@ -66,28 +79,61 @@ export class RapidWorker {
   close() { this.proc.stdin.end(); }
 }
 
-async function toBgra(input, maxWidth) {
-  const { data, info } = await sharp(input).resize({ width: maxWidth, withoutEnlargement: true }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  for (let i = 0; i < data.length; i += 4) { const r = data[i]; data[i] = data[i + 2]; data[i + 2] = r; }
-  return { data, width: info.width, height: info.height };
+async function toBgra(input, maxWidth, rgb = false) {
+  // rgb: 3-channel RGB straight from sharp (the worker converts it), no byte swap here.
+  const pipeline = sharp(input).resize({ width: maxWidth, withoutEnlargement: true });
+  const { data, info } = await (rgb ? pipeline.removeAlpha().toColourspace('srgb') : pipeline.ensureAlpha()).raw().toBuffer({ resolveWithObject: true });
+  if (!rgb) for (let i = 0; i < data.length; i += 4) { const r = data[i]; data[i] = data[i + 2]; data[i + 2] = r; }
+  return { data, width: info.width, height: info.height, channels: info.channels };
 }
 
-export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0.75, keyLinesOnly = true, lenient = false, confirm = '2x', overlapVeto = 0 } = {}) {
+// Xbox 5x5 codes never contain A, E, I, O, U, L, N, S, 0, 1 or 5 (Z does occur). A read
+// with one of them is certainly wrong, so it is refused instead of filled.
+const NOT_IN_XBOX_CODES = /[AEIOULNS015]/;
+export const impossibleXboxKey = key => NOT_IN_XBOX_CODES.test(key.replace(/-/g, ''));
+
+export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0.75, keyLinesOnly = true, lenient = false, confirm = '2x', overlapVeto = 0, xboxAlphabet = false, edgeVeto = false, parallelConfirm = false, workers = null, rgb = false } = {}) {
   const t0 = performance.now();
   // The full-resolution decode for the confirmation runs while the worker reads the image.
   const original = confirm !== '2x'
     ? sharp(jpeg).ensureAlpha().raw().toBuffer({ resolveWithObject: true }).catch(() => null) : null;
-  const image = await toBgra(jpeg, maxWidth);
+  const image = await toBgra(jpeg, maxWidth, rgb);
   const t1 = performance.now();
-  const first = await worker.recognize(image.data, image.width, image.height, keyLinesOnly);
+  const pad = 4;
+  // The confirmation view: the line re-cropped from the decoded image and upscaled 2x.
+  const lineCrop2x = ([l, t, r, b]) => {
+    const left = Math.max(0, l - pad), top = Math.max(0, t - pad);
+    const w = Math.min(image.width, r + pad) - left, h = Math.min(image.height, b + pad) - top;
+    return sharp(image.data, { raw: { width: image.width, height: image.height, channels: image.channels } })
+      .extract({ left, top, width: w, height: h }).resize({ width: w * 2, kernel: 'cubic' }).raw().toBuffer({ resolveWithObject: true });
+  };
+  // parallelConfirm: when another worker is idle, start the confirmation there as soon as
+  // the detector has located a single key-shaped line, while this worker recognizes it.
+  // Same two reads on the same pixels as the sequential path, only overlapped in time.
+  const helper = parallelConfirm && keyLinesOnly && confirm === '2x' ? (workers ?? []).find(w => w !== worker && !w.pending) : null;
+  let first = null, early = null;
+  if (helper) {
+    const { detection, recognition } = worker.detectThenRecognize(image.data, image.width, image.height, rgb);
+    const det = await detection;
+    if (det.keyBoxes?.length === 1) {
+      const bounds = det.keyBoxes[0];
+      early = { bounds, reply: lineCrop2x(bounds).then(crop => helper.recognize(crop.data, crop.info.width, crop.info.height, false, false, rgb)) };
+      early.reply.catch(() => {});
+    }
+    const rec = await recognition;
+    if (!det.unsupported) first = { readings: rec.readings, boxes: det.boxes,
+      timings: { ...det.timings, RecognitionMs: rec.timings?.RecognitionMs, TextRegions: rec.timings?.TextRegions } };
+  }
+  first ??= await worker.recognize(image.data, image.width, image.height, keyLinesOnly, false, rgb);
   const t2 = performance.now();
   const rows = (first.readings ?? []).filter(r => r.confidence >= minConfidence);
   const keys = [...new Set(rows.flatMap(r => extractKeys(r.text, lenient)))];
   const result = { key: null, candidates: keys.length, decodeMs: t1 - t0, ocrMs: t2 - t1, confirmMs: 0, confidence: null,
     detMs: first.timings?.DetectionMs, recMs: first.timings?.RecognitionMs, regions: first.timings?.TextRegions };
   if (keys.length !== 1) return { ...result, totalMs: performance.now() - t0 };
+  if (xboxAlphabet && impossibleXboxKey(keys[0])) return { ...result, rejected: 'alphabet', totalMs: performance.now() - t0 };
   const row = rows.find(r => extractKeys(r.text, lenient).includes(keys[0]));
-  result.confidence = row.confidence;
+  result.confidence = row.confidence; result.bounds = row.bounds;
   // A key drawn over other text (a logo, a chat bubble) can borrow its strokes: 7 read as
   // Z, C read as G, and both reads and other engines agree on the wrong character. The
   // detector sees that text as separate boxes: when the key line covers more than
@@ -104,14 +150,19 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
     result.overlap = overlap;
     if (overlapVeto > 0 && overlap > overlapVeto) return { ...result, rejected: 'overlap', totalMs: performance.now() - t0 };
   }
-  const [l, t, r, b] = row.bounds; const pad = 4;
+  const [l, t, r, b] = row.bounds;
+  // The detector grows each text box by its unclip margin and then clips it to the image:
+  // a key line box that touches the image edge means the glyphs come close to it, where a
+  // cut character can still read as a whole one (Q cut at the bottom read as O). Channel
+  // keys sit well inside the image; refuse such a line instead of risking a wrong key.
+  if (edgeVeto && (l <= 1 || t <= 1 || r >= image.width - 2 || b >= image.height - 2)) {
+    if (early) await early.reply.catch(() => null);
+    return { ...result, rejected: 'edge', totalMs: performance.now() - t0 };
+  }
   // Independent second read: only the line, re-cropped from the decoded image and upscaled 2x.
-  const upscaled = async () => {
-    const left = Math.max(0, l - pad), top = Math.max(0, t - pad);
-    const w = Math.min(image.width, r + pad) - left, h = Math.min(image.height, b + pad) - top;
-    return sharp(image.data, { raw: { width: image.width, height: image.height, channels: 4 } })
-      .extract({ left, top, width: w, height: h }).resize({ width: w * 2, kernel: 'cubic' }).raw().toBuffer({ resolveWithObject: true });
-  };
+  const upscaled = () => lineCrop2x(row.bounds);
+  const sameBox = early && early.bounds.every((v, i) => v === row.bounds[i]);
+  if (early && !sameBox) await early.reply.catch(() => null); // let the helper finish; not used
   // Alternative second read: the line cut from the full-resolution decode at 1x (other
   // pixels than the downscaled first read). Only useful when the post is larger than maxWidth.
   const fullRes = async () => {
@@ -133,9 +184,13 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
       .extract({ left, top, width: w, height: h }).raw().toBuffer({ resolveWithObject: true });
   })();
   const confirmWith = async (view, secondModel = false) => {
-    const crop = await view();
-    if (!crop) return false;
-    const second = await worker.recognize(crop.data, crop.info.width, crop.info.height, false, secondModel);
+    let second;
+    if (view === upscaled && sameBox) { second = await early.reply; result.parallel = true; }
+    else {
+      const crop = await view();
+      if (!crop) return false;
+      second = await worker.recognize(crop.data, crop.info.width, crop.info.height, false, secondModel, rgb && view === upscaled);
+    }
     const secondKeys = [...new Set((second.readings ?? []).filter(x => x.confidence >= minConfidence).flatMap(x => extractKeys(x.text, lenient)))];
     return secondKeys.length === 1 && secondKeys[0] === keys[0];
   };

@@ -110,10 +110,17 @@ const ocrEnv = { ...process.env, XKW_DET_BUCKETS: '1', XKW_DET_FASTNORM: '1', ..
 const workers = process.argv.includes('--no-ocr') ? []
   : [0, 1].map(() => Object.assign(new RapidWorker(botPython, ['-u', join(repoRoot, 'src', 'rapid_worker.py')], repoRoot, ocrEnv), { busy: 0 }));
 const worker = workers.length > 0;
+// OCR options (each can be turned off with =0): confirmation on the idle second worker in
+// parallel with the first read (same two reads), RGB pixels without the byte swap, and the
+// Xbox code alphabet check (a read with A E I O U L N S 0 1 5 is refused, never filled).
+const ocrOptions = { workers,
+  parallelConfirm: process.env.XKW_PAR_CONFIRM !== '0',
+  rgb: process.env.XKW_RGB_PIXELS !== '0',
+  xboxAlphabet: process.env.XKW_XBOX_ALPHABET !== '0' };
 async function readKeyPooled(buffer) {
   const chosen = workers.reduce((a, b) => (b.busy < a.busy ? b : a));
   chosen.busy++;
-  try { return await readKey(chosen, buffer); } finally { chosen.busy--; }
+  try { return await readKey(chosen, buffer, ocrOptions); } finally { chosen.busy--; }
 }
 // Pick the worker for a post as soon as it arrives (the image is still downloading).
 // Waking an idle GPU here was measured and did not help, so it is not done.
@@ -241,7 +248,7 @@ function raceMediaSources(image, id, arrived) {
   return firstFull;
 }
 
-async function handlePost(sock, msg, via) {
+async function handlePost(sock, msg, via, extra = {}) {
   const arrived = now();
   const jid = msg.key?.remoteJid;
   // The same post can come from the raw frame and again from Baileys' upsert: dedupe on
@@ -268,7 +275,7 @@ async function handlePost(sock, msg, via) {
     thumbFile = join('media', `${Math.round(arrived)}-${id}-thumb.jpg`);
     writeFileSync(thumbFile, Buffer.from(image.jpegThumbnail));
   }
-  log('post', { via, first, jid, thumbFile, id, type, sentAt, lagFromSentSecondResolution: lagS, caption,
+  log('post', { via, first, jid, thumbFile, id, type, sentAt, lagFromSentSecondResolution: lagS, caption, ...extra,
     thumbnailBytes: image?.jpegThumbnail?.length ?? 0, width: image?.width, height: image?.height,
     hasMediaKey: !!image?.mediaKey?.length, hasDirectPath: !!image?.directPath });
   console.log(`${stamp(arrived)}  POST via=${via}${first ? '' : ' (repetido)'} tipo=${type} atraso≈${lagS}s (resolução de 1 s)`);
@@ -286,13 +293,13 @@ async function handlePost(sock, msg, via) {
     const downloaded = now();
     log('image', { id, winner, downloadMs: Math.round(downloaded - start), bytes: buffer.length, fromArrivalMs: Math.round(downloaded - arrived) });
     console.log(`${stamp(downloaded)}  IMAGEM (${winner}) baixada em ${Math.round(downloaded - start)} ms (${Math.round(buffer.length / 1024)} KB)`);
-    const read = lease ? await readKey(lease.worker, buffer) : worker ? await readKeyPooled(buffer) : null;
+    const read = lease ? await readKey(lease.worker, buffer, ocrOptions) : worker ? await readKeyPooled(buffer) : null;
     lease?.release();
     const ocrDone = now();
     let appResult = null;
     if (read?.key && sendToApp) appResult = await sendKeyToApp(read.key, `canal ${id}`);
     const handed = now();
-    log('ocr', { id, accepted: !!read?.key, key: read?.key ? redact(read.key) : null, candidates: read?.candidates, disagreed: !!read?.disagreed, overlap: read?.overlap != null ? Math.round(read.overlap * 1000) / 1000 : null,
+    log('ocr', { id, accepted: !!read?.key, key: read?.key ? redact(read.key) : null, candidates: read?.candidates, disagreed: !!read?.disagreed, rejected: read?.rejected ?? null, parallel: !!read?.parallel, overlap: read?.overlap != null ? Math.round(read.overlap * 1000) / 1000 : null,
       ocrMs: Math.round(ocrDone - downloaded), appMs: Math.round(handed - ocrDone), appResult, arrivalToAppMs: Math.round(handed - arrived) });
     console.log(`${stamp(handed)}  OCR ${read?.key ? 'KEY ' + redact(read.key) : 'sem key'} em ${Math.round(ocrDone - downloaded)} ms` +
       (appResult ? ` | app: ${appResult} | chegada→app ${Math.round(handed - arrived)} ms` : ''));
@@ -319,6 +326,71 @@ function sendKeyToApp(key, source) {
     socket.on('connect', () => socket.write(JSON.stringify({ key, source }) + '\n'));
     socket.on('data', chunk => { reply += chunk; if (reply.includes('\n')) { try { done(JSON.parse(reply).result); } catch { done('resposta inválida'); } } });
   });
+}
+
+// Channel poll. On the official channel (many followers) the push frame reached this
+// account 8-11 s after the post's server time, and another account 18-22 s after, while
+// asking the server for the channel's latest posts (the query WhatsApp Web sends when a
+// channel is opened) returned the same post 1.1-1.5 s after it (one query every 2 s).
+// The answer carries the whole post (the same plaintext protobuf as the push), so it goes
+// through handlePost like a frame; the push that comes later is deduplicated by server id.
+// The server limits this query: at 3 queries/s per account (1 s on three channels) it began
+// answering 500 after ~27 min. So by default only the first channel of canais.txt (the
+// official one, where the push is slow) is polled, every XKW_POLL_MS (default 2000), and
+// any error pauses the poll for 30 s, doubling up to 10 min; the push keeps working.
+// XKW_POLL_CHANNELS=all polls every channel; XKW_POLL_MS=0 turns polling off.
+const POLL_MS = Number(process.env.XKW_POLL_MS ?? 2000);
+const POLL_CHANNELS = process.env.XKW_POLL_CHANNELS ?? 'first';
+const pollers = new Map();
+async function pollOnce(sock, jid) {
+  const asked = now();
+  const result = await sock.query({ tag: 'iq', attrs: { id: sock.generateMessageTag(), type: 'get', xmlns: 'newsletter', to: 's.whatsapp.net' },
+    content: [{ tag: 'messages', attrs: { type: 'jid', jid, count: '3' } }] });
+  const found = [];
+  const walk = node => {
+    if (!node || typeof node !== 'object') return;
+    if (node.tag === 'message' && node.attrs?.server_id) found.push(node);
+    else if (Array.isArray(node.content)) for (const child of node.content) walk(child);
+  };
+  walk(result);
+  for (const node of found) {
+    const sid = String(node.attrs.server_id);
+    if (seen.has(`${jid}:${sid}`)) continue;
+    const plaintext = getBinaryNodeChild(node, 'plaintext');
+    if (!plaintext?.content) continue;
+    let message;
+    try { message = proto.Message.decode(typeof plaintext.content === 'string' ? Buffer.from(plaintext.content, 'binary') : Buffer.from(plaintext.content)); }
+    catch { continue; }
+    handlePost(sock, { key: { remoteJid: jid, server_id: sid }, message, messageTimestamp: Number(node.attrs.t ?? 0) }, 'poll', { pollRttMs: Math.round(now() - asked) })
+      .catch(() => {});
+  }
+}
+function startPolling(sock, jid) {
+  stopPolling(jid);
+  if (!(POLL_MS > 0)) return;
+  const state = { delay: POLL_MS, errors: 0, timer: null, stopped: false };
+  pollers.set(jid, state);
+  const tick = async () => {
+    if (state.stopped) return;
+    const started = now();
+    try {
+      await pollOnce(sock, jid);
+      if (state.errors) { log('poll-recovered', { jid, errors: state.errors }); state.errors = 0; state.delay = POLL_MS; }
+    } catch (error) {
+      // Back off on errors (a rate limit or a dropped connection): 30 s, doubling to 10 min.
+      state.errors++;
+      state.delay = Math.min(600_000, 30_000 * 2 ** (state.errors - 1));
+      if (state.errors <= 3 || state.errors % 20 === 0)
+        log('poll-error', { jid, errors: state.errors, delayMs: state.delay, error: String(error?.output?.statusCode ?? error?.message ?? error) });
+    }
+    // Period measured from the start of each query, so it stays POLL_MS whatever the round trip.
+    if (!state.stopped) state.timer = setTimeout(tick, Math.max(0, state.delay - (now() - started)));
+  };
+  state.timer = setTimeout(tick, 0);
+}
+function stopPolling(jid) {
+  const state = pollers.get(jid);
+  if (state) { state.stopped = true; clearTimeout(state.timer); pollers.delete(jid); }
 }
 
 async function subscribe(sock, jid) {
@@ -383,6 +455,7 @@ async function start() {
           console.log(`${stamp(now())}  Canal: ${name} (${jid})`);
           try { await sock.newsletterFollow(jid); console.log('  Seguindo o canal.'); } catch { console.log('  (já seguia o canal ou não foi preciso seguir)'); }
           await subscribe(sock, jid);
+          if (POLL_CHANNELS === 'all' || (POLL_CHANNELS === 'first' && inviteCode === inviteCodes[0])) startPolling(sock, jid);
           if (historyCount > 0) await fetchHistory(sock, jid).catch(error => console.log(`  Histórico indisponível: ${error?.message ?? error}`));
         } catch (error) {
           log('channel-error', { inviteCode, error: String(error?.message ?? error) });
@@ -393,6 +466,7 @@ async function start() {
     }
     if (update?.connection === 'close') {
       for (const timer of renewTimers.values()) clearTimeout(timer);
+      for (const jid of [...pollers.keys()]) stopPolling(jid);
       const code = update.lastDisconnect?.error?.output?.statusCode;
       log('disconnected', { code });
       if (code === DisconnectReason.loggedOut) { console.log('Sessão encerrada no celular. Apague a pasta de auth e rode de novo.'); process.exit(1); }
