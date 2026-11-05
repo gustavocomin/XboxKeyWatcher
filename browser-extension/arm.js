@@ -9,6 +9,11 @@
     globalThis.xkwStopPaste?.();
     const real = redeemFrame;
     const page = location.href;
+    // The field may be filled when it is empty or holds a complete key (an earlier key, pasted
+    // by this extension or by hand): a new key replaces it. Any other text (a key being typed)
+    // is left alone. Declared first: poll() can run before the rest of this function.
+    const KEY = /^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){4}$/;
+    const replaceable = value => value === '' || KEY.test(value.trim().toUpperCase());
     let stopped = false, polling = false, timer, target, lastFilled, lastStatus;
     let lastUnavailableAt;
     function wakeWhenReady() {
@@ -65,7 +70,7 @@
           (document.activeElement === target ||
             !document.activeElement?.closest('input, textarea, select, [contenteditable], iframe'))
           : document.activeElement === target) &&
-        !target.disabled && !target.readOnly && target.value === '';
+        !target.disabled && !target.readOnly && replaceable(target.value);
     }
 
     async function poll() {
@@ -78,7 +83,7 @@
         if (real && !target) { report('Campo de resgate ausente ou ambíguo nesta página.'); return; }
         if (!ready()) {
           lastUnavailableAt = performance.now();
-          report('Aguardando a aba ativa e o campo de resgate vazio e disponível.');
+          report('Aguardando a aba ativa e o campo de resgate disponível (vazio ou com uma key completa).');
           return;
         }
         const requestedAt = performance.now();
@@ -102,8 +107,11 @@
 
         const applyAt = performance.now();
         lastFilled = offer.Id;
-        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(target, offer.Key);
-        target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste', data: offer.Key }));
+        // Same key already in the field: nothing to change, just confirm it.
+        if (target.value !== offer.Key) {
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(target, offer.Key);
+          target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste', data: offer.Key }));
+        }
         const filled = target.value === offer.Key;
         const appliedAt = performance.now();
         report(filled ? 'Preenchimento confirmado.' : 'A página não manteve o valor preenchido.');

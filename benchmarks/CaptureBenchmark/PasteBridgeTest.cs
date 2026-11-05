@@ -7,9 +7,9 @@ internal static class PasteBridgeTest
 {
     internal static void ServeFixture()
     {
-        const string key = "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R";
+        const string key = "T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R", second = "W3H9K-PQ7XB-M2CRT-6YFDV-B8JGH";
         bool measuring = false;
-        using var bridge = new PasteBridge(value => value == key, (_, elapsed, _) =>
+        using var bridge = new PasteBridge(value => value == key || value == second, (_, elapsed, _) =>
         {
             if (Volatile.Read(ref measuring)) Console.WriteLine(FormattableString.Invariant($"latency {elapsed:F3}"));
         }, native: true);
@@ -17,6 +17,7 @@ internal static class PasteBridgeTest
         while (Console.ReadLine() is string command)
         {
             if (command == "offer") bridge.Offer(key);
+            else if (command == "offer2") bridge.Offer(second);
             else if (command == "clear") bridge.Clear();
             else if (command == "measure")
             {
