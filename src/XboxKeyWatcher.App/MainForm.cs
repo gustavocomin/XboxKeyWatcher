@@ -96,7 +96,7 @@ internal sealed class MainForm : Form
 #if XKW_ISOLATED_CANDIDATE
         Text = "XboxKeyWatcher — Teste de miniaturas";
 #else
-        Text = "XboxKeyWatcher — Release - V3.2";
+        Text = "XboxKeyWatcher — Release - V3.3";
 #endif
         ClientSize = new Size(920, 680);
         Icon = AppIcon;
