@@ -12,17 +12,27 @@ internal sealed class ChannelBot : IDisposable
     private readonly Action<string> report;
     private Process? process;
     private string? pidFile;
+    private volatile bool disposed;
 
     public ChannelBot(Action<string> report) => this.report = report;
 
-    public void Start()
+    /// <summary>The listener folder (tools/wa-listener) above the app, or null.</summary>
+    public static string? FindListenerDir()
     {
-        string? dir = null;
+        // XKW_LISTENER_DIR: development and tests (the app normally finds the folder above it).
+        string? forced = Environment.GetEnvironmentVariable("XKW_LISTENER_DIR");
+        if (!string.IsNullOrEmpty(forced) && File.Exists(Path.Combine(forced, "listener.mjs"))) return forced;
         for (var d = new DirectoryInfo(AppContext.BaseDirectory); d is not null; d = d.Parent)
         {
             string candidate = Path.Combine(d.FullName, "tools", "wa-listener");
-            if (File.Exists(Path.Combine(candidate, "listener.mjs"))) { dir = candidate; break; }
+            if (File.Exists(Path.Combine(candidate, "listener.mjs"))) return candidate;
         }
+        return null;
+    }
+
+    public void Start()
+    {
+        string? dir = FindListenerDir();
         if (dir is null) { report("Bot do canal: pasta tools\\wa-listener não encontrada."); return; }
         // conta.txt names the login folder to use (auth-secundario or auth-principal).
         string account = "auth-secundario";
@@ -69,7 +79,7 @@ internal sealed class ChannelBot : IDisposable
         };
         process.ErrorDataReceived += (_, _) => { };
         process.EnableRaisingEvents = true;
-        process.Exited += (_, _) => report("Bot do canal parou. Feche e abra o app para reiniciar.");
+        process.Exited += (_, _) => { if (!disposed) report("Bot do canal parou. Use Configurações > Salvar e reiniciar o bot, ou feche e abra o app."); };
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
         report($"Bot do canal: iniciando ({account})...");
@@ -91,7 +101,9 @@ internal sealed class ChannelBot : IDisposable
 
     public void Dispose()
     {
-        try { if (process is { HasExited: false }) process.Kill(entireProcessTree: true); } catch { }
+        disposed = true;
+        // Wait for the old listener to exit, so a restart never runs two sessions of one login.
+        try { if (process is { HasExited: false }) { process.Kill(entireProcessTree: true); process.WaitForExit(5000); } } catch { }
         try { if (pidFile is not null) File.Delete(pidFile); } catch { }
         process?.Dispose();
     }

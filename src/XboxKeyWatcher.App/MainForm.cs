@@ -93,7 +93,7 @@ internal sealed class MainForm : Form
 #if XKW_ISOLATED_CANDIDATE
         Text = "XboxKeyWatcher — Teste de miniaturas";
 #else
-        Text = "XboxKeyWatcher — Release - V3.1";
+        Text = "XboxKeyWatcher — Release - V3.2";
 #endif
         ClientSize = new Size(920, 680);
         var bar = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40 };
@@ -102,6 +102,7 @@ internal sealed class MainForm : Form
         var stop = new Button { Text = "Parar", AutoSize = true };
         var clear = new Button { Text = "Limpar histórico", AutoSize = true };
         var paste = new Button { Text = "Colagem assistida", AutoSize = true };
+        var settings = new Button { Text = "Configurações", AutoSize = true };
         try { if (File.Exists(hotkeysPath)) { var saved = JsonSerializer.Deserialize<HotkeyPreferences>(File.ReadAllText(hotkeysPath)); if (saved is not null && saved.TryBindings(out _)) hotkeys = saved; else status.Text = "Atalhos inválidos; usando padrões."; } }
         catch (Exception e) { status.Text = "Erro ao carregar atalhos: " + e.Message; }
         select.Click += async (_, _) => { try { await SelectWindow(); } catch (Exception e) { status.Text = "Erro: " + e.Message; } };
@@ -109,7 +110,8 @@ internal sealed class MainForm : Form
         stop.Click += (_, _) => StopMonitoring();
         clear.Click += (_, _) => { StopMonitoring(); lock (sync) { gate.ClearHistory(); copiedKeys.Clear(); } status.Text = "Histórico limpo. Inicie novamente para estabelecer baseline."; };
         paste.Click += (_, _) => ConfigurePasteBridge();
-        bar.Controls.Add(select); bar.Controls.Add(start); bar.Controls.Add(stop); bar.Controls.Add(clear); bar.Controls.Add(paste);
+        settings.Click += (_, _) => EditSettings();
+        bar.Controls.Add(select); bar.Controls.Add(start); bar.Controls.Add(stop); bar.Controls.Add(clear); bar.Controls.Add(paste); bar.Controls.Add(settings);
         Controls.Add(preview); Controls.Add(details); Controls.Add(health); Controls.Add(botStatus); Controls.Add(status); Controls.Add(bar);
         preview.MouseDown += (_, e) => { dragging = true; dragStart = e.Location; };
         preview.MouseUp += (_, e) => SelectRegion(e.Location);
@@ -127,8 +129,7 @@ internal sealed class MainForm : Form
         SystemEvents.SessionSwitch += OnSessionSwitch;
         botInbox = new BotKeyInbox(AcceptBotKey);
 #if !INTEGRATION_TEST
-        channelBot = new ChannelBot(text => Post(() => botStatus.Text = text.Length > 160 ? text[..160] : text));
-        Shown += (_, _) => channelBot.Start();
+        Shown += (_, _) => StartBot();
 #endif
         FormClosed += (_, _) => { channelBot?.Dispose(); botInbox?.Dispose(); watchdog.Stop(); watchdog.Dispose(); SystemEvents.SessionSwitch -= OnSessionSwitch; tray.Visible = false; tray.Dispose(); capture?.Dispose(); preview.Image?.Dispose(); pasteBridge?.Dispose(); };
     }
@@ -204,6 +205,28 @@ internal sealed class MainForm : Form
         byte[]? data; int width, height; Rectangle area; long current; bool active;
         lock (sync) { data = pixels; width = frameWidth; height = frameHeight; area = selection; current = generation; active = monitoring && !baselining; lastPixels = null; }
         if (active && data is not null) await ProcessPixels(data, width, height, area, current); else await TestOcr();
+    }
+
+    private void StartBot()
+    {
+#if !INTEGRATION_TEST
+        channelBot = new ChannelBot(text => Post(() => botStatus.Text = text.Length > 160 ? text[..160] : text));
+        channelBot.Start();
+#endif
+    }
+
+    // Settings screen: channels, key times, bot login and hotkeys. A change of channels or
+    // login restarts the bot (the old listener has exited before the new one starts).
+    private void EditSettings()
+    {
+        using var dialog = new BotSettingsForm(hotkeys, draft =>
+        {
+            try { File.WriteAllText(hotkeysPath, JsonSerializer.Serialize(draft, new JsonSerializerOptions { WriteIndented = true })); hotkeys = draft; RegisterHotkeys(); return null; }
+            catch (Exception e) { return e.Message; }
+        });
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        if (dialog.BotRestartNeeded) { channelBot?.Dispose(); channelBot = null; StartBot(); }
+        status.Text = dialog.Summary;
     }
 
     private void EditHotkeys()
