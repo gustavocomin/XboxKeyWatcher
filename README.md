@@ -1,50 +1,79 @@
 # XboxKeyWatcher
 
-**Estado: experimental e ainda não validado para uso real.** Testes sintéticos do aplicativo passaram com baseline, duas novas keys e clipboard real. No conjunto sintético difícil original, o pipeline reconheceu 50 de 120 observações; em outro conjunto, reconheceu somente 20 de 240 observações de imagens com key completa ou próxima à borda. Uma imagem cortada inicialmente não foi sinalizada pelo baseline; a falha específica foi corrigida e incluída nas regressões. A leitura da imagem real do WhatsApp foi rejeitada mesmo após ser aberta. Não confie nele para acompanhar uma promoção. O baseline verifica também com RapidOCR e bloqueia divergências, mas OCR pode deixar de identificar uma imagem antiga.
+Lê keys Xbox (XXXXX-XXXXX-XXXXX-XXXXX-XXXXX) postadas como imagem num canal do WhatsApp e preenche o campo de resgate do Xbox no Chrome. Não faz login, não envia o formulário e não resgata nada por conta própria: a página da Microsoft pode iniciar o resgate sozinha quando o campo é preenchido.
 
-## Aplicativo experimental
+Versão atual: **V3.3** (app) e **0.3.3** (extensão). O histórico das versões instaladas fica em `dist\win-x64\VERSION.txt`.
 
-Executável autossuficiente x64: `dist\win-x64\XboxKeyWatcher.App.exe`. Mantenha toda a pasta `dist\win-x64` junta: ela inclui RapidOCR e Tesseract. O aplicativo usa Windows Graphics Capture, Windows OCR, RapidOCR e Tesseract localmente; é necessário um idioma de OCR do Windows instalado. Para calibrar, selecione a janela, arraste o mouse na prévia sobre a coluna de mensagens e clique em **Testar OCR**. A seleção fica visível em verde e é salva junto ao executável, sendo reaplicada apenas após a seleção de uma janela com o mesmo título e tamanho. **Testar OCR** não copia nada. **Testar clipboard** copia um texto fictício mediante clique. **Iniciar experimental** estabelece um baseline e tenta copiar novas leituras. A janela pode ser minimizada para a bandeja; clique duas vezes no ícone para restaurar.
+## Como funciona
 
-O OCR é aquecido ao escolher a janela. Uma heurística rejeita candidatos próximos de bordas que possam cortar caracteres, ou com formato incompleto; o baseline é interrompido se detectar uma dessas situações. Essa heurística é conservadora e não identifica todos os erros possíveis. Se a primeira letra realmente estiver fora da imagem, o programa não tem como recuperar os pixels ausentes nem deve adivinhar a letra.
+Dois caminhos rodam juntos. O que tiver a key primeiro preenche o Chrome; o outro é descartado como repetido.
 
-Ainda é necessário selecionar a janela novamente ao iniciar; não há redetecção por handle persistido. O aplicativo não resgata códigos, acessa contas ou envia dados. Captura só o item escolhido no seletor do Windows, mas o seletor também pode oferecer monitores: escolha explicitamente a janela do WhatsApp. Captura com janela minimizada não foi validada. Em caso de redimensionamento, selecione a região novamente. A interface experimental não representa a entrega final pretendida.
+1. **Bots do canal** (caminho principal, `tools\wa-listener`): um bot por login do WhatsApp marcado nas Configurações, hoje a conta principal e a secundária. Cada bot ouve o post pelo push e também consulta a lista de posts do canal oficial. Ele baixa a imagem e lê a key com RapidOCR, aceitando só quando duas leituras concordam (imagem inteira e linha ampliada 2x). Também recusa keys com letras que códigos Xbox não usam (A, E, I, O, U, L, S, 0, 1, 5) e linhas encostadas na borda da imagem.
+2. **Leitura pela tela** (reserva): lê a janela do WhatsApp Desktop com Windows OCR, RapidOCR e Tesseract.
 
-Os atalhos padrão são Ctrl+Alt+Shift+F9 (iniciar/parar), F10 (forçar OCR), F11 (recopiar) e F12 (abrir interface), todos com os mesmos três modificadores. O botão **Atalhos** permite alterar as combinações e informa conflitos. A captura guarda apenas o último frame pendente durante o OCR; um watchdog tenta recriar a captura quando um processamento excede dez segundos ou ocorre erro. Atalhos e recuperação ainda precisam de validação interativa. Ao bloquear ou desbloquear a sessão, o monitoramento é parado e deve ser iniciado de novo para estabelecer baseline.
+A key vai para a área de transferência e, pela ponte nativa, para a extensão do Chrome, que preenche o campo de resgate.
 
-## Executar testes e benchmarks
+Medições de 05/11/2026 (WhatsApp real): no canal de teste, a key chegou ao app 1,4–1,7 s depois do post, e o Chrome foi preenchido ~10 ms depois disso. No canal oficial, o post chega em ~1,2 s pela consulta, contra 8–10 s pelo push. Detalhes em [docs/perf-bot-2026-11-05.md](docs/perf-bot-2026-11-05.md).
 
-### Colagem assistida experimental
+## Uso a cada sorteio
 
-A extensão usa Native Messaging. Carregue a pasta `browser-extension` como extensão sem compactação em `chrome://extensions`. Se já estiver instalada, clique em **Recarregar** e aceite a permissão, se o Chrome pedir. Em uma instalação nova, copie o ID mostrado nessa página e execute `scripts/register-native-host.ps1 -ExtensionId ID_DA_EXTENSAO` no PowerShell. Para Edge, use também `-Browser Edge`.
+1. Abra o app (atalho **XboxKeyWatcher** no menu Iniciar ou na Área de Trabalho, ou `dist\win-x64\XboxKeyWatcher.App.exe`). Ele conecta sozinho a janela do WhatsApp Desktop e liga a colagem no Chrome.
+2. Em **Configurações > Horário do sorteio**, marque **Usar horário do sorteio**, escolha a data e a hora da key e salve.
+3. Deixe o WhatsApp Desktop aberto e **não minimizado**, e a aba `https://www.xbox.com/pt-BR/redeem` aberta e visível no Chrome.
 
-Abra o XboxKeyWatcher, clique em **Colagem assistida** e inicie o monitoramento. Deixe `https://www.xbox.com/pt-BR/redeem` como a aba selecionada na janela do navegador, com o campo vazio. Na extensão, clique em **Ativar preenchimento**. A extensão permanece ativa nessa aba até você desativar. Após recarregar a extensão, atualize também a página do Xbox para conectar o formulário da Microsoft. Você pode voltar ao WhatsApp e manter a janela do navegador aberta. Inserir a key pode iniciar o resgate automaticamente. A oferta expira em 30 segundos. **Parar** limpa a oferta e um novo clique em **Colagem assistida** desativa a ponte.
+O resto é automático. Com a key às 10:00 e os tempos padrão:
 
+| Horário | O que acontece |
+|---|---|
+| 9:55 | Os bots ligam e preparam o OCR (só ouvindo o push). |
+| 9:58 | Consulta ao canal oficial a cada 0,5 s (as duas contas se alternam) e leitura pela tela ligada. |
+| 10:10 | Tudo desliga. |
 
-O teste `dotnet run --project benchmarks/CaptureBenchmark -c Release -- --paste-bridge-test` exercita a ponte local. O teste `node benchmarks/browser-redeem-test.mjs` verifica o envio repetido ao formulário autorizado.
+Sem horário cadastrado, os bots ficam ligados o tempo todo e consultam o canal a cada 2 s. A leitura pela tela, nesse caso, liga pelo botão **Iniciar**.
 
-Com .NET SDK 8+ e Python 3.13, abra PowerShell neste diretório:
+## Configurações
+
+- **Canais**: tabela com Ativo, Nome e Link. Desmarcar **Ativo** faz o bot parar de escutar o canal sem apagá-lo. O canal **oficial** é o primeiro ativo da lista: é o único que o bot consulta. Salvar reinicia os bots.
+- **Horário do sorteio**: data e hora da key, e os três tempos (bots antes, consulta rápida e tela antes, fim depois).
+- **Contas do bot**: os logins do WhatsApp em que os bots rodam (pastas `auth-*`). Não marque um login que outro bot usa fora do app: duas sessões do mesmo login se derrubam.
+- **Atalhos**: atalhos globais (padrão Ctrl+Alt+Shift+F9 iniciar/parar a leitura pela tela, F10 forçar OCR, F11 copiar a última key, F12 abrir a janela).
+
+Esses valores ficam em `tools\wa-listener` (`canais.txt`, `poll-rapido.txt`, `agenda.json`, `conta.txt`) e em `dist\win-x64` (`settings.json` com a janela e a região da tela, `hotkeys.json`).
+
+## Primeira instalação
+
+1. **Extensão**: em `chrome://extensions`, ative o modo de desenvolvedor e carregue a pasta `browser-extension` como extensão sem compactação. Copie o ID dela e rode `scripts\register-native-host.ps1 -ExtensionId ID_DA_EXTENSAO` (para o Edge, acrescente `-Browser Edge`). A extensão não tem botões: ela fica sempre ligada na página de resgate do Xbox.
+2. **Logins do WhatsApp**: com o app fechado, rode `tools\wa-listener\parear-principal.cmd` (ou `iniciar-bot.cmd` para a secundária) e escaneie o QR em WhatsApp > Aparelhos conectados. Depois marque o login em Configurações > Contas do bot.
+3. **Janela e região da tela**: no app, clique em **Selecionar janela**, escolha a janela do WhatsApp Desktop e arraste na prévia sobre a coluna de mensagens. A escolha é salva; nas próximas aberturas o app conecta sozinho.
+
+Depois de atualizar a extensão: recarregue-a em `chrome://extensions` e dê F5 na aba de resgate do Xbox.
+
+## Desenvolvimento
+
+Requisitos: .NET SDK 8+, Python 3.13 (em `.venv`), Node 22 (dependências em `tools\wa-listener\node_modules`) e **PowerShell 7** (o Windows PowerShell 5.1 falha no primeiro passo dos testes).
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\install-dev.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\benchmark.ps1
+pwsh -File .\scripts\install-dev.ps1   # dependências Python, Zig e modelo Tesseract
+pwsh -File .\scripts\test.ps1          # suíte completa
+pwsh -File .\scripts\build.ps1         # recompila dist\win-x64
 ```
 
-As dependências Python e o compilador Zig ficam em `.venv`; o modelo Tesseract fica em `models`. O último comando gera seis imagens sintéticas fictícias, mede C# com Windows OCR, Python com RapidOCR em duas configurações, Tesseract, comparação de pixels em C/C++/C#/Python e captura + OCR em uma janela sintética. Para também testar o clipboard, depois de desbloquear a sessão gráfica:
+- A suíte reescreve `benchmarks\results`; restaure com `git checkout -- benchmarks/results`. Os testes de tela do CaptureBenchmark falham de vez em quando sem motivo; rode de novo antes de investigar.
+- Todo arquivo `.cs` novo do app precisa entrar na lista de Compile de `benchmarks\CaptureBenchmark\CaptureBenchmark.csproj`.
+- Teste da extensão num Edge separado: `node benchmarks\browser-extension-test.mjs --local-http`.
+- A/B do OCR do bot: `node tools\wa-listener\ocr-ab.mjs --a base --b <variante> --real <pasta> --rounds ABBA`. Imagens de teste com keys fictícias: `tools\wa-listener\make-test-images.ps1` e `benchmarks\generate_safety.py`.
+- Nunca rode um bot de teste com um login que o app está usando: feche o app antes.
 
-```powershell
-dotnet run --project benchmarks\CaptureBenchmark -c Release
-```
+## Logs
 
-Para exercitar o próprio aplicativo com baseline e duas keys fictícias até o clipboard real, execute `powershell -ExecutionPolicy Bypass -File .\scripts\test.ps1 -WithClipboard` com a sessão desbloqueada. Os testes gráficos padrão incluem baseline, imagem cortada, duas novas keys com destino simulado e uma key que chega durante o baseline. O benchmark tenta preservar o conteúdo anterior do clipboard e só o restaura se o clipboard ainda contiver seu texto fictício. Não execute se outra aplicação estiver usando o clipboard simultaneamente. Resultados estão em `benchmarks\results`; detalhes e limites estão em [docs/medicoes.md](docs/medicoes.md). CPU é calculada em relação a um único núcleo: valores superiores a 100% indicam uso de vários núcleos. Os processos são medidos separadamente, não o uso contínuo do aplicativo.
+- Bots: `tools\wa-listener\logs\listener-*-<login>.jsonl` (chegada do post, download, OCR, consultas por minuto, erros).
+- App: `%LOCALAPPDATA%\XboxKeyWatcher\detections.jsonl` (cópias, preenchimentos no Chrome e recusas).
 
-Para recompilar a distribuição:
+Keys aparecem nos logs só com os 2 primeiros e os 2 últimos caracteres.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1
-```
+## Limitações conhecidas
 
-## Limitações e próximos passos
-
-Falta comprovar o reconhecimento correto de novas imagens reais em posições variadas, a recuperação de falhas, a rolagem, carga prolongada, fontes e imagens reais, múltiplas keys, atalhos, watchdog e logs. Os benchmarks de C, C++ e Python incluem captura, OCR e clipboard numa janela sintética, mas não aplicações completas; usam outra API e outro motor. A medição C# da janela sintética começa na conclusão do desenho do aplicativo de teste e não mede o momento em que a imagem se torna fisicamente visível. Os conjuntos sintéticos são pequenos e não permitem estimar a precisão de produção.
+- O tempo que falta cortar está quase todo no download da imagem nova (0,3–1,4 s até o 1º byte), que depende do servidor do WhatsApp.
+- Em fontes muito condensadas, as duas leituras podem concordar em 7 lido como Z. Nas imagens reais do canal isso não aconteceu.
+- Consultar o canal rápido demais leva o WhatsApp a recusar as consultas (visto a 3 por segundo depois de ~30 min). Por isso a consulta rápida fica só na janela do sorteio. Se o WhatsApp recusar, o bot pausa a consulta e continua pelo push.
+- A leitura pela tela não funciona com o WhatsApp Desktop minimizado.
