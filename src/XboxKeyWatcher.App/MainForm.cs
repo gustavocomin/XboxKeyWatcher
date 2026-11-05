@@ -255,6 +255,9 @@ internal sealed class MainForm : Form
                     ? $"Bots desligados até {next.AddMinutes(-schedule.Times.BotMinutesBefore):HH:mm} (key às {next:dd/MM HH:mm}); a colagem no Chrome está ligada."
                     : "Bots desligados: nenhum horário de key pela frente (Configurações > Horários de key).";
 
+            // Keep the saved WhatsApp window connected (preview and region ready), quietly retrying
+            // while it is closed or minimized.
+            if (capture is null) await AttachSavedWindow(quiet: true);
             bool wantScreen = schedule.HasTimes && schedule.InPollWindow(now);
             if (wantScreen && !monitoring && now >= autoScreenRetryAt) await AutoStartScreen();
             else if (!wantScreen && autoScreenStarted)
@@ -267,29 +270,49 @@ internal sealed class MainForm : Form
         finally { scheduleBusy = false; }
     }
 
+    private bool attaching;
+    // Connects the window saved with the region (settings.json, the WhatsApp Desktop window)
+    // without the picker: at start-up and, while it is closed or minimized, every 2 s from the
+    // scheduler. "Selecionar janela" still picks another window or region. True when attached.
+    private async Task<bool> AttachSavedWindow(bool quiet)
+    {
+        SavedRegion? saved;
+        try { saved = File.Exists(settingsPath) ? JsonSerializer.Deserialize<SavedRegion>(File.ReadAllText(settingsPath)) : null; }
+        catch { saved = null; }
+        if (saved is null)
+        {
+            if (!quiet) status.Text = "Leitura pela tela: selecione a janela e a região uma vez (Selecionar janela); depois o app conecta sozinho.";
+            return false;
+        }
+        if (capture is not null && selectedItem is not null && selectedTitle == saved.Title) return true;
+        if (attaching) return false;
+        nint hwnd = WindowCapture.FindWindowByTitle(saved.Title, out bool minimized);
+        if (hwnd == 0) { if (!quiet) status.Text = $"Leitura pela tela: janela \"{saved.Title}\" não encontrada; abra o WhatsApp Desktop."; return false; }
+        if (minimized) { if (!quiet) status.Text = $"Leitura pela tela: a janela \"{saved.Title}\" está minimizada; restaure-a."; return false; }
+        attaching = true;
+        try
+        {
+            var item = WindowCapture.ItemForWindow(hwnd);
+            selectedItem = item; selectedTitle = item.DisplayName; savedRegion = saved;
+            var newProcessor = new FrameProcessor();
+            status.Text = $"Conectando a janela \"{saved.Title}\" e preparando o OCR...";
+            await newProcessor.WarmUp();
+            processor = newProcessor;
+            StartCapture(item, false);
+            status.Text = $"Janela \"{saved.Title}\" conectada com a região salva.";
+            return true;
+        }
+        catch (Exception e) { if (!quiet) status.Text = "Leitura pela tela: não consegui conectar a janela: " + e.Message; return false; }
+        finally { attaching = false; }
+    }
+
     // Turns the screen reading on without the window picker: finds the WhatsApp window saved
     // with the region (settings.json), restores the region and runs the baseline. On any
     // problem it says what to fix and tries again in 30 s; the bots keep working meanwhile.
     private async Task AutoStartScreen()
     {
         autoScreenRetryAt = DateTime.Now.AddSeconds(30);
-        SavedRegion? saved;
-        try { saved = File.Exists(settingsPath) ? JsonSerializer.Deserialize<SavedRegion>(File.ReadAllText(settingsPath)) : null; }
-        catch { saved = null; }
-        if (saved is null) { status.Text = "Leitura pela tela: selecione a janela e a região uma vez (Selecionar janela) para ela ligar sozinha."; return; }
-        if (capture is null || selectedItem is null || selectedTitle != saved.Title)
-        {
-            nint hwnd = WindowCapture.FindWindowByTitle(saved.Title, out bool minimized);
-            if (hwnd == 0) { status.Text = $"Leitura pela tela: janela \"{saved.Title}\" não encontrada; abra o WhatsApp Desktop."; return; }
-            if (minimized) { status.Text = $"Leitura pela tela: a janela \"{saved.Title}\" está minimizada; restaure-a."; return; }
-            var item = WindowCapture.ItemForWindow(hwnd);
-            selectedItem = item; selectedTitle = item.DisplayName; savedRegion = saved;
-            var newProcessor = new FrameProcessor();
-            status.Text = "Leitura pela tela: preparando o OCR...";
-            await newProcessor.WarmUp();
-            processor = newProcessor;
-            StartCapture(item, false);
-        }
+        if (!await AttachSavedWindow(quiet: false)) return;
         for (int i = 0; i < 40; i++)
         {
             bool ready; lock (sync) ready = pixels is not null && !selection.IsEmpty;
