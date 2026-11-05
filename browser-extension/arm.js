@@ -14,6 +14,10 @@
     // the field is disabled or hidden; ready() waits for it and the newest offer is filled.
     const replaceable = () => true;
     let stopped = false, polling = false, timer, target, lastFilled, lastStatus;
+    // After a fill the page processes the key (the field turns grey); a different key that
+    // arrives in that time waits FILL_GUARD_MS instead of replacing it mid-processing.
+    const FILL_GUARD_MS = 3000;
+    let lastFillAt = -Infinity;
     let lastUnavailableAt;
     function wakeWhenReady() {
       if (polling || stopped) return;
@@ -95,6 +99,7 @@
         if (!offer && response.waited) delay = 0;
         if (!offer && response.reason) report(response.reason);
         if (!offer || offer.Id === lastFilled || !/^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){4}$/.test(offer.Key)) return;
+        if (performance.now() - lastFillAt < FILL_GUARD_MS && target.value !== '') { report('Aguardando a página processar a key anterior.'); return; }
         if (!ready() || Date.parse(offer.Expires) <= Date.now()) return;
         if (!real) {
           let clipboard;
@@ -106,6 +111,7 @@
 
         const applyAt = performance.now();
         lastFilled = offer.Id;
+        lastFillAt = performance.now();
         // Same key already in the field: nothing to change, just confirm it.
         if (target.value !== offer.Key) {
           Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(target, offer.Key);

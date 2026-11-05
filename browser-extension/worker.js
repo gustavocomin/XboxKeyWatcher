@@ -53,9 +53,15 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
   return true;
 });
 
+// Always on: any tab on the Xbox redeem page is paired by itself (no button). Only the
+// Microsoft redeem frame inside it may ask for keys, and only while the tab is active.
+const XBOX_REDEEM = /^https:\/\/www\.xbox\.com\/[a-z]{2}-[A-Z]{2}\/redeem(?:[?#]|$)/;
+
 async function handle(message, sender) {
-  const { pairing } = await chrome.storage.session.get('pairing');
-  const real = pairing?.url === 'https://www.xbox.com/pt-BR/redeem';
+  let { pairing } = await chrome.storage.session.get('pairing');
+  if (sender.tab?.id && XBOX_REDEEM.test(sender.tab.url ?? ''))
+    pairing = { tabId: sender.tab.id, url: sender.tab.url, id: `auto-${sender.tab.id}`, allowRedeem: true };
+  const real = XBOX_REDEEM.test(pairing?.url ?? '');
   if (!pairing || sender.tab?.id !== pairing.tabId ||
       sender.tab.url !== pairing.url || (message.action !== 'init' && message.id !== pairing.id))
     return { disarmed: true };
@@ -86,11 +92,11 @@ async function handle(message, sender) {
     const started = performance.now();
     const response = await sendNative({ action: 'pending', wait: true });
     const nativeQueryMs = performance.now() - started;
-    if (response.offline) return { retry: true, reason: 'Ative Colagem assistida no XboxKeyWatcher.' };
+    if (response.offline) return { retry: true, reason: 'Abra o XboxKeyWatcher para receber as keys.' };
     if (response.offer && response.waited) {
       const current = await chrome.tabs.get(pairing.tabId);
       const state = await chrome.storage.session.get('pairing');
-      if (state.pairing?.id !== pairing.id) return { disarmed: true };
+      if (!pairing.id.startsWith('auto-') && state.pairing?.id !== pairing.id) return { disarmed: true };
       if (!current.active || current.url !== pairing.url || (!real && !(await chrome.windows.get(current.windowId)).focused))
         return { retry: true, reason: 'A aba autorizada precisa estar ativa na sua janela.' };
     }

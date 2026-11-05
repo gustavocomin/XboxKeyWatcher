@@ -234,17 +234,24 @@ try {
     // A newer key replaces whatever the field holds: an earlier key, or any other text.
     const second = 'W3H9K-PQ7XB-M2CRT-6YFDV-B8JGH';
     await evaluate(sendPage, `navigator.clipboard.writeText(${JSON.stringify(second)})`);
+    await wait(3100); // the extension leaves a just-filled field alone for 3 s
     bridge.stdin.write('offer2\n');
     const replacedOldKey = await until(() => evaluate(sendPage, `document.querySelector("#redeem").value === ${JSON.stringify(second)}`), 'A extensão não trocou a key antiga pela nova.');
     await until(async () => (await fetch('http://127.0.0.1:47183/pending', { headers: { Authorization: `Bearer ${token}` } })).status === 204, 'A troca não foi confirmada.');
+    // Within 3 s of a fill a different key waits (the page may still be processing).
+    await evaluate(sendPage, `navigator.clipboard.writeText(${JSON.stringify(fixture)})`);
+    bridge.stdin.write('offer\n');
+    await wait(800);
+    const heldDuringProcessing = await evaluate(sendPage, `document.querySelector("#redeem").value === ${JSON.stringify(second)}`);
+    await wait(3100);
     await evaluate(sendPage, 'document.querySelector("#redeem").value = "T7Q4M-V9K"');
     await evaluate(sendPage, `navigator.clipboard.writeText(${JSON.stringify(fixture)})`);
     bridge.stdin.write('offer\n');
     const replacedOtherText = Boolean(await until(() => evaluate(sendPage, `document.querySelector("#redeem").value === ${JSON.stringify(fixture)}`), 'A extensão não trocou o texto do campo pela key.'));
     bridge.stdin.write('clear\n');
     await evaluate(sendPage, 'document.querySelector("#redeem").value = ""');
-    console.log(JSON.stringify({ heldWhileOtherTab, heldWhileOtherField, heldWhenClipboardChanged, exact: true, acknowledged, noSubmission, replacedOldKey: Boolean(replacedOldKey), replacedOtherText }));
-    if (!heldWhileOtherTab || !heldWhileOtherField || !heldWhenClipboardChanged || !noSubmission || !replacedOtherText) process.exitCode = 1;
+    console.log(JSON.stringify({ heldWhileOtherTab, heldWhileOtherField, heldWhenClipboardChanged, exact: true, acknowledged, noSubmission, replacedOldKey: Boolean(replacedOldKey), heldDuringProcessing, replacedOtherText }));
+    if (!heldWhileOtherTab || !heldWhileOtherField || !heldWhenClipboardChanged || !noSubmission || !heldDuringProcessing || !replacedOtherText) process.exitCode = 1;
     if (process.argv.includes('--field-ready') && !process.exitCode) {
       await evaluate(sendPage, `(() => {
         const field = document.querySelector("#redeem");
