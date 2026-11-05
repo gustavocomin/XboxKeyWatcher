@@ -113,7 +113,9 @@ const worker = workers.length > 0;
 // OCR options (each can be turned off with =0): confirmation on the idle second worker in
 // parallel with the first read (same two reads), RGB pixels without the byte swap, and the
 // Xbox code alphabet check (a read with A E I L O S U 0 1 5 is refused, never filled).
-const PARTIAL_READ = process.env.XKW_PARTIAL_READ !== '0';
+// Off by default: on the bench, partial first read + complete-image confirmation accepted
+// more wrong keys on text-heavy art (7 to 8 vs 4 of 720), with the same result on real images.
+const PARTIAL_READ = process.env.XKW_PARTIAL_READ === '1';
 const PARTIAL_MIN_REST_MS = Number(process.env.XKW_PARTIAL_MIN_REST_MS ?? 60); // env only for tests
 const isProgressiveJpeg = b => { for (let i = 2; i < b.length - 1; i++) if (b[i] === 0xff && (b[i + 1] === 0xc2 || b[i + 1] === 0xc0 || b[i + 1] === 0xc1)) return b[i + 1] === 0xc2; return null; };
 const ocrOptions = { workers,
@@ -279,7 +281,7 @@ async function handlePost(sock, msg, via, extra = {}) {
   // of the file. So when enough has arrived and the rest is still a while away, the first
   // OCR read runs on what has arrived. Reads on a partial image gave wrong keys the complete
   // image did not (2 of 160 bench images), so the candidate is only accepted after the key
-  // line re-read 2x from the complete image agrees (confirmKey). XKW_PARTIAL_READ=0 turns it off.
+  // line re-read 2x from the complete image agrees (confirmKey). Off unless XKW_PARTIAL_READ=1.
   const partial = { try: null, at: null, fraction: null, progressive: null };
   const expectedLen = Number(image?.fileLength ?? 0);
   const onProgress = PARTIAL_READ && expectedLen > 64 * 1024 ? (name, chunks, received, startedAt) => {
