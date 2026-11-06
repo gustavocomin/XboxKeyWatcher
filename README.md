@@ -2,13 +2,17 @@
 
 Lê keys Xbox (XXXXX-XXXXX-XXXXX-XXXXX-XXXXX) postadas como imagem num canal do WhatsApp e preenche o campo de resgate do Xbox no Chrome. Não faz login, não envia o formulário e não resgata nada por conta própria: a página da Microsoft pode iniciar o resgate sozinha quando o campo é preenchido.
 
-Versão atual: **V3.3** (app) e **0.3.3** (extensão). O histórico das versões instaladas fica em `dist\win-x64\VERSION.txt`.
+Versão atual: **v3.4** (app) e **0.3.3** (extensão). O histórico das versões instaladas fica em `dist\win-x64\VERSION.txt`.
 
 ## Como funciona
 
 Dois caminhos rodam juntos. O que tiver a key primeiro preenche o Chrome; o outro é descartado como repetido.
 
-1. **Bots do canal** (caminho principal, `tools\wa-listener`): um bot por login do WhatsApp marcado nas Configurações, hoje a conta principal e a secundária. Cada bot ouve o post pelo push e também consulta a lista de posts do canal oficial. Ele baixa a imagem e lê a key com RapidOCR, aceitando só quando duas leituras concordam (imagem inteira e linha ampliada 2x). Também recusa keys com letras que códigos Xbox não usam (A, E, I, O, U, L, S, 0, 1, 5). Só lê os canais ativos de `canais.txt` e liga a consulta rápida sozinho quando o canal avisa a key ("KEY … XBOX ⏳ Liberação de HH:MM") ou começa a contagem ("PREPARADOS???", "3...").
+1. **Bots do canal** (caminho principal, `tools\wa-listener`): um bot por login do WhatsApp marcado nas Configurações (hoje a conta principal e a secundária, alternando as consultas). Cada bot ouve o post pelo push e também consulta a lista de posts do canal oficial (só lê os canais ativos de `canais.txt`):
+   - **Consulta normal**: a cada 6 s por login (3 s alternando os dois) fora de horário agendado.
+   - **Anúncio no canal** ("KEY … XBOX ⏳ Liberação de HH:MM"): abre um alerta com som no PC, envia mensagem da conta secundária para a principal no WhatsApp, grava o horário em `poll-rapido.txt` e agenda a **janela rápida** (500 ms por bot, de 2 min antes do horário anunciado até 10 min depois).
+   - **Turbo na contagem** ("PREPARADOS???", "3..."): dispara 2 consultas simultâneas a cada 500 ms por bot (~125 ms somando os dois logins) até 30 s depois da primeira imagem do canal (ou 2 min no máximo). Se uma consulta der erro no turbo, ele encerra o turbo daquela janela e segue no ritmo rápido normal (500 ms) 1 s depois.
+   - **OCR**: baixa a imagem e lê a key com RapidOCR, aceitando só quando duas leituras concordam (imagem inteira e linha ampliada 2x; ou desempate numa 3ª leitura quando diferem apenas por letras fora do alfabeto Xbox). Recusa keys com caracteres que códigos Xbox não usam (A, E, I, O, U, L, S, 0, 1, 5).
 2. **Leitura pela tela** (reserva): lê a janela do WhatsApp Desktop com Windows OCR, RapidOCR e Tesseract.
 
 A key vai para a área de transferência e, pela ponte nativa, para a extensão do Chrome, que preenche o campo de resgate.
@@ -18,18 +22,18 @@ Medições de 05/11/2026 (WhatsApp real): no canal de teste, a key chegou ao app
 ## Uso a cada sorteio
 
 1. Abra o app (atalho **XboxKeyWatcher** no menu Iniciar ou na Área de Trabalho, ou `dist\win-x64\XboxKeyWatcher.App.exe`). Ele conecta sozinho a janela do WhatsApp Desktop e liga a colagem no Chrome.
-2. Em **Configurações > Horário do sorteio**, marque **Usar horário do sorteio**, escolha a data e a hora da key e salve.
+2. O horário pode vir sozinho do anúncio do canal (gravado em `poll-rapido.txt` quando os bots estão ouvindo) ou ser definido em **Configurações > Horário do sorteio** (**Usar horário do sorteio**, data e hora da key).
 3. Deixe o WhatsApp Desktop aberto e **não minimizado**, e a aba `https://www.xbox.com/pt-BR/redeem` aberta e visível no Chrome.
 
 O resto é automático. Com a key às 10:00 e os tempos padrão:
 
 | Horário | O que acontece |
 |---|---|
-| 9:55 | Os bots ligam e preparam o OCR (só ouvindo o push). |
-| 9:58 | Consulta ao canal oficial a cada 0,5 s (as duas contas se alternam) e leitura pela tela ligada. |
-| 10:10 | Tudo desliga. |
+| 9:55 | Os bots estão ligados e com o OCR preparado (se havia horário futuro agendado manualmente, aguardam só no push até 9:58; se veio pelo anúncio do canal, seguem consultando a cada 6 s até 9:58). |
+| 9:58 | Consulta rápida ao canal oficial a cada 500 ms por bot (as duas contas se alternam) e leitura pela tela ligada. Na contagem ("PREPARADOS???" / "3..."), entra o turbo (2 consultas simultâneas por bot a cada 500 ms até 30 s após a imagem). |
+| 10:10 | A leitura pela tela desliga. Horário já passado não desliga mais os bots: sem outro horário futuro pela frente, eles continuam ligados consultando a cada 6 s para pegar o próximo anúncio. |
 
-Sem horário cadastrado, os bots ficam ligados o tempo todo e consultam o canal a cada 2 s. A leitura pela tela, nesse caso, liga pelo botão **Iniciar**.
+Sem horário futuro cadastrado (ou depois que o horário anunciado já passou), os bots ficam ligados o tempo todo e consultam o canal a cada 6 s por bot (3 s alternando as duas contas). A leitura pela tela, fora de horário agendado, também pode ser ligada pelo botão **Iniciar**.
 
 ## Configurações
 
