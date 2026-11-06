@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "XboxKeyWatcher — colagem assistida",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "permissions": [
     "activeTab",
     "scripting",

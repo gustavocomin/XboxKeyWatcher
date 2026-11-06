@@ -3,10 +3,64 @@
   const redeemFrame = window !== window.top &&
     /^https:\/\/(www\.)?microsoft\.com\/store\/purchase\/buynowui\/redeemnow(?:[?#]|$)/.test(location.href);
 
+  // Cascade mode (see worker.js): this frame does not poll. The worker pushes each offer here
+  // after this tab's delay; the frame fills the field, answers, and later reports what the
+  // page shows. Never fills the same key twice, whatever the worker sends.
+  function startCascade(id, reportAfterMs) {
+    const FILL_GUARD_MS = 3000;
+    const filledKeys = new Set();
+    let lastFillAt = -Infinity;
+    const field = () => {
+      if (!redeemFrame) return document.querySelector('#redeem');
+      const matches = document.querySelectorAll('input[name="tokenString"][type="text"][maxlength="29"]');
+      return matches.length === 1 ? matches[0] : null;
+    };
+    const mask = key => `${key.slice(0, 2)}…${key.slice(-2)}`;
+    function fill(offer) {
+      const started = performance.now();
+      if (!/^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){4}$/.test(offer?.Key ?? '') || Date.parse(offer.Expires) <= Date.now())
+        return { filled: false, reason: 'invalid-or-expired' };
+      if (filledKeys.has(offer.Key)) return { filled: false, reason: 'repeat' };
+      const target = field();
+      if (!target?.isConnected || target.disabled || target.readOnly || target.getClientRects().length === 0 ||
+          getComputedStyle(target).visibility !== 'visible') return { filled: false, reason: 'no-field' };
+      if (performance.now() - lastFillAt < FILL_GUARD_MS && target.value !== '') return { filled: false, reason: 'guard' };
+      filledKeys.add(offer.Key);
+      lastFillAt = performance.now();
+      if (target.value !== offer.Key) {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(target, offer.Key);
+        target.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste', data: offer.Key }));
+      }
+      const filled = target.value === offer.Key;
+      const result = { filled, appliedEpoch: Date.now(), applyMs: performance.now() - started };
+      if (filled) setTimeout(() => {
+        const now = field();
+        const text = (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim().replaceAll(offer.Key, mask(offer.Key)).slice(0, 160);
+        void chrome.runtime.sendMessage({ action: 'report', id, offerId: offer.Id, page: {
+          fieldPresent: Boolean(now), fieldHasKey: now?.value === offer.Key, fieldDisabled: Boolean(now?.disabled), text } }).catch(() => {});
+      }, reportAfterMs);
+      return result;
+    }
+    const onMessage = (message, sender, reply) => {
+      if (message.action !== 'fill' || sender.id !== chrome.runtime.id) return false;
+      reply(fill(message.offer));
+      return false;
+    };
+    chrome.runtime.onMessage.addListener(onMessage);
+    // Keeps the worker's tab registry fresh after it restarts; init is idempotent.
+    const keepAlive = setInterval(() => { void chrome.runtime.sendMessage({ action: 'init' }).catch(() => {}); }, 20000);
+    globalThis.xkwStopPaste = () => {
+      clearInterval(keepAlive);
+      chrome.runtime.onMessage.removeListener(onMessage);
+    };
+    return true;
+  }
+
   async function startPaste() {
-    const { id } = await chrome.runtime.sendMessage({ action: 'init' });
+    const { id, cascade, reportAfterMs } = await chrome.runtime.sendMessage({ action: 'init' });
     if (!id) return;
     globalThis.xkwStopPaste?.();
+    if (cascade) return startCascade(id, reportAfterMs);
     const real = redeemFrame;
     const page = location.href;
     // A new key replaces whatever the field holds (an earlier key, a failed attempt): keys are

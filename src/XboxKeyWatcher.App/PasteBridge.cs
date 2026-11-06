@@ -8,7 +8,11 @@ namespace XboxKeyWatcher.App;
 
 internal sealed class PasteBridge : IDisposable
 {
-    public const string Address = "http://127.0.0.1:47183/";
+    // XKW_BRIDGE_PORT exists only so tests can run beside the installed app; never set it for real use.
+    public static readonly string Address = $"http://127.0.0.1:{(int.TryParse(Environment.GetEnvironmentVariable("XKW_BRIDGE_PORT"), out var testPort) && testPort is >= 1024 and <= 65535 ? testPort : 47183)}/";
+    // Cascade: the offer outlives the first ACK until the expected tabs confirm or this long.
+    private static readonly long CascadeWindow = 5 * Stopwatch.Frequency;
+    public const int MaxCascadeTabs = 10;
     private readonly HttpListener listener = new();
     private readonly CancellationTokenSource stopping = new();
     private readonly object sync = new();
@@ -21,6 +25,9 @@ internal sealed class PasteBridge : IDisposable
     private sealed record Pending(string Id, string Key, DateTimeOffset Expires, long OfferedAt)
     {
         public long FirstServedAt { get; set; }
+        public int Acks { get; set; }
+        public int Expected { get; set; } = 1;
+        public long CascadeUntil { get; set; }
     }
 
     internal sealed record BrowserTiming(double? SinceLastUnavailableMs, double? QueryMs, double? NativeQueryMs,
@@ -82,7 +89,9 @@ internal sealed class PasteBridge : IDisposable
                             try { timing = value.Deserialize<BrowserTiming>(); }
                             catch (JsonException) { }
                         }
-                        Acknowledge(id.GetString()!, timing);
+                        int expected = payload.TryGetProperty("expected", out var count) && count.ValueKind == JsonValueKind.Number &&
+                            count.TryGetInt32(out var parsed) ? parsed : 1;
+                        Acknowledge(id.GetString()!, timing, expected);
                     }
                 }
                 await writer.WriteLineAsync(response.AsMemory(), timeout.Token);
@@ -113,17 +122,29 @@ internal sealed class PasteBridge : IDisposable
         lock (sync)
         {
             if (pending != offer) return null;
+            if (offer.CascadeUntil != 0 && Stopwatch.GetTimestamp() > offer.CascadeUntil) { pending = null; return null; }
             if (offer.FirstServedAt == 0) offer.FirstServedAt = Stopwatch.GetTimestamp();
             return offer;
         }
     }
 
-    private void Acknowledge(string id, BrowserTiming? timing = null)
+    private void Acknowledge(string id, BrowserTiming? timing = null, int expected = 1)
     {
         Pending? pasted = null;
         lock (sync)
             if (pending is { } current && current.Id == id)
-            { pasted = current; pending = null; }
+            {
+                // Several tabs may confirm the same offer (cascade). The first ACK reports the paste;
+                // the offer stays available until the last expected tab confirms or the window ends.
+                current.Acks++;
+                if (current.Acks == 1)
+                {
+                    pasted = current;
+                    current.Expected = Math.Clamp(expected, 1, MaxCascadeTabs);
+                    if (current.Expected > 1) current.CascadeUntil = Stopwatch.GetTimestamp() + CascadeWindow;
+                }
+                if (current.Acks >= current.Expected) pending = null;
+            }
         if (pasted is not null)
         {
             long acknowledgedAt = Stopwatch.GetTimestamp();
@@ -225,7 +246,8 @@ internal sealed class PasteBridge : IDisposable
 
         if (request.HttpMethod == "POST" && request.Url?.AbsolutePath.StartsWith("/ack/", StringComparison.Ordinal) == true)
         {
-            Acknowledge(request.Url.AbsolutePath[5..]);
+            int.TryParse(request.QueryString["expected"], out var expected);
+            Acknowledge(request.Url.AbsolutePath[5..], null, expected == 0 ? 1 : expected);
             response.StatusCode = 204;
             return;
         }

@@ -21,6 +21,7 @@ static class Program
         if (args.Length == 1 && args[0] == "--paste-prototype") { ApplicationConfiguration.Initialize(); Application.Run(new PastePrototype()); return; }
         if (args.Length == 1 && args[0] == "--paste-bridge-test") { PasteBridgeTest.Run().GetAwaiter().GetResult(); return; }
         if (args.Length == 1 && args[0] == "--paste-bridge-fixture") { PasteBridgeTest.ServeFixture(); return; }
+        if (args.Length == 1 && args[0] == "--paste-bridge-cascade") { PasteBridgeTest.ServeCascade(); return; }
         if (args.Length is 1 or 2 && args[0] == "--probe-backlog")
         {
             BacklogFixture.Probe(args.Length == 2 ? args[1] : null).GetAwaiter().GetResult();
