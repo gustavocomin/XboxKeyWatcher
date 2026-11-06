@@ -12,6 +12,7 @@ import { constants as osConstants, setPriority as osPriority } from 'node:os';
 import { Agent, fetch as mediaFetch } from 'undici';
 import { RapidWorker, readKey, confirmKey } from './bot-ocr.mjs';
 import { announcedKeyTime, isCountdown } from './channel-signals.mjs';
+import { keyAnnounced } from './key-alert.mjs';
 import { sendToApp as sendToAppPipe, sendKeyWithRetry as sendKeyWithRetryPipe } from './app-inbox.mjs';
 import sharp from 'sharp';
 import { dirname, join } from 'node:path';
@@ -481,7 +482,10 @@ const sendKeyWithRetry = (key, source) => sendKeyWithRetryPipe(key, source, { on
 // any error pauses the poll for 30 s, doubling up to 10 min; the push keeps working.
 // XKW_POLL_CHANNELS=all polls every channel, "1,2" the channels at those positions in
 // canais.txt (1 = first); XKW_POLL_MS=0 turns polling off.
-const POLL_MS = Number(process.env.XKW_POLL_MS ?? 2000);
+// Outside the key windows the poll only has to catch the announcement (~15 min ahead) and the
+// countdown (13-22 s ahead): every 6 s per login (3 s with two) keeps hours of polling far from
+// the limit measured (2 h without errors at one query every 2 s; errors after ~30 min at 3/s).
+const POLL_MS = Number(process.env.XKW_POLL_MS ?? 6000);
 const POLL_CHANNELS = process.env.XKW_POLL_CHANNELS ?? 'first';
 const pollsChannel = index => POLL_CHANNELS === 'all' || (POLL_CHANNELS === 'first' && index === 0)
   || (/^\d+(,\d+)*$/.test(POLL_CHANNELS) && POLL_CHANNELS.split(',').map(Number).includes(index + 1));
@@ -532,6 +536,9 @@ function addAutoWindow(from, to, why, post) {
   log('auto-window', { why, post, from: new Date(from).toISOString(), to: new Date(to).toISOString() });
   console.log(`${stamp(now())}  ${why === 'anuncio' ? `Key anunciada no canal para ${hhmm(from + FAST_BEFORE_MS)}` : 'Contagem no canal'}: consulta rápida de ${hhmm(from)} a ${hhmm(to)}`);
   kickPollers();
+  // At the start of the announced window (HH:MM-2): wake the OCR workers and the media connections.
+  if (why === 'anuncio') setTimeout(() => { log('pre-warm', { post }); warmHosts(); for (const w of workers) warmWorker(w).catch(() => {}); }, Math.max(0, from - t)).unref?.();
+  if (why === 'anuncio') keyAnnounced({ at: from + FAST_BEFORE_MS, post, me, authDir, sock: currentSock, log }).catch(() => {});
 }
 function noteChannelSignals(text, sentAt, post) {
   try {
@@ -623,7 +630,8 @@ function startPolling(sock, jid) {
     try {
       const fast = inFastWindow();
       // With key times set, poll only inside their windows; outside, check again in 1 s.
-      const idle = fastTimes.length > 0 && !fast;
+      // A key time written by the announcement itself keeps the normal poll until its window.
+      const idle = fastTimes.length > 0 && !fast && autoWindows.length === 0;
       const mode = idle ? 'off' : fast ? 'fast' : 'normal';
       if (mode !== state.fast) {
         state.fast = mode;
@@ -671,9 +679,10 @@ async function subscribe(sock, jid) {
   }
 }
 
+let currentSock = null;
 async function start() {
   const { state, saveCreds } = await useMultiFileAuthState(authDir);
-  const sock = makeWASocket({
+  const sock = currentSock = makeWASocket({
     auth: state,
     browser: Browsers.windows('Desktop'),
     logger: pino({ level: 'silent' }),

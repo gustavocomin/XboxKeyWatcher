@@ -24,8 +24,10 @@ export function sendToApp(key, source, pipe = APP_PIPE) {
 export async function sendKeyWithRetry(key, source, { pipe = APP_PIPE, forMs = 2500, onRetry = null } = {}) {
   const started = Date.now();
   let result = await sendToApp(key, source, pipe), attempts = 1;
-  while (/^app indispon/.test(String(result)) && Date.now() - started < forMs) {
-    await new Promise(r => setTimeout(r, Math.min(200, 20 * attempts)));
+  // clipboard_failed: another program held the Windows clipboard for the app's ~75 ms of tries
+  // (seen 05/11 20:25); the app releases the key on that failure, so sending again retries it.
+  while (/^app indispon|^clipboard_failed$/.test(String(result)) && Date.now() - started < forMs) {
+    await new Promise(r => setTimeout(r, /^clipboard/.test(String(result)) ? 100 : Math.min(200, 20 * attempts)));
     result = await sendToApp(key, source, pipe); attempts++;
   }
   if (attempts > 1) onRetry?.({ attempts, result, ms: Date.now() - started });

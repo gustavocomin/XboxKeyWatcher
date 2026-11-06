@@ -51,3 +51,11 @@ test('an answer from the app is never re-sent', async () => {
   assert.equal(got.length, 1);
   server.close();
 });
+
+test('a key the app could not put on the clipboard is sent again until it is copied', async () => {
+  const pipe = pipeName(); let n = 0;
+  const { server, got } = await inbox(pipe, () => (++n < 3 ? 'clipboard_failed' : 'copied'));
+  assert.equal(await sendKeyWithRetry(KEY, 'x', { pipe }), 'copied');
+  assert.equal(got.length, 3);
+  server.close();
+});
