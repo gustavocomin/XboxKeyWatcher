@@ -136,7 +136,9 @@ const ocrOptions = { workers,
   rgb: process.env.XKW_RGB_PIXELS !== '0',
   xboxAlphabet: process.env.XKW_XBOX_ALPHABET !== '0',
   edgeVeto: process.env.XKW_EDGE_VETO === '1',
-  edgeMargin: Number(process.env.XKW_EDGE_MARGIN ?? 0) };
+  edgeMargin: Number(process.env.XKW_EDGE_MARGIN ?? 0),
+  // Third read when the 1x and 2x reads differ only by letters Xbox codes never use (bot-ocr.mjs).
+  tieBreak: process.env.XKW_TIE_BREAK !== '0' };
 // A worker that died is being restarted (bot-ocr.mjs): give posts to the live ones.
 const leastBusy = () => { const live = workers.filter(w => !w.dead); return (live.length ? live : workers).reduce((a, b) => (b.busy < a.busy ? b : a)); };
 async function readKeyPooled(buffer) {
@@ -397,7 +399,7 @@ async function handlePost(sock, msg, via, extra = {}) {
     let appResult = null;
     if (read?.key && sendToApp) appResult = await sendKeyWithRetry(read.key, `canal ${id}`);
     const handed = now();
-    log('ocr', { id, accepted: !!read?.key, key: read?.key ? redact(read.key) : null, candidates: read?.candidates, disagreed: !!read?.disagreed, rejected: read?.rejected ?? null, parallel: !!read?.parallel, viaPartial: !!read?.viaPartial,
+    log('ocr', { id, accepted: !!read?.key, key: read?.key ? redact(read.key) : null, candidates: read?.candidates, disagreed: !!read?.disagreed, rejected: read?.rejected ?? null, tieBreak: read?.tieBreak ?? null, parallel: !!read?.parallel, viaPartial: !!read?.viaPartial,
       partialAtMs: partial.at ? Math.round(partial.at - arrived) : null, partialFraction: partial.fraction != null ? Math.round(partial.fraction * 100) / 100 : null, progressive: partial.progressive, overlap: read?.overlap != null ? Math.round(read.overlap * 1000) / 1000 : null,
       ocrMs: Math.round(ocrDone - downloaded), appMs: Math.round(handed - ocrDone), appResult, arrivalToAppMs: Math.round(handed - arrived) });
     console.log(`${stamp(handed)}  OCR ${read?.key ? 'KEY ' + redact(read.key) : 'sem key'} em ${Math.round(ocrDone - downloaded)} ms` +

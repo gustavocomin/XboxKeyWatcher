@@ -25,6 +25,7 @@ const OPTIONS = {
   alpha: { opts: { xboxAlphabet: true } },
   edge: { opts: { edgeVeto: true } },
   edge8: { opts: { edgeVeto: true, edgeMargin: 0.008 } },
+  tie: { opts: { tieBreak: true } },
   ov05: { opts: { overlapVeto: 0.05 } },
   ov15: { opts: { overlapVeto: 0.15 } },
   ov30: { opts: { overlapVeto: 0.3 } },

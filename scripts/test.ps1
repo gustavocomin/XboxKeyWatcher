@@ -5,7 +5,7 @@ Set-Location (Split-Path -Parent $PSScriptRoot)
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # Channel bot: key announcements, hand-off to the app, OCR worker restart and refusals
 # (the worker tests use tools\wa-listener\test-images from make-test-images.ps1; skipped without it).
-node --test tools/wa-listener/tests/channel-signals.test.mjs tools/wa-listener/tests/app-inbox.test.mjs tools/wa-listener/tests/bot-ocr-worker.test.mjs tools/wa-listener/tests/key-alert.test.mjs
+node --test tools/wa-listener/tests/channel-signals.test.mjs tools/wa-listener/tests/app-inbox.test.mjs tools/wa-listener/tests/bot-ocr-worker.test.mjs tools/wa-listener/tests/key-alert.test.mjs tools/wa-listener/tests/tie-break.test.mjs
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet run --project tests\XboxKeyWatcher.Tests -c Release
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

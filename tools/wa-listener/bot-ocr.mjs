@@ -114,6 +114,17 @@ async function toBgra(input, maxWidth, rgb = false, partial = false) {
 const NOT_IN_XBOX_CODES = /[AEILOSU015]/;
 export const impossibleXboxKey = key => NOT_IN_XBOX_CODES.test(key.replace(/-/g, ''));
 
+// Two reads of the same line that differ only where one of them has a letter Xbox codes never
+// use (Q read as O, B as 8...): the read without such letters, or null. Any other difference
+// (7 versus Z, two valid letters) gives null: those stay refused.
+export function tieBreakCandidate(a, b) {
+  if (!a || !b || a.length !== b.length || a === b) return null;
+  const bad = c => NOT_IN_XBOX_CODES.test(c);
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i] && bad(a[i]) === bad(b[i])) return null;
+  const valid = [a, b].filter(k => !impossibleXboxKey(k));
+  return valid.length === 1 ? valid[0] : null;
+}
+
 // 7 versus Z by shape. Both reads come from the same network and, in condensed bold fonts,
 // can agree on Z for a 7. In the channel style each character is white fill inside a black
 // outline, so its fill is one blob of the line: Z has a bar along its foot, 7 only a stem.
@@ -190,7 +201,7 @@ export function z7Evidence(image, row, { white = 225, pad = 4 } = {}) {
   });
 }
 
-export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0.75, keyLinesOnly = true, lenient = false, confirm = '2x', overlapVeto = 0, xboxAlphabet = false, edgeVeto = false, edgeMargin = 0, parallelConfirm = false, workers = null, rgb = false, partial = false, firstOnly = false } = {}) {
+export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0.75, keyLinesOnly = true, lenient = false, confirm = '2x', overlapVeto = 0, xboxAlphabet = false, edgeVeto = false, edgeMargin = 0, tieBreak = false, parallelConfirm = false, workers = null, rgb = false, partial = false, firstOnly = false } = {}) {
   const t0 = performance.now();
   // The full-resolution decode for the confirmation runs while the worker reads the image.
   const original = confirm !== '2x'
@@ -202,12 +213,13 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
     return { key: null, candidates: 0, rejected: 'size', decodeMs: t1 - t0, ocrMs: 0, confirmMs: 0, totalMs: performance.now() - t0 };
   const pad = 4;
   // The confirmation view: the line re-cropped from the decoded image and upscaled 2x.
-  const lineCrop2x = ([l, t, r, b]) => {
+  const lineCrop = ([l, t, r, b], scale) => {
     const left = Math.max(0, l - pad), top = Math.max(0, t - pad);
     const w = Math.min(image.width, r + pad) - left, h = Math.min(image.height, b + pad) - top;
     return sharp(image.data, { raw: { width: image.width, height: image.height, channels: image.channels } })
-      .extract({ left, top, width: w, height: h }).resize({ width: w * 2, kernel: 'cubic' }).raw().toBuffer({ resolveWithObject: true });
+      .extract({ left, top, width: w, height: h }).resize({ width: w * scale, kernel: 'cubic' }).raw().toBuffer({ resolveWithObject: true });
   };
+  const lineCrop2x = bounds => lineCrop(bounds, 2);
   // parallelConfirm: when another worker is idle, start the confirmation there as soon as
   // the detector has located a single key-shaped line, while this worker recognizes it.
   // Same two reads on the same pixels as the sequential path, only overlapped in time.
@@ -232,7 +244,10 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
   const result = { key: null, candidates: keys.length, decodeMs: t1 - t0, ocrMs: t2 - t1, confirmMs: 0, confidence: null,
     detMs: first.timings?.DetectionMs, recMs: first.timings?.RecognitionMs, regions: first.timings?.TextRegions };
   if (keys.length !== 1) return { ...result, totalMs: performance.now() - t0 };
-  if (xboxAlphabet && impossibleXboxKey(keys[0])) return { ...result, rejected: 'alphabet', totalMs: performance.now() - t0 };
+  // A first read with a letter Xbox codes never use is refused, unless tieBreak lets the line
+  // be read twice more (below); such a read itself is never accepted.
+  const firstForbidden = xboxAlphabet && impossibleXboxKey(keys[0]);
+  if (firstForbidden && !tieBreak) return { ...result, rejected: 'alphabet', totalMs: performance.now() - t0 };
   const row = rows.find(r => extractKeys(r.text, lenient).includes(keys[0]));
   result.confidence = row.confidence; result.bounds = row.bounds;
   if (process.env.XKW_Z7_EVIDENCE === '1') result.z7 = z7Evidence(image, row); // measurement only (off by default)
@@ -302,8 +317,10 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
       second = await worker.recognize(crop.data, crop.info.width, crop.info.height, false, secondModel, rgb && view === upscaled);
     }
     const secondKeys = [...new Set((second.readings ?? []).filter(x => x.confidence >= minConfidence).flatMap(x => extractKeys(x.text, lenient)))];
-    return secondKeys.length === 1 && secondKeys[0] === keys[0];
+    lastSecondKey = secondKeys.length === 1 ? secondKeys[0] : null;
+    return lastSecondKey === keys[0] && !firstForbidden;
   };
+  let lastSecondKey = null;
   // Every listed confirmation must agree exactly with the first read.
   // '2x' (release): same model, line upscaled 2x. 'm2': a different recognition model
   // (PP-OCRv4) on the line. 'm2+2x': both must agree (three reads, two networks).
@@ -312,6 +329,23 @@ export async function readKey(worker, jpeg, { maxWidth = 1000, minConfidence = 0
   let agreed = true;
   for (const [view, secondModel] of plan) if (!(await confirmWith(view, secondModel))) { agreed = false; break; }
   if (agreed) result.key = keys[0];
+  // tieBreak: the 1x and 2x reads differ only where one has a forbidden letter (Q read as O on a
+  // fictitious key, 05/11). A third read of the line at 3x must give exactly the valid one.
+  // Only for a line well inside the image: on the fictitious corpus every cut key it would
+  // have accepted sat <= 0.4% from a side or <= 1.3% from the top/bottom (one was accepted
+  // wrong), every whole key >= 2.2% and >= 14%. Real keys: 0.8-4.3% and 23-69%.
+  const sideMargin = Math.min(l, image.width - r) / image.width, edgeGap = Math.min(t, image.height - b) / image.height;
+  if (!agreed && tieBreak && xboxAlphabet && confirm === '2x' && sideMargin >= 0.015 && edgeGap >= 0.05) {
+    const candidate = tieBreakCandidate(keys[0], lastSecondKey);
+    if (candidate) {
+      const crop = await lineCrop(row.bounds, 3);
+      const third = await worker.recognize(crop.data, crop.info.width, crop.info.height, false, false, rgb);
+      const thirdKeys = [...new Set((third.readings ?? []).filter(x => x.confidence >= minConfidence).flatMap(x => extractKeys(x.text, lenient)))];
+      if (thirdKeys.length === 1 && thirdKeys[0] === candidate && !impossibleXboxKey(candidate)) { result.key = candidate; result.tieBreak = true; }
+      else result.tieBreak = false;
+    }
+  }
+  if (!result.key && firstForbidden) result.rejected = 'alphabet';
   result.confirmMs = performance.now() - t2;
   if (!result.key) result.disagreed = true;
   return { ...result, totalMs: performance.now() - t0 };
