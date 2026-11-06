@@ -580,6 +580,19 @@ function noteChannelSignals(text, sentAt, post) {
     else if (isCountdown(text) && (!sentAt || t - sentAt < 60_000)) addAutoWindow(t, t + COUNTDOWN_FAST_MS, 'contagem', post);
   } catch { }
 }
+// A key time still ahead (or in its window). Past times (e.g. one written by an announcement)
+// do not switch the poll off: without a time ahead it polls every POLL_MS to catch the next one.
+function hasUpcomingFastTime(t = Date.now()) {
+  const d = new Date(t);
+  return fastTimes.some(x => {
+    for (const dayOffset of x.date ? [0] : [0, 1]) {
+      const at = x.date ? new Date(x.date[0], x.date[1], x.date[2], x.h, x.min).getTime()
+        : new Date(d.getFullYear(), d.getMonth(), d.getDate() + dayOffset, x.h, x.min).getTime();
+      if (at + FAST_AFTER_MS >= t) return true;
+    }
+    return false;
+  });
+}
 function inFastWindow(t = Date.now()) {
   if (autoWindows.some(w => t >= w.from && t <= w.to)) return true;
   const d = new Date(t);
@@ -672,7 +685,7 @@ function startLane(sock, jid, lane) {
       const fast = inFastWindow();
       // With key times set, poll only inside their windows; outside, check again in 1 s.
       // A key time written by the announcement itself keeps the normal poll until its window.
-      const idle = fastTimes.length > 0 && !fast && autoWindows.length === 0;
+      const idle = hasUpcomingFastTime() && !fast && autoWindows.length === 0;
       const mode = idle ? 'off' : turboNow() ? 'turbo' : fast ? 'fast' : 'normal';
       if (mode !== state.fast) {
         state.fast = mode;

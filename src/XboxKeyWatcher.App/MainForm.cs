@@ -247,7 +247,9 @@ internal sealed class MainForm : Form
             string? dir = ChannelBot.FindListenerDir();
             var schedule = KeySchedule.Load(dir);
             var now = DateTime.Now;
-            bool wantBots = !schedule.HasTimes || schedule.InBotWindow(now);
+            // No key time ahead (only past ones, e.g. the time an announcement wrote): bots stay on, so the
+            // next announcement is still caught.
+            bool wantBots = schedule.Next(now) is null || schedule.InBotWindow(now);
             if (wantBots && channelBot is null) StartBot();
             else if (!wantBots && channelBot is not null) { channelBot.Dispose(); channelBot = null; }
             if (!wantBots)
