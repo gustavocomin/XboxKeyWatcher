@@ -52,6 +52,36 @@ Esses valores ficam em `tools\wa-listener` (`canais.txt`, `poll-rapido.txt`, `ag
 
 Depois de atualizar a extensão: recarregue-a em `chrome://extensions` e dê F5 na aba de resgate do Xbox.
 
+## Colagem em cascata em várias abas (Edge)
+
+A colagem em cascata empurra a mesma key confirmada para várias abas de resgate abertas e logadas, cada uma com um atraso configurado a partir do momento em que a oferta chega ao service worker da extensão. As abas mais recentemente acessadas recebem os menores atrasos. Por padrão, esse modo vem desligado.
+
+1. **Carregar a extensão no Edge**: abra `edge://extensions`, ative o **Modo de desenvolvedor** e clique em **Carregar sem compactação** selecionando a pasta `browser-extension`. Copie o ID da extensão e registre o host nativo para o Edge com:
+   ```powershell
+   .\scripts\register-native-host.ps1 -ExtensionId ID_DA_EXTENSAO -Browser Edge
+   ```
+2. **Abrir as abas de resgate**: abra as *N* abas já logadas na conta Microsoft em `https://www.xbox.com/pt-BR/redeem` (ou localidade equivalente `xbox.com/<idioma>/redeem`). Caso tenha acabado de carregar ou recarregar a extensão, atualize as abas com F5 para que o frame de resgate se registre no worker.
+3. **Ligar e desligar**: em `edge://extensions`, clique no link do **service worker** da extensão para abrir o console do DevTools e execute:
+   ```js
+   chrome.storage.local.set({cascade:{enabled:true, delays:[0,100,300,600,1000]}})
+   ```
+   Para desligar e voltar ao modo antigo (uma única aba ativa consultando a ponte), execute no mesmo console:
+   ```js
+   chrome.storage.local.set({cascade:{enabled:false}})
+   ```
+4. **Campo `activate`**: desligado por padrão (`activate: false`). Se incluído como `activate: true` no objeto `cascade`, a extensão traz para frente (`chrome.tabs.update(..., { active: true })`) a aba da vez imediatamente antes de preencher o campo.
+5. **Limite de segurança**: a extensão faz no máximo **uma tentativa por key por aba**, preenche no máximo o **número de atrasos configurados em `delays`** (limitado a 10 abas e atraso máximo de 4000 ms) e **nunca aplica a mesma key duas vezes na mesma aba** (além de respeitar a guarda de 3 s após um preenchimento antes de aceitar outra key diferente naquela aba). Atenção: **cada aba além da que acertar o resgate conta como tentativa inválida na conta Microsoft**.
+6. **Como ler o registro (`cascadeLog`)**: no console do service worker, consulte:
+   ```js
+   await chrome.storage.local.get('cascadeLog')
+   ```
+   Cada entrada traz a key mascarada (`XX…YY`), `tabId`, `slot`, `scheduledMs` (atraso configurado para o slot), `actualMs` (atraso real até o preenchimento na aba), `applyMs`, `result` (`'filled'`, `'expired'`, `'repeat'`, `'guard'`, `'no-field'`, `'error'`) e `page` (relatório enviado pela aba após `reportAfterMs`, padrão 1500 ms, com `fieldPresent`, `fieldHasKey`, `fieldDisabled` e trecho de `text` com a key mascarada).
+7. **Teste automatizado local**:
+   ```powershell
+   node benchmarks\browser-cascade-test.mjs
+   ```
+   O teste copia a extensão para uma pasta temporária trocando a porta para `47993` e sobe a ponte HTTP de teste com `XKW_BRIDGE_PORT=47993` (sem pipe nativo), portanto não interfere no aplicativo instalado nem usa a porta padrão `47183`. Para medir memória e atraso por número de abas (`N` em 1, 3, 5, 8 e 10), use `node benchmarks\browser-cascade-test.mjs --sweep --out docs\cascata-sweep.json`.
+
 ## Desenvolvimento
 
 Requisitos: .NET SDK 8+, Python 3.13 (em `.venv`), Node 22 (dependências em `tools\wa-listener\node_modules`) e **PowerShell 7** (o Windows PowerShell 5.1 falha no primeiro passo dos testes).

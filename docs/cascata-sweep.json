@@ -1,0 +1,1956 @@
+{
+  "mode": "sweep",
+  "port": 47993,
+  "table": [
+    {
+      "tabs": 1,
+      "memoryMb": 930.24,
+      "edgeProcesses": 19,
+      "lastSlotScheduledMs": 0,
+      "lastSlotMedianMs": 1,
+      "lastSlotP90Ms": 3,
+      "lastSlotMaxMs": 3,
+      "lastSlotDiffMedianMs": 1,
+      "lastSlotDiffP90Ms": 3,
+      "lastSlotDiffMaxMs": 3
+    },
+    {
+      "tabs": 3,
+      "memoryMb": 1051.66,
+      "edgeProcesses": 21,
+      "lastSlotScheduledMs": 300,
+      "lastSlotMedianMs": 300,
+      "lastSlotP90Ms": 301,
+      "lastSlotMaxMs": 301,
+      "lastSlotDiffMedianMs": 0,
+      "lastSlotDiffP90Ms": 1,
+      "lastSlotDiffMaxMs": 1
+    },
+    {
+      "tabs": 5,
+      "memoryMb": 1164.59,
+      "edgeProcesses": 23,
+      "lastSlotScheduledMs": 1000,
+      "lastSlotMedianMs": 1000,
+      "lastSlotP90Ms": 1010,
+      "lastSlotMaxMs": 1010,
+      "lastSlotDiffMedianMs": 0,
+      "lastSlotDiffP90Ms": 10,
+      "lastSlotDiffMaxMs": 10
+    },
+    {
+      "tabs": 8,
+      "memoryMb": 1340.75,
+      "edgeProcesses": 26,
+      "lastSlotScheduledMs": 2500,
+      "lastSlotMedianMs": 2500,
+      "lastSlotP90Ms": 2501,
+      "lastSlotMaxMs": 2501,
+      "lastSlotDiffMedianMs": 0,
+      "lastSlotDiffP90Ms": 1,
+      "lastSlotDiffMaxMs": 1
+    },
+    {
+      "tabs": 10,
+      "memoryMb": 1455.39,
+      "edgeProcesses": 28,
+      "lastSlotScheduledMs": 3500,
+      "lastSlotMedianMs": 3501,
+      "lastSlotP90Ms": 3501,
+      "lastSlotMaxMs": 3501,
+      "lastSlotDiffMedianMs": 1,
+      "lastSlotDiffP90Ms": 1,
+      "lastSlotDiffMaxMs": 1
+    }
+  ],
+  "results": [
+    {
+      "tabs": 1,
+      "delays": [
+        0
+      ],
+      "memoryMb": 930.24,
+      "workingSetBytes": 975425536,
+      "edgeProcesses": 19,
+      "lastSlot": {
+        "slot": 0,
+        "scheduledMs": 0,
+        "actualValuesMs": [
+          3,
+          1,
+          1,
+          1,
+          1
+        ],
+        "medianMs": 1,
+        "p90Ms": 3,
+        "maxMs": 3,
+        "diffMedianMs": 1,
+        "diffP90Ms": 3,
+        "diffMaxMs": 3
+      },
+      "perSlot": [
+        {
+          "slot": 0,
+          "scheduledMs": 0,
+          "actualValuesMs": [
+            3,
+            1,
+            1,
+            1,
+            1
+          ],
+          "actual": {
+            "minMs": 1,
+            "medianMs": 1,
+            "p90Ms": 3,
+            "maxMs": 3
+          },
+          "diff": {
+            "minMs": 1,
+            "medianMs": 1,
+            "p90Ms": 3,
+            "maxMs": 3
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "key": "B2…4V",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 3,
+              "diffMs": 3,
+              "applyMs": 0.7
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "key": "W6…2P",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "key": "Q3…7J",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            }
+          ]
+        },
+        {
+          "round": 4,
+          "key": "K8…3D",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0
+            }
+          ]
+        },
+        {
+          "round": 5,
+          "key": "F4…7Y",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tabs": 3,
+      "delays": [
+        0,
+        100,
+        300
+      ],
+      "memoryMb": 1051.66,
+      "workingSetBytes": 1102745600,
+      "edgeProcesses": 21,
+      "lastSlot": {
+        "slot": 2,
+        "scheduledMs": 300,
+        "actualValuesMs": [
+          301,
+          300,
+          300,
+          300,
+          301
+        ],
+        "medianMs": 300,
+        "p90Ms": 301,
+        "maxMs": 301,
+        "diffMedianMs": 0,
+        "diffP90Ms": 1,
+        "diffMaxMs": 1
+      },
+      "perSlot": [
+        {
+          "slot": 0,
+          "scheduledMs": 0,
+          "actualValuesMs": [
+            2,
+            1,
+            1,
+            1,
+            1
+          ],
+          "actual": {
+            "minMs": 1,
+            "medianMs": 1,
+            "p90Ms": 2,
+            "maxMs": 2
+          },
+          "diff": {
+            "minMs": 1,
+            "medianMs": 1,
+            "p90Ms": 2,
+            "maxMs": 2
+          }
+        },
+        {
+          "slot": 1,
+          "scheduledMs": 100,
+          "actualValuesMs": [
+            101,
+            101,
+            100,
+            100,
+            101
+          ],
+          "actual": {
+            "minMs": 100,
+            "medianMs": 101,
+            "p90Ms": 101,
+            "maxMs": 101
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 1,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 2,
+          "scheduledMs": 300,
+          "actualValuesMs": [
+            301,
+            300,
+            300,
+            300,
+            301
+          ],
+          "actual": {
+            "minMs": 300,
+            "medianMs": 300,
+            "p90Ms": 301,
+            "maxMs": 301
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "key": "B2…4V",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 2,
+              "diffMs": 2,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 101,
+              "diffMs": 1,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 301,
+              "diffMs": 1,
+              "applyMs": 0.7
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "key": "W6…2P",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 101,
+              "diffMs": 1,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.1
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "key": "Q3…7J",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.2
+            }
+          ]
+        },
+        {
+          "round": 4,
+          "key": "K8…3D",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.1
+            }
+          ]
+        },
+        {
+          "round": 5,
+          "key": "F4…7Y",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 101,
+              "diffMs": 1,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 301,
+              "diffMs": 1,
+              "applyMs": 0.1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tabs": 5,
+      "delays": [
+        0,
+        100,
+        300,
+        600,
+        1000
+      ],
+      "memoryMb": 1164.59,
+      "workingSetBytes": 1221156864,
+      "edgeProcesses": 23,
+      "lastSlot": {
+        "slot": 4,
+        "scheduledMs": 1000,
+        "actualValuesMs": [
+          1001,
+          1000,
+          1010,
+          1000,
+          1000
+        ],
+        "medianMs": 1000,
+        "p90Ms": 1010,
+        "maxMs": 1010,
+        "diffMedianMs": 0,
+        "diffP90Ms": 10,
+        "diffMaxMs": 10
+      },
+      "perSlot": [
+        {
+          "slot": 0,
+          "scheduledMs": 0,
+          "actualValuesMs": [
+            2,
+            1,
+            1,
+            1,
+            1
+          ],
+          "actual": {
+            "minMs": 1,
+            "medianMs": 1,
+            "p90Ms": 2,
+            "maxMs": 2
+          },
+          "diff": {
+            "minMs": 1,
+            "medianMs": 1,
+            "p90Ms": 2,
+            "maxMs": 2
+          }
+        },
+        {
+          "slot": 1,
+          "scheduledMs": 100,
+          "actualValuesMs": [
+            101,
+            100,
+            100,
+            100,
+            100
+          ],
+          "actual": {
+            "minMs": 100,
+            "medianMs": 100,
+            "p90Ms": 101,
+            "maxMs": 101
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 2,
+          "scheduledMs": 300,
+          "actualValuesMs": [
+            301,
+            300,
+            300,
+            300,
+            300
+          ],
+          "actual": {
+            "minMs": 300,
+            "medianMs": 300,
+            "p90Ms": 301,
+            "maxMs": 301
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 3,
+          "scheduledMs": 600,
+          "actualValuesMs": [
+            601,
+            600,
+            600,
+            600,
+            600
+          ],
+          "actual": {
+            "minMs": 600,
+            "medianMs": 600,
+            "p90Ms": 601,
+            "maxMs": 601
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 4,
+          "scheduledMs": 1000,
+          "actualValuesMs": [
+            1001,
+            1000,
+            1010,
+            1000,
+            1000
+          ],
+          "actual": {
+            "minMs": 1000,
+            "medianMs": 1000,
+            "p90Ms": 1010,
+            "maxMs": 1010
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 10,
+            "maxMs": 10
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "key": "B2…4V",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 2,
+              "diffMs": 2,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 101,
+              "diffMs": 1,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 301,
+              "diffMs": 1,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 601,
+              "diffMs": 1,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1001,
+              "diffMs": 1,
+              "applyMs": 0.6
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "key": "W6…2P",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "key": "Q3…7J",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1010,
+              "diffMs": 10,
+              "applyMs": 0.2
+            }
+          ]
+        },
+        {
+          "round": 4,
+          "key": "K8…3D",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            }
+          ]
+        },
+        {
+          "round": 5,
+          "key": "F4…7Y",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tabs": 8,
+      "delays": [
+        0,
+        100,
+        300,
+        600,
+        1000,
+        1500,
+        2000,
+        2500
+      ],
+      "memoryMb": 1340.75,
+      "workingSetBytes": 1405874176,
+      "edgeProcesses": 26,
+      "lastSlot": {
+        "slot": 7,
+        "scheduledMs": 2500,
+        "actualValuesMs": [
+          2501,
+          2501,
+          2500,
+          2500,
+          2500
+        ],
+        "medianMs": 2500,
+        "p90Ms": 2501,
+        "maxMs": 2501,
+        "diffMedianMs": 0,
+        "diffP90Ms": 1,
+        "diffMaxMs": 1
+      },
+      "perSlot": [
+        {
+          "slot": 0,
+          "scheduledMs": 0,
+          "actualValuesMs": [
+            2,
+            2,
+            1,
+            1,
+            1
+          ],
+          "actual": {
+            "minMs": 1,
+            "medianMs": 1,
+            "p90Ms": 2,
+            "maxMs": 2
+          },
+          "diff": {
+            "minMs": 1,
+            "medianMs": 1,
+            "p90Ms": 2,
+            "maxMs": 2
+          }
+        },
+        {
+          "slot": 1,
+          "scheduledMs": 100,
+          "actualValuesMs": [
+            101,
+            101,
+            100,
+            100,
+            101
+          ],
+          "actual": {
+            "minMs": 100,
+            "medianMs": 101,
+            "p90Ms": 101,
+            "maxMs": 101
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 1,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 2,
+          "scheduledMs": 300,
+          "actualValuesMs": [
+            301,
+            301,
+            300,
+            300,
+            300
+          ],
+          "actual": {
+            "minMs": 300,
+            "medianMs": 300,
+            "p90Ms": 301,
+            "maxMs": 301
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 3,
+          "scheduledMs": 600,
+          "actualValuesMs": [
+            602,
+            601,
+            600,
+            601,
+            600
+          ],
+          "actual": {
+            "minMs": 600,
+            "medianMs": 601,
+            "p90Ms": 602,
+            "maxMs": 602
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 1,
+            "p90Ms": 2,
+            "maxMs": 2
+          }
+        },
+        {
+          "slot": 4,
+          "scheduledMs": 1000,
+          "actualValuesMs": [
+            1002,
+            1001,
+            1000,
+            1000,
+            1001
+          ],
+          "actual": {
+            "minMs": 1000,
+            "medianMs": 1001,
+            "p90Ms": 1002,
+            "maxMs": 1002
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 1,
+            "p90Ms": 2,
+            "maxMs": 2
+          }
+        },
+        {
+          "slot": 5,
+          "scheduledMs": 1500,
+          "actualValuesMs": [
+            1502,
+            1501,
+            1500,
+            1500,
+            1500
+          ],
+          "actual": {
+            "minMs": 1500,
+            "medianMs": 1500,
+            "p90Ms": 1502,
+            "maxMs": 1502
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 2,
+            "maxMs": 2
+          }
+        },
+        {
+          "slot": 6,
+          "scheduledMs": 2000,
+          "actualValuesMs": [
+            2001,
+            2001,
+            2001,
+            2000,
+            2000
+          ],
+          "actual": {
+            "minMs": 2000,
+            "medianMs": 2001,
+            "p90Ms": 2001,
+            "maxMs": 2001
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 1,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 7,
+          "scheduledMs": 2500,
+          "actualValuesMs": [
+            2501,
+            2501,
+            2500,
+            2500,
+            2500
+          ],
+          "actual": {
+            "minMs": 2500,
+            "medianMs": 2500,
+            "p90Ms": 2501,
+            "maxMs": 2501
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "key": "B2…4V",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 2,
+              "diffMs": 2,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 101,
+              "diffMs": 1,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 301,
+              "diffMs": 1,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 602,
+              "diffMs": 2,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1002,
+              "diffMs": 2,
+              "applyMs": 0.7
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1502,
+              "diffMs": 2,
+              "applyMs": 0.7
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2001,
+              "diffMs": 1,
+              "applyMs": 0.7
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2501,
+              "diffMs": 1,
+              "applyMs": 0.6
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "key": "W6…2P",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 2,
+              "diffMs": 2,
+              "applyMs": 0
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 101,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 301,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 601,
+              "diffMs": 1,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1001,
+              "diffMs": 1,
+              "applyMs": 0.3
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1501,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2001,
+              "diffMs": 1,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2501,
+              "diffMs": 1,
+              "applyMs": 0.1
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "key": "Q3…7J",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1500,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2001,
+              "diffMs": 1,
+              "applyMs": 0.3
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2500,
+              "diffMs": 0,
+              "applyMs": 0.2
+            }
+          ]
+        },
+        {
+          "round": 4,
+          "key": "K8…3D",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 601,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1500,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2500,
+              "diffMs": 0,
+              "applyMs": 0.1
+            }
+          ]
+        },
+        {
+          "round": 5,
+          "key": "F4…7Y",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 101,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1001,
+              "diffMs": 1,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1500,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2500,
+              "diffMs": 0,
+              "applyMs": 0.3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tabs": 10,
+      "delays": [
+        0,
+        100,
+        300,
+        600,
+        1000,
+        1500,
+        2000,
+        2500,
+        3000,
+        3500
+      ],
+      "memoryMb": 1455.39,
+      "workingSetBytes": 1526091776,
+      "edgeProcesses": 28,
+      "lastSlot": {
+        "slot": 9,
+        "scheduledMs": 3500,
+        "actualValuesMs": [
+          3501,
+          3500,
+          3501,
+          3500,
+          3501
+        ],
+        "medianMs": 3501,
+        "p90Ms": 3501,
+        "maxMs": 3501,
+        "diffMedianMs": 1,
+        "diffP90Ms": 1,
+        "diffMaxMs": 1
+      },
+      "perSlot": [
+        {
+          "slot": 0,
+          "scheduledMs": 0,
+          "actualValuesMs": [
+            4,
+            2,
+            1,
+            2,
+            1
+          ],
+          "actual": {
+            "minMs": 1,
+            "medianMs": 2,
+            "p90Ms": 4,
+            "maxMs": 4
+          },
+          "diff": {
+            "minMs": 1,
+            "medianMs": 2,
+            "p90Ms": 4,
+            "maxMs": 4
+          }
+        },
+        {
+          "slot": 1,
+          "scheduledMs": 100,
+          "actualValuesMs": [
+            101,
+            100,
+            100,
+            100,
+            100
+          ],
+          "actual": {
+            "minMs": 100,
+            "medianMs": 100,
+            "p90Ms": 101,
+            "maxMs": 101
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 2,
+          "scheduledMs": 300,
+          "actualValuesMs": [
+            301,
+            300,
+            300,
+            300,
+            300
+          ],
+          "actual": {
+            "minMs": 300,
+            "medianMs": 300,
+            "p90Ms": 301,
+            "maxMs": 301
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 3,
+          "scheduledMs": 600,
+          "actualValuesMs": [
+            604,
+            600,
+            600,
+            600,
+            600
+          ],
+          "actual": {
+            "minMs": 600,
+            "medianMs": 600,
+            "p90Ms": 604,
+            "maxMs": 604
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 4,
+            "maxMs": 4
+          }
+        },
+        {
+          "slot": 4,
+          "scheduledMs": 1000,
+          "actualValuesMs": [
+            1001,
+            1000,
+            1000,
+            1000,
+            1000
+          ],
+          "actual": {
+            "minMs": 1000,
+            "medianMs": 1000,
+            "p90Ms": 1001,
+            "maxMs": 1001
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 5,
+          "scheduledMs": 1500,
+          "actualValuesMs": [
+            1501,
+            1500,
+            1500,
+            1500,
+            1500
+          ],
+          "actual": {
+            "minMs": 1500,
+            "medianMs": 1500,
+            "p90Ms": 1501,
+            "maxMs": 1501
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 6,
+          "scheduledMs": 2000,
+          "actualValuesMs": [
+            2001,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "actual": {
+            "minMs": 2000,
+            "medianMs": 2000,
+            "p90Ms": 2001,
+            "maxMs": 2001
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 7,
+          "scheduledMs": 2500,
+          "actualValuesMs": [
+            2501,
+            2500,
+            2500,
+            2500,
+            2500
+          ],
+          "actual": {
+            "minMs": 2500,
+            "medianMs": 2500,
+            "p90Ms": 2501,
+            "maxMs": 2501
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 8,
+          "scheduledMs": 3000,
+          "actualValuesMs": [
+            3001,
+            3000,
+            3000,
+            3000,
+            3000
+          ],
+          "actual": {
+            "minMs": 3000,
+            "medianMs": 3000,
+            "p90Ms": 3001,
+            "maxMs": 3001
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 0,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        },
+        {
+          "slot": 9,
+          "scheduledMs": 3500,
+          "actualValuesMs": [
+            3501,
+            3500,
+            3501,
+            3500,
+            3501
+          ],
+          "actual": {
+            "minMs": 3500,
+            "medianMs": 3501,
+            "p90Ms": 3501,
+            "maxMs": 3501
+          },
+          "diff": {
+            "minMs": 0,
+            "medianMs": 1,
+            "p90Ms": 1,
+            "maxMs": 1
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "key": "B2…4V",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 4,
+              "diffMs": 4,
+              "applyMs": 1.4
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 101,
+              "diffMs": 1,
+              "applyMs": 0.8
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 301,
+              "diffMs": 1,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 604,
+              "diffMs": 4,
+              "applyMs": 0.7
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1001,
+              "diffMs": 1,
+              "applyMs": 0.8
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1501,
+              "diffMs": 1,
+              "applyMs": 0.7
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2001,
+              "diffMs": 1,
+              "applyMs": 0.7
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2501,
+              "diffMs": 1,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 8,
+              "scheduledMs": 3000,
+              "actualMs": 3001,
+              "diffMs": 1,
+              "applyMs": 0.6
+            },
+            {
+              "slot": 9,
+              "scheduledMs": 3500,
+              "actualMs": 3501,
+              "diffMs": 1,
+              "applyMs": 0.7
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "key": "W6…2P",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 2,
+              "diffMs": 2,
+              "applyMs": 0
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1500,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2000,
+              "diffMs": 0,
+              "applyMs": 0.3
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2500,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 8,
+              "scheduledMs": 3000,
+              "actualMs": 3000,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 9,
+              "scheduledMs": 3500,
+              "actualMs": 3500,
+              "diffMs": 0,
+              "applyMs": 0.1
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "key": "Q3…7J",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1000,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1500,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2000,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2500,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 8,
+              "scheduledMs": 3000,
+              "actualMs": 3000,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 9,
+              "scheduledMs": 3500,
+              "actualMs": 3501,
+              "diffMs": 1,
+              "applyMs": 0.1
+            }
+          ]
+        },
+        {
+          "round": 4,
+          "key": "K8…3D",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 2,
+              "diffMs": 2,
+              "applyMs": 0
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1500,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2500,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 8,
+              "scheduledMs": 3000,
+              "actualMs": 3000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 9,
+              "scheduledMs": 3500,
+              "actualMs": 3500,
+              "diffMs": 0,
+              "applyMs": 0
+            }
+          ]
+        },
+        {
+          "round": 5,
+          "key": "F4…7Y",
+          "slots": [
+            {
+              "slot": 0,
+              "scheduledMs": 0,
+              "actualMs": 1,
+              "diffMs": 1,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 1,
+              "scheduledMs": 100,
+              "actualMs": 100,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 2,
+              "scheduledMs": 300,
+              "actualMs": 300,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 3,
+              "scheduledMs": 600,
+              "actualMs": 600,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 4,
+              "scheduledMs": 1000,
+              "actualMs": 1000,
+              "diffMs": 0,
+              "applyMs": 0.1
+            },
+            {
+              "slot": 5,
+              "scheduledMs": 1500,
+              "actualMs": 1500,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 6,
+              "scheduledMs": 2000,
+              "actualMs": 2000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 7,
+              "scheduledMs": 2500,
+              "actualMs": 2500,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 8,
+              "scheduledMs": 3000,
+              "actualMs": 3000,
+              "diffMs": 0,
+              "applyMs": 0.2
+            },
+            {
+              "slot": 9,
+              "scheduledMs": 3500,
+              "actualMs": 3501,
+              "diffMs": 1,
+              "applyMs": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

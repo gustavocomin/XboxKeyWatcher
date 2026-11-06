@@ -224,6 +224,7 @@ async function cascadeLoop() {
       try { response = await sendNative({ action: 'pending', wait: true }); }
       catch { await sleep(500); continue; }
       const receivedAt = performance.now(), receivedEpoch = Date.now();
+      if (!cascade.enabled) break;               // switched off while the poll was in flight
       if (response.offline) { await sleep(1000); continue; }
       const offer = response.offer;
       if (offer && !dispatchedOffers.has(offer.Id) && /^[a-f0-9]{32}$/.test(offer.Id) &&
