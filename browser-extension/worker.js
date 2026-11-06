@@ -117,7 +117,7 @@ async function handle(message, sender) {
 // Enable from the worker console:
 //   chrome.storage.local.set({ cascade: { enabled: true, delays: [0, 100, 300, 600, 1000] } })
 // ---------------------------------------------------------------------------------------
-const CASCADE_DEFAULTS = { enabled: false, allowFixture: false, delays: [0, 100, 300, 600, 1000], activate: false, reportAfterMs: 1500 };
+const CASCADE_DEFAULTS = { enabled: true, allowFixture: false, delays: [0, 100, 300], activate: false, reportAfterMs: 1500 };
 const CASCADE_MAX_TABS = 10, CASCADE_MAX_DELAY_MS = 4000, CASCADE_LOG_SIZE = 300;
 const MS_REDEEM_FRAME = /^https:\/\/(www\.)?microsoft\.com\/store\/purchase\/buynowui\/redeemnow(?:[?#]|$)/;
 const KEY_PATTERN = /^[A-Z0-9]{5}(?:-[A-Z0-9]{5}){4}$/;

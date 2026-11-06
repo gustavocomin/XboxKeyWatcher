@@ -61,9 +61,9 @@ A colagem em cascata empurra a mesma key confirmada para várias abas de resgate
    .\scripts\register-native-host.ps1 -ExtensionId ID_DA_EXTENSAO -Browser Edge
    ```
 2. **Abrir as abas de resgate**: abra as *N* abas já logadas na conta Microsoft em `https://www.xbox.com/pt-BR/redeem` (ou localidade equivalente `xbox.com/<idioma>/redeem`). Caso tenha acabado de carregar ou recarregar a extensão, atualize as abas com F5 para que o frame de resgate se registre no worker.
-3. **Ligar e desligar**: em `edge://extensions`, clique no link do **service worker** da extensão para abrir o console do DevTools e execute:
+3. **Ligada por padrão (extensão 0.4.1)**: sem configurar nada, a cascata já vale com atrasos 0, 100 e 300 ms (no máximo 3 abas por key). Para mudar ou desligar, em `edge://extensions` (ou `chrome://extensions`), clique no link do **service worker** da extensão para abrir o console do DevTools e execute:
    ```js
-   chrome.storage.local.set({cascade:{enabled:true, delays:[0,100,300,600,1000]}})
+   chrome.storage.local.set({cascade:{enabled:true, delays:[0,100,300,600,1000]}})  // 5 abas
    ```
    Para desligar e voltar ao modo antigo (uma única aba ativa consultando a ponte), execute no mesmo console:
    ```js
