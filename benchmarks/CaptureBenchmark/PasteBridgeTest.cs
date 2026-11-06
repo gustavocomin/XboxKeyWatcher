@@ -28,15 +28,17 @@ internal static class PasteBridgeTest
     }
 
     // HTTP only (no pipe) and honours XKW_BRIDGE_PORT, so it can run beside the installed app.
+    // stdin: "offer" / "offer2" (two fixed fake keys), "offer <KEY>" (any fake key), "clear".
     internal static void ServeCascade()
     {
         string[] keys = ["T7Q4M-V9K2X-G6W3F-J8D5Y-N4P7R", "W3H9K-PQ7XB-M2CRT-6YFDV-B8JGH"];
-        using var bridge = new PasteBridge(value => keys.Contains(value), null, native: false, http: true);
+        using var bridge = new PasteBridge(_ => true, null, native: false, http: true);
         Console.WriteLine(bridge.Token);
         while (Console.ReadLine() is string command)
         {
             if (command == "offer") bridge.Offer(keys[0]);
             else if (command == "offer2") bridge.Offer(keys[1]);
+            else if (command.StartsWith("offer ", StringComparison.Ordinal)) bridge.Offer(command[6..].Trim());
             else if (command == "clear") bridge.Clear();
         }
     }
