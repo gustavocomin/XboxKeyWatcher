@@ -355,6 +355,7 @@ async function handlePost(sock, msg, via, extra = {}) {
     hasMediaKey: !!image?.mediaKey?.length, hasDirectPath: !!image?.directPath });
   console.log(`${stamp(arrived)}  POST via=${via}${first ? '' : ' (repetido)'} tipo=${type} atraso≈${lagS}s (resolução de 1 s)`);
   // The channel announces each key ~15 min ahead and counts down just before it: poll fast then.
+  if (first && polledJids.has(jid) && image) endTurboSoon();
   if (first && polledJids.has(jid)) noteChannelSignals(image?.caption ?? content.conversation ?? content.extendedTextMessage?.text ?? '', sentAt, id);
   if (!image || !first) return;
   if (stale) {
@@ -529,6 +530,34 @@ loadFastTimes(); setInterval(loadFastTimes, 15_000).unref?.();
 // ("PREPARADOS???", "3..."). They only change the poll rate, never what is accepted.
 const COUNTDOWN_FAST_MS = Number(process.env.XKW_COUNTDOWN_FAST_MS ?? 3 * 60_000);
 const autoWindows = [], polledJids = new Set();
+// Turbo: from a countdown post ("PREPARADOS", "3...") each bot runs XKW_POLL_LANES (default 2)
+// overlapping query loops every XKW_TURBO_POLL_MS (default 500): one query every ~125 ms with two
+// logins, ~4/s per login for well under a minute (measured 06/11: 0 errors at up to ~7/s per
+// login; errors were only seen after ~27 min at 3/s). It ends 30 s after the first image of the
+// polled channel, or XKW_TURBO_COUNTDOWN_MS (default 2 min) after the countdown. On 06/11 two
+// overlapping loops saw a post 371 ms after it was sent vs 642 ms with one (one login, 20 posts each).
+// The first error inside a turbo window ends the turbo for that window and the poll goes on
+// at the fast rate 1 s later, so a limit costs one query, not a pause. XKW_TURBO_POLL_MS=0: off.
+const TURBO_POLL_MS = Number(process.env.XKW_TURBO_POLL_MS ?? 500);
+// 06/11 (and 03-05/11): the key image came 13-27 s after "PREPARADOS"; the turbo runs from the
+// countdown until 30 s after the first image of the polled channel (at most 2 min).
+const TURBO_AFTER_IMAGE_MS = Number(process.env.XKW_TURBO_AFTER_IMAGE_MS ?? 30_000);
+function endTurboSoon() {
+  const end = Date.now() + TURBO_AFTER_IMAGE_MS;
+  for (const w of turboWindows) if (!w.off && w.to > end && w.from <= Date.now()) { w.to = end; log('turbo-end', { at: new Date(end).toISOString() }); }
+}
+const TURBO_COUNTDOWN_MS = Number(process.env.XKW_TURBO_COUNTDOWN_MS ?? 2 * 60_000);
+const turboWindows = [];
+function addTurbo(from, to, why) {
+  if (!(TURBO_POLL_MS > 0)) return;
+  const t = Date.now();
+  for (let i = turboWindows.length - 1; i >= 0; i--) if (turboWindows[i].to < t) turboWindows.splice(i, 1);
+  if (turboWindows.some(w => Math.abs(w.from - from) < 1000 && Math.abs(w.to - to) < 1000)) return;
+  turboWindows.push({ from, to, why, off: false });
+  log('turbo-window', { why, from: new Date(from).toISOString(), to: new Date(to).toISOString(), intervalMs: TURBO_POLL_MS });
+}
+const turboNow = (t = Date.now()) => turboWindows.find(w => !w.off && t >= w.from && t <= w.to);
+function pollInterval(t = Date.now()) { return turboNow(t) ? TURBO_POLL_MS : inFastWindow(t) ? FAST_POLL_MS : POLL_MS; }
 const hhmm = ms => new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 function addAutoWindow(from, to, why, post) {
   const t = Date.now();
@@ -536,6 +565,7 @@ function addAutoWindow(from, to, why, post) {
   if (autoWindows.some(w => w.why === why && Math.abs(w.from - from) < 1000 && Math.abs(w.to - to) < 1000)) return;
   autoWindows.push({ from, to, why });
   log('auto-window', { why, post, from: new Date(from).toISOString(), to: new Date(to).toISOString() });
+  if (why !== 'anuncio') addTurbo(t, t + TURBO_COUNTDOWN_MS, why);
   console.log(`${stamp(now())}  ${why === 'anuncio' ? `Key anunciada no canal para ${hhmm(from + FAST_BEFORE_MS)}` : 'Contagem no canal'}: consulta rápida de ${hhmm(from)} a ${hhmm(to)}`);
   kickPollers();
   // At the start of the announced window (HH:MM-2): wake the OCR workers and the media connections.
@@ -566,8 +596,13 @@ function inFastWindow(t = Date.now()) {
 const pollStats = { ok: 0, err: 0, rttSum: 0 };
 setInterval(() => { if (pollStats.ok || pollStats.err) { log('poll-stats', { ok: pollStats.ok, err: pollStats.err, rttMs: pollStats.ok ? Math.round(pollStats.rttSum / pollStats.ok) : null, fast: inFastWindow() }); pollStats.ok = pollStats.err = pollStats.rttSum = 0; } }, 60_000).unref?.();
 const POLL_PHASE = Math.min(1, Math.max(0, Number(process.env.XKW_POLL_PHASE ?? 0) || 0));
-function msToNextSlot(interval) {
-  const t = Date.now(), offset = POLL_PHASE * interval;
+// Turbo query loops: N per channel during a turbo window (extra loops idle otherwise), each on the
+// same grid shifted by k/N of the interval, so up to N queries are in the air at once (a query
+// takes ~150-370 ms to answer; one loop cannot ask faster than that). With two logins (phases 0
+// and 0.5) the bot's phase is divided by N, so the four loops ask at 0, 1/4, 1/2 and 3/4.
+const POLL_LANES = Math.max(1, Math.min(4, Number(process.env.XKW_POLL_LANES ?? 2) || 1));
+function msToNextSlot(interval, lane = 0) {
+  const t = Date.now(), offset = (turboNow() ? (POLL_PHASE + lane) / POLL_LANES : POLL_PHASE) * interval;
   let next = Math.ceil((t - offset) / interval) * interval + offset;
   if (next - t < 5) next += interval;
   return next - t;
@@ -582,7 +617,7 @@ const FIRST_POLL_COUNT = Number(process.env.XKW_FIRST_POLL_COUNT ?? 10);
 // pausing after an error keeps its pause).
 function kickPollers() {
   for (const state of pollers.values())
-    if (!state.stopped && !state.inFlight && !state.errors && state.tick) { clearTimeout(state.timer); state.timer = setTimeout(state.tick, msToNextSlot(FAST_POLL_MS)); }
+    if (!state.stopped && !state.inFlight && !state.errors && state.tick) { clearTimeout(state.timer); state.timer = setTimeout(state.tick, msToNextSlot(pollInterval(), state.lane)); }
 }
 async function pollOnce(sock, jid, count = 3) {
   const asked = now();
@@ -624,8 +659,12 @@ const editsSeen = new Map();
 function startPolling(sock, jid) {
   stopPolling(jid);
   if (!(POLL_MS > 0)) return;
-  const state = { delay: POLL_MS, errors: 0, timer: null, stopped: false, fast: null, first: true, inFlight: false, tick: null };
-  pollers.set(jid, state); polledJids.add(jid);
+  polledJids.add(jid);
+  for (let lane = 0; lane < POLL_LANES; lane++) startLane(sock, jid, lane);
+}
+function startLane(sock, jid, lane) {
+  const state = { delay: POLL_MS, errors: 0, timer: null, stopped: false, fast: null, first: lane === 0, inFlight: false, tick: null, lane };
+  pollers.set(lane ? `${jid}#${lane}` : jid, state);
   const tick = state.tick = async () => {
     if (state.stopped) return;
     const started = now();
@@ -634,20 +673,29 @@ function startPolling(sock, jid) {
       // With key times set, poll only inside their windows; outside, check again in 1 s.
       // A key time written by the announcement itself keeps the normal poll until its window.
       const idle = fastTimes.length > 0 && !fast && autoWindows.length === 0;
-      const mode = idle ? 'off' : fast ? 'fast' : 'normal';
+      const mode = idle ? 'off' : turboNow() ? 'turbo' : fast ? 'fast' : 'normal';
       if (mode !== state.fast) {
         state.fast = mode;
-        log('poll-rate', { jid, intervalMs: idle ? null : fast ? FAST_POLL_MS : POLL_MS });
-        console.log(`${stamp(now())}  ${idle ? 'Poll em espera até o horário da key (só push)' : `Poll a cada ${fast ? FAST_POLL_MS : POLL_MS} ms`}`);
+        log('poll-rate', { jid, intervalMs: idle ? null : pollInterval(), mode });
+        console.log(`${stamp(now())}  ${idle ? 'Poll em espera até o horário da key (só push)' : `Poll a cada ${pollInterval()} ms${mode === 'turbo' ? ' (turbo)' : ''}`}`);
       }
-      if (idle) { state.delay = 1000; if (!state.stopped) state.timer = setTimeout(tick, 1000); return; }
+      if (idle || (state.lane && !turboNow())) { state.delay = 1000; if (!state.stopped) state.timer = setTimeout(tick, 1000); return; }
       state.inFlight = true;
       try { await pollOnce(sock, jid, state.first ? FIRST_POLL_COUNT : 3); } finally { state.inFlight = false; }
       state.first = false;
       if (state.errors) { log('poll-recovered', { jid, errors: state.errors }); state.errors = 0; }
       // Checked again after the query: its answer may have carried the key announcement.
-      state.delay = inFastWindow() ? FAST_POLL_MS : POLL_MS;
+      state.delay = pollInterval();
     } catch (error) {
+      const turbo = turboNow();
+      if (turbo) {
+        // Turbo hit an error (maybe the limit): end this turbo window, go on at the fast rate.
+        turbo.off = true; pollStats.err++;
+        state.delay = 1000;
+        log('poll-error', { jid, errors: state.errors, delayMs: state.delay, turboOff: true, error: String(error?.output?.statusCode ?? error?.message ?? error) });
+        if (!state.stopped) state.timer = setTimeout(tick, state.delay);
+        return;
+      }
       // Back off on errors (a rate limit or a dropped connection): 30 s, doubling to 10 min;
       // inside a fast window 5 s, doubling to 30 s, so the window is not lost to one error.
       state.errors++; pollStats.err++;
@@ -657,13 +705,12 @@ function startPolling(sock, jid) {
     }
     // Next query on the wall-clock grid of the interval, shifted by XKW_POLL_PHASE (0..1):
     // two bots on two logins with phases 0 and 0.5 then ask alternately and stay that way.
-    if (!state.stopped) state.timer = setTimeout(tick, msToNextSlot(state.delay));
+    if (!state.stopped) state.timer = setTimeout(tick, msToNextSlot(state.delay, state.lane));
   };
-  state.timer = setTimeout(tick, msToNextSlot(POLL_MS));
+  state.timer = setTimeout(tick, msToNextSlot(POLL_MS, lane));
 }
 function stopPolling(jid) {
-  const state = pollers.get(jid);
-  if (state) { state.stopped = true; clearTimeout(state.timer); pollers.delete(jid); }
+  for (const [key, state] of [...pollers]) if (key === jid || key.startsWith(jid + '#')) { state.stopped = true; clearTimeout(state.timer); pollers.delete(key); }
 }
 
 async function subscribe(sock, jid) {
